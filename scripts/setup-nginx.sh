@@ -85,6 +85,13 @@ else
     info "Frontend dist already exists"
 fi
 
+# Ensure nginx user can traverse /root and read the dist files
+chmod 755 /root
+if [[ -d "$FRONTEND_DIST" ]]; then
+    chmod -R o+rX "$FRONTEND_DIST"
+    info "Set read permissions on frontend/dist for nginx"
+fi
+
 # ── 3. Create systemd service for the backend ──────────────────────────────
 
 info "Creating systemd service: ${SERVICE_NAME}.service"
