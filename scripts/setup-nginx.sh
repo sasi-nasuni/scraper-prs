@@ -130,6 +130,15 @@ info "Configuring nginx for ${DOMAIN} ..."
 # Back up existing default config
 [[ -f /etc/nginx/conf.d/default.conf ]] && mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.bak 2>/dev/null || true
 
+# Disable the default server block in nginx.conf (listens on :80 which conflicts with httpd)
+if grep -q 'listen.*80' /etc/nginx/nginx.conf 2>/dev/null; then
+    info "Disabling default port-80 server block in nginx.conf ..."
+    cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
+    # Comment out the entire default server { ... } block inside http { }
+    sed -i '/^[[:space:]]*server[[:space:]]*{/,/^[[:space:]]*}/s/^/#/' /etc/nginx/nginx.conf
+    info "Default server block commented out (backup at nginx.conf.bak)"
+fi
+
 cat > /etc/nginx/conf.d/${SERVICE_NAME}.conf <<EOF
 server {
     listen ${LISTEN_PORT};
