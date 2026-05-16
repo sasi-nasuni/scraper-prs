@@ -1,0 +1,42 @@
+[
+  {
+    "author": "Copilot",
+    "body": "Sentry init currently runs whenever `STACK_ENVIRONMENT` is set, even if the DSN is explicitly overridden to an empty string. The docs/README describe `PORTAL_SENTRY_DSN=\"\"` as a supported way to disable Sentry, but this code will still call `get_sentry_config()` and `sentry_sdk.init()` with an empty DSN (which may raise during DSN parsing or at least defeats the intent of an explicit disable). Consider gating initialization on a non-empty DSN (and/or normalizing blank DSNs to None in `SentrySettings`)."
+  },
+  {
+    "author": "Copilot",
+    "body": "`SentrySettings.dsn` is a required `str` with a built-in default, but docs suggest disabling Sentry via `PORTAL_SENTRY_DSN=\"\"`. With the current type/absence of an \u201cempty string \u2192 disabled\u201d validator, setting an empty DSN will still be passed into `sentry_sdk.init(...)` and can raise at startup. Consider making `dsn` optional (e.g., `SecretStr | None`) and adding a validator that converts blank strings to `None`, then only initializing Sentry when a non-empty DSN is present.\n```suggestion\n    dsn: SecretStr | None = Field(\n        default=SecretStr(\n            \"https://ee6ee87924219671e355dc1d4e237a67@o4508734372970496.ingest.us.sentry.io/4511135349080065\"\n        )\n    )\n    debug: bool = False\n\n    @field_validator(\"dsn\", mode=\"before\")\n    @classmethod\n    def _empty_string_to_none(cls, v: str | SecretStr | None) -> str | SecretStr | None:\n        if isinstance(v, str) and not v.strip():\n            return None\n        return v\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Sentry is initialized whenever `STACK_ENVIRONMENT` is set, even if `PORTAL_SENTRY_DSN` is overridden to an empty string. `sentry_sdk.init(dsn=\"\")` may raise and prevent the service from starting. Gate initialization on a non-empty DSN (and/or normalize empty DSN to `None` in settings) so `PORTAL_SENTRY_DSN=\"\"` reliably disables Sentry as documented."
+  },
+  {
+    "author": "Copilot",
+    "body": "This documentation says `PORTAL_SENTRY_DSN=\"\"` explicitly disables Sentry, but the current MCP settings/lifespan code will still attempt `sentry_sdk.init` with the configured DSN. Either update the code to treat empty DSN as disabled, or adjust the docs to match actual behavior to avoid broken deployments."
+  },
+  {
+    "author": "Copilot",
+    "body": "The config table claims `PORTAL_SENTRY_DSN=\"\"` disables Sentry. Ensure the runtime behavior matches this (i.e., empty DSN is normalized to disabled and Sentry init is skipped), or update the README to avoid instructing a configuration that can break startup.\n```suggestion\n| `PORTAL_SENTRY_DSN` | built-in default DSN | Sentry reporting is enabled when `STACK_ENVIRONMENT` is set. Override with a custom DSN as needed. |\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Previously the MCP HTTP sub-app was created with `stateless_http=True`; now `mcp.http_app(path=\"/\")` relies on the FastMCP default. Given the README states requests are stateless and session headers are ignored, it would be safer to pass `stateless_http=True` explicitly (or otherwise ensure the default remains stateless) to avoid accidentally enabling server-side session state across upgrades."
+  },
+  {
+    "author": "Copilot",
+    "body": "These assertions still expect the old tool names (e.g., `portal_appliance_core_performance`, `portal_appliance_cpu_usage`). In this PR the workflow text was updated to the renamed tools (e.g., `check_appliance_performance`, `get_appliance_cpu_usage`, etc.), so this test will fail unless the expected strings are updated to match the new workflow output."
+  },
+  {
+    "author": "Copilot",
+    "body": "This test still asserts legacy tool names in the comprehensive workflow output (e.g., `portal_appliance_cache_hits_misses`, `portal_appliance_smb_connections`). The workflow generator now references the renamed `get_appliance_*` tools, so the expected substrings should be updated to avoid a false negative."
+  },
+  {
+    "author": "Copilot",
+    "body": "The docs/README say Sentry can be explicitly disabled by setting `PORTAL_SENTRY_DSN=\"\"`, but this lifespan hook still initializes Sentry whenever `STACK_ENVIRONMENT` is set, even if the DSN is an empty string. That can lead to an attempted init with an invalid DSN and does not match the documented disable behavior. Consider skipping `sentry_sdk.init()` when `sentry_settings.dsn` is blank (or normalizing blank -> None in settings) and gating on both `stack_environment` and a non-empty DSN."
+  },
+  {
+    "author": "Copilot",
+    "body": "This module duplicates the handler-import side-effect pattern that already exists in `portal.mcp.routes.tools.attach_mcp_routes()`. Keeping two separate entry points that must stay in sync increases the chance of drift (e.g., a new handler added to one list but not the other). Consider consolidating on a single canonical registration module and having other callers import from it.\n```suggestion\nfrom portal.mcp.routes.tools import attach_mcp_routes\nfrom portal.mcp.tools.server import mcp\n\n# Reuse the canonical MCP route/tool registration entry point so handler\n# imports stay centralized in one place.\nattach_mcp_routes()\n```"
+  }
+]

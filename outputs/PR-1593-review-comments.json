@@ -1,0 +1,14 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The new label\u2192pair mapping only accepts the five human-friendly labels. This breaks existing callers that dispatch this workflow programmatically with the legacy pair value (e.g., `tvista1/tvista2`), causing the `Unknown stack environment label` error and failing the workflow. Update the mapping logic to accept legacy pair strings as valid inputs as well (e.g., detect values containing `/` and treat them as `PAIR_INPUT`, or add explicit case arms for the old pair values) so existing automation keeps working.\n```suggestion\n              if [[ \"$PAIR_LABEL\" == */* ]]; then\n                PAIR_INPUT=\"$PAIR_LABEL\"\n              else\n                echo \"::error::Unknown stack environment label: $PAIR_LABEL\"\n                exit 1\n              fi\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The triple-quoted string after `SECURITY_HEADERS` is a standalone expression, not a Python docstring attached to the constant. It won\u2019t be associated with `SECURITY_HEADERS` by tooling and can be confusing as it looks like variable documentation. Consider converting this to regular `#` comments above the constant (or moving this text into module docs) so it\u2019s clearly non-executable documentation.\n```suggestion\n# Security response headers applied to every HTTP response by the shared middleware.\n#\n# These headers mitigate common browser-level attack vectors:\n# - ``X-Content-Type-Options: nosniff`` \u2014 Prevents MIME-sniffing (CWE-693, OWASP A05:2021),\n#   ensuring browsers honour the declared ``Content-Type`` and do not reinterpret response\n#   bodies as executable content.\n#\n# New security headers should be added here so all portal services inherit them\n# automatically via ``build_web_app``.\nSECURITY_HEADERS: dict[str, str] = {\n    \"X-Content-Type-Options\": \"nosniff\",\n}\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The `icon` state is typed too loosely/inconsistently (`useState<ComponentType>` and `useState<typeof AlarmClockIcon>`), and the `setIcon` updater callback parameter is typed as `ComponentType`. This will likely fail TypeScript checking because `AnimatedIcon` expects an SVG component type (e.g., `ComponentType<ComponentProps<'svg'>>`) and the updater signature should match the state type. Please align the state and updater types to the same SVG icon component type used by `AnimatedIcon` so the story typechecks."
+  }
+]

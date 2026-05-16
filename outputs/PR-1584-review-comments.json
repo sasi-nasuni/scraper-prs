@@ -1,0 +1,6 @@
+[
+  {
+    "author": "Copilot",
+    "body": "For the BFF tier this script now runs `make install` (which maps to `uv sync` without the `lambda` dependency group) and no longer installs `libpq-dev`. Since `portal-webbff`\u2019s default deps include `psycopg2` (source distribution), this is likely to fail on hosts without `pg_config` (the exact case the previous `uv sync --group lambda` + `psycopg2-binary` workaround handled). Consider switching back to installing the `lambda` dependency group for BFF deployments (e.g., `uv sync --group lambda` or a `make install-lambda` target), or reintroduce `libpq-dev` if you intend to build `psycopg2` from source."
+  }
+]

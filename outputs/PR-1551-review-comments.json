@@ -1,0 +1,92 @@
+[
+  {
+    "file_path": "backend/stacks/portal-db-forge/src/portal_db_forge_stack/backend/engine.py",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rnimje-nasuni",
+        "body": "If the connection is broken, _engine.dispose() this line itself can fail. Can we do like forgetting the connection first, then try to clean it up? If cleanup fails, log a warning and move on.\n",
+        "created_at": "2026-04-14 06:25:59+00:00"
+      },
+      {
+        "author": "avinash-b-nasuni",
+        "body": "Refactored [dispose_root_engine](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) to reset [_engine = None](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) before calling [dispose()](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html). This way, even if [dispose()](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) raises on a broken connection, the singleton is already cleared and the next [get_root_engine()](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) call will create a fresh engine. Added a try/except that logs a warning with traceback if [dispose()](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) itself fails.",
+        "created_at": "2026-04-14 06:47:36+00:00"
+      },
+      {
+        "author": "rnimje-nasuni",
+        "body": "Thanks! Looks good to me.",
+        "created_at": "2026-04-15 10:18:32+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "backend/stacks/portal-db-forge/src/portal_db_forge_stack/backend/engine.py",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "The warning message says \"pool has been reset\", but if `engine_to_dispose.dispose()` raises, the pool/engine may not have been disposed\u2014only the cached singleton was cleared. Consider rewording the log to reflect what's guaranteed (e.g., cache cleared / new engine will be created on next use) to avoid misleading operational logs.\n",
+        "created_at": "2026-04-14 06:49:21+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "backend/stacks/portal-db-forge/src/portal_db_forge_stack/handlers/notifications_maintenance.py",
+    "line_range": "41-45",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "sasi-nasuni",
+        "body": "We are disposing the engine on every exception, is that okay ?(Assuming a non connection related exception occurred which would still leave the pool connection healthy and in that case we would clearing out healthy connection to create a new one). \n(On another thought since it is a single connection, it would not matter even if we get one more by killing the current one)",
+        "created_at": "2026-04-15 14:53:34+00:00"
+      },
+      {
+        "author": "avinash-b-nasuni",
+        "body": "Good catch! With NullPool there's no pool of healthy connections to lose, so disposing on any exception is harmless and keeps the logic simple. ",
+        "created_at": "2026-04-24 11:50:18+00:00"
+      },
+      {
+        "author": "avinash-b-nasuni",
+        "body": "Good catch! With NullPool there's no pool of healthy connections to lose, so disposing on any exception is harmless and keeps the logic simple. ",
+        "created_at": "2026-04-24 11:50:22+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "backend/stacks/portal-db-forge/src/portal_db_forge_stack/handlers/notifications_maintenance.py",
+    "line_range": "43",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "Can we add a warning / info here ? In case on first try the job fails due to some reason so that we will have the logs to debug and we will know why it failed on first try but passed on next tries.",
+        "created_at": "2026-04-14 05:09:56+00:00"
+      },
+      {
+        "author": "avinash-b-nasuni",
+        "body": "Added [exc_info=True](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) to the transient [logger.warning](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) call so the full traceback is captured on every failed attempt, not just the final one.",
+        "created_at": "2026-04-14 06:46:56+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "backend/stacks/portal-db-forge/tests/test_handler.py",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "Along with this can we add one assertion which checks the `dispose_engine` is not called in the happy path ?",
+        "created_at": "2026-04-14 05:08:44+00:00"
+      },
+      {
+        "author": "avinash-b-nasuni",
+        "body": "Updated [test_with_root_engine_wraps_db_job](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) to capture [dispose_root_engine](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) as a named mock and added [dispose_mock.assert_not_called()](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) at the end.",
+        "created_at": "2026-04-14 06:39:03+00:00"
+      }
+    ]
+  }
+]

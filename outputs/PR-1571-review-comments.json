@@ -1,0 +1,6 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`CLOUDFRONT_ORIGIN_VERIFY_VALUE` is treated as a shared secret to bypass the default WAF block, but it is hard-coded in the repository. This effectively makes the WAF allow rule spoofable by any direct caller who can set the header, undermining the IP allowlist\u2019s protection. Please source the value from a secret store (e.g., SSM/Secrets Manager) or CDK context/env var per-environment, and avoid committing the value in code (rotate existing deployed value when you change this)."
+  }
+]

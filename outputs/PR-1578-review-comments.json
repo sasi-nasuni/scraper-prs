@@ -1,0 +1,22 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The comment says the MQTT client is stopped because \"we poll SQS for responses\", but the script now verifies inbound via CloudWatch Logs (no SQS polling). This is misleading when troubleshooting; update the comment to reflect CloudWatch polling (or remove it).\n```suggestion\n    # Stop MQTT client \u2014 no longer needed because inbound verification\n    # is done by polling CloudWatch Logs for the Lambda processing result.\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "CloudWatch `filter_log_events` is called without handling pagination (`nextToken`). If the log group has enough matching events since `startTime`, the response may not include the event you need and the poll can time out even though the Lambda processed it. Consider paging through results (or using `nextToken` / `limit` + advancing `startTime`/last seen timestamp) to ensure newer events are examined."
+  },
+  {
+    "author": "Copilot",
+    "body": "The polling loop only returns success when it finds a \"Received ...\" log line containing the filer serial. In the Lambda handler, the \"Received ... (large payload, s3=...)\" log line does not include `origin`/serial, so large-payload responses could be processed successfully but this script would never return evidence. Consider treating the later \"Processing <type> from <origin_id>\" (or \"Successfully processed\") log lines as sufficient evidence, or adjusting the filter/parse logic to also handle the large-payload \"Received\" format."
+  },
+  {
+    "author": "Copilot",
+    "body": "CloudWatch query failures are logged at DEBUG, but this script's `e2e_roundtrip` logger is pinned to INFO even when `--verbose` is used, so these errors will stay hidden. Either log these as WARN/INFO (with rate limiting if needed) or set this logger's level to DEBUG when `--verbose` is enabled so users can diagnose IAM/region/log-group issues."
+  },
+  {
+    "author": "Copilot",
+    "body": "This inbound diagram line says \"SNS \u2192 SQS\", but earlier in the script output the production architecture still prints \"SNS FIFO \u2192 SQS FIFO\". Please make the diagrams consistent (either FIFO or not) to avoid confusion when comparing script output to the actual pipeline.\n```suggestion\n        f\"    SNS FIFO  \u2192  SQS FIFO\",\n```"
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`DataGrowthOverCapacityScenario` now has a name/description focused on the over-capacity *contact success* flow and also registers a `/account/contact` POST handler. This is confusing given the class/file name implies it only models the data-growth over-capacity state. Consider either (a) renaming/moving this scenario to reflect the contact-success use case, or (b) splitting into two scenarios (one for over-capacity data-growth GET only, one for over-capacity contact POST success) so each has a single responsibility."
+  },
+  {
+    "author": "Copilot",
+    "body": "`DataGrowthOverCapacityScenario` is being used as the over-capacity *contact success* scenario for `/account/status`. Since it also sets up data-growth handlers, it\u2019s hard to tell from this list which scenarios cover the banner contact success vs. the data-growth chart state. Consider reintroducing a dedicated `OverCapacityContactSuccessScenario` (POST-only) or renaming the scenario here to make the scenario list self-explanatory."
+  },
+  {
+    "author": "Copilot",
+    "body": "`contactSuccessHandlers` pulls `DataGrowthOverCapacityScenario().getHandlers()`, which includes both the `/account/data_growth` GET handler and the `/account/contact` POST success handler. Since `LicensedCapacityPanel` is driven by props and only needs the contact POST mocked for the success story, consider using a smaller, purpose-built handler set (or a dedicated over-capacity contact-success scenario) to avoid coupling this story to data-growth scenario details."
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "Not required. This is the default scenario"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "Not required."
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "not required"
+  },
+  {
+    "author": "Copilot",
+    "body": "`make install` runs plain `uv sync` (per backend/common.mk), which will not install the `lambda` dependency group. Previously this script installed with `uv sync --group lambda` for the BFF tier to ensure `psycopg2-binary` is available on hosts without `pg_config`. As written, installs may fail (psycopg2 source build) or runtime may miss the binary driver. Update this path to install the `lambda` group (or add a dedicated make target used here) and only drop `libpq-dev` if the binary wheel is guaranteed.\n```suggestion\n    make install\n    uv sync --group lambda\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`Locator.all()` returns a promise in Vitest browser locators; `rows.shift()` will fail because `rows` is not an array. This helper should either (a) return a locator for rows and do the header-row removal inside an `expect.poll(async () => ...)`, or (b) `await` the `.all()` result and slice it before returning."
+  },
+  {
+    "author": "Copilot",
+    "body": "`setQueryData(..., { status: 'downloaded' })` writes a value that is outside the `ActivityLogExportInfoDto` schema (`pending` | `completed`). This can break any component code that assumes the cached value matches the DTO type, and it provides an incomplete object shape. Prefer clearing/invalidating the query (or set a valid `completed` status with the expected fields) and rely on `setExportId('')` to stop polling."
+  },
+  {
+    "author": "Copilot",
+    "body": "This migration claims to update the renamed permission's \"key columns\" but the SQL only updates `role_permissions.id`. The `role_permissions` table also has `key` and `description` columns; leaving `key` as `can_view_audit_records` will cause permission lookups/filters and UI labeling to be inconsistent after the rename. Update the migration to also set `key` (and, if needed, `description`) to the new values, handling any uniqueness constraints safely."
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "Related to changes in other files while syncing with main"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "Related to changes in other files while syncing with main"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "Related to changes in other files while syncing with main"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "Related to changes in other files while syncing with main"
+  }
+]

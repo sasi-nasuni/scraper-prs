@@ -1,0 +1,50 @@
+[
+  {
+    "author": "Copilot",
+    "body": "AccountService.get_account_status() calls BffAccountRepo.get_account_license() directly, but get_account_license() does not map HTTPStatusError/InternalConnectionFailure to CoreException like the previous repo-level get_account_status did. This will leak raw httpx/connection exceptions out of the route (behavior regression). Catch and wrap these exceptions here (or move the try/except into BffAccountRepo.get_account_license()) to preserve a stable CoreException contract and consistent logging."
+  },
+  {
+    "author": "Copilot",
+    "body": "BffAccountRepo.__init__ no longer accepts slack_notification_service, but there are still call sites passing slack_notification_service (e.g. backend/portal-webbff/tests/unit/test_account.py uses slack_notification_service=AsyncMock()). Those will now raise TypeError at runtime and fail unit tests. Update remaining instantiations to match the new constructor signature (and route Slack usage through ContactService instead)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The module-level logger `log` is defined but never used. Remove it to avoid dead code, or use it to log exceptions/context in send_contact_message (e.g., before raising InternalConnectionFailure)."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Updated."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Removed from the test files."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Updated, removed the dead code."
+  },
+  {
+    "author": "viramjain99",
+    "body": "Let's not raise ValueError here if it is not there because someone changed something let it be fail with 500 internal server error for frontend it's does matter it is value error or 500 both are same "
+  },
+  {
+    "author": "viramjain99",
+    "body": "I think it's better we remove hidden service for now when it will come will enhance and add"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "if it does not matter why to make un-necessary changes."
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "The requirement is  there already. We are hiding services if they are not licensed for an organization."
+  },
+  {
+    "author": "viramjain99",
+    "body": "First of all can you tell me why this exception will come ? do we really need this check ? This check is not needed I think your test case should fail if someone is changed something "
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "Let's discuss offline"
+  }
+]

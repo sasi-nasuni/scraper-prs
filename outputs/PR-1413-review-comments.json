@@ -1,0 +1,122 @@
+[
+  {
+    "author": "Copilot",
+    "body": "_get_key_provider() defaults missing PORTAL_ENCRYPTION_KEYS_* env vars to an empty string, which then causes DecryptionKeyProvider to call Secrets Manager with secret_name=\"\" every TTL refresh. That will generate noisy errors/warnings and unnecessary AWS calls when encryption is not configured. Consider treating empty/missing env vars as \u201cno secret configured\u201d (e.g., pass None) and have the provider skip loading/logging in that case, or raise a clear startup error if decryption is required.\n```suggestion\n        active = os.environ.get(\"PORTAL_ENCRYPTION_KEYS_ACTIVE_SECRET\") or None\n        backup = os.environ.get(\"PORTAL_ENCRYPTION_KEYS_BACKUP_SECRET\") or None\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "DecryptionKeyProvider._load_key() always calls Secrets Manager even when secret_name is an empty string. In this repo, SecretManagerServiceSync.get_secret logs an error and then raises InternalConnectionFailure on invalid SecretId, so this will spam logs and add latency. Add a fast-path like `if not secret_name: return None` (and potentially log at debug once) before calling Secrets Manager."
+  },
+  {
+    "author": "Copilot",
+    "body": "PR description mentions \u201cfallback to plaintext on failure\u201d, but the production wiring here always enables OutboundEncryptionService and MessageClient does not catch EncryptionError. That makes outbound message sends fail hard whenever NOC key lookup or PGP encryption fails (including 404/no key), which is a breaking operational change unless keys are guaranteed for all targets. Either update the PR description to reflect fail-hard behavior, or gate this wiring behind an explicit feature flag / configuration so rollout can be controlled per environment/tenant."
+  },
+  {
+    "author": "Copilot",
+    "body": "The docstring claims filer_guid is an \u201cedge serial number\u201d, but this method name/parameter and the NBN routing use the filer GUID (distinct from serial_number). This mismatch is confusing and risks callers passing the wrong identifier. Please update the docstring (and the Args section) to clearly state what identifier is required (GUID vs serial) and align terminology across the codebase.\n```suggestion\n        Uses the filer's GUID to fetch the account public key from the NOC\n        ``get_appliance_key`` API. This expects the filer GUID used by NOC,\n        not the hardware/edge serial number.\n\n        Args:\n            payload: The compressed command payload string.\n            filer_guid: Target filer GUID as used by NOC APIs (not the\n                hardware/edge serial number).\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The docstring says `filer_guid` is the \u201cedge serial number\u201d, which conflicts with usage elsewhere (and the NBN API expects the GUID for destination routing). Please clarify in the docstring whether this parameter expects the filer GUID or the serial number, and update wording so consumers don\u2019t pass the wrong identifier.\n```suggestion\n            filer_guid: The filer GUID used for destination routing (not the human-readable edge serial number).\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This doc update says portal-crypto uses `ipworksopenpgp` and has \u201cDependencies: None\u201d, but the new `portal-crypto` package is implemented with PGPy13/pyasn1 and declares those dependencies. Please correct this section to reflect the actual implementation/dependency footprint (and the real reason for separating it from portal-core).\n```suggestion\nProvides PGP message encryption and decryption using PGPy13 and `pyasn1`. Separated\nfrom `portal-core` to keep heavy PGP-related dependencies out of the core foundation\nlibrary while keeping `portal-core` lightweight and giving consumers that need PGP an\nexplicit opt-in.\n\n**Dependencies:** PGPy13, pyasn1\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "When encryption is attempted and fails, the helper script logs a warning but still sends the message unencrypted. For a tool intended to validate PGP routing, silently falling back can lead to accidental plaintext sends. Consider failing/aborting by default when encryption fails, and require an explicit flag (e.g., `--no-encrypt` or `--allow-plaintext`) to proceed unencrypted."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Fixed"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Fixed"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Updated docstring"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Updated docstring"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Updated docstring"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Already fixed \u2014 both encryption failure paths in the helper script now call `logger.error(...)` followed by 1sys.exit(1)1 instead of logging a warning and continuing. To send unencrypted, you must explicitly pass --no-encrypt. This was committed in 0deabe23c."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Made encryption key-aware. This means encryption rolls out automatically per-filer as keys get registered in the NOC. Filers without keys continue to receive unencrypted messages. No config or feature flag needed."
+  },
+  {
+    "author": "fiebiga",
+    "body": "Personally I think we could have just shoved this in portal core and called it good\n\nGeneric pgp encryption and decryption standardization seems like a low enough thing to me"
+  },
+  {
+    "author": "fiebiga",
+    "body": "We don't need to import these in a function. If a project doesn't need pgp encryption it just won't import this module\n\nIf it does need it, we should import immediately and fail on startup, not on invocation"
+  },
+  {
+    "author": "fiebiga",
+    "body": "We have a tenant cache implementation we can use here\n\nIf we want to further optimize it to optionally keep it loaded in memory we could. But there's no need to reinvent the cache wheel"
+  },
+  {
+    "author": "fiebiga",
+    "body": "These tests are mostly useless. All it does is mock then verify the mock was returned. For such simple functions I think we can just drop testing"
+  },
+  {
+    "author": "nick-falco",
+    "body": " Right, I originally had it that way. In the end I decided to pull it out. It's not about the code being too complex for portal-core, it's about not forcing PGPy13 onto every consumer of portal-core.\r\n\r\n"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Moved to the module level."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Good point, no sense reinventing this. I will update."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Removed"
+  },
+  {
+    "author": "Copilot",
+    "body": "PR description calls out \u201clazy imports for performance\u201d, but this module imports `pgpy` at import time. If minimizing cold-start/import overhead is a goal (and to align with the PR description), move the `import pgpy` into the helper functions or behind a small local import helper."
+  },
+  {
+    "author": "Copilot",
+    "body": "TenantCacheService/CacheService returns raw Redis bytes when `model` is not provided. Converting that to `str(result)` will produce a string like `\"b'...'\")`, which will corrupt the cached public key and make PGP encryption fail (or repeatedly miss cache). Decode bytes (e.g., UTF-8) before returning, or update CacheService to return decoded strings for non-model gets.\n```suggestion\n            if result is None:\n                return None\n            if isinstance(result, (bytes, bytearray)):\n                try:\n                    return result.decode(\"utf-8\")\n                except UnicodeDecodeError:\n                    logger.warning(\n                        \"Failed to decode cached encryption key for key %s; treating as cache miss\",\n                        key,\n                    )\n                    return None\n            return str(result)\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`tenant_cache_service.get()` returns raw Redis bytes (see CacheService.get). Using `str(cached)` will yield a string like `\"b'...'\")` rather than the original payload, which will then break `try_decrypt()` / `_decode_body()` and JSON parsing. Decode cached bytes (e.g., `cached.decode('utf-8')`) before using it (and similarly ensure cached payloads are stored/returned consistently as text)."
+  },
+  {
+    "author": "Copilot",
+    "body": "This new `portal-crypto` entry still claims heavy native deps via `ipworksopenpgp`, but the implementation/dependencies in this PR are `PGPy13` + `pyasn1` (pure-Python + cryptography). Please update this line to reflect the actual dependency footprint/reason for separation so the architecture doc stays accurate.\n```suggestion\n| PGP encryption/decryption helper | `portal-crypto` | Isolated PGP crypto using dedicated deps (`PGPy13`, `pyasn1`/`cryptography`), kept separate from core |\n```"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Updated PR description."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Fixed:\r\n\r\n```python\r\n-            return str(result) if result is not None else None\r\n+            if result is None:\r\n+                return None\r\n+            return result.decode(\"utf-8\") if isinstance(result, bytes) else result\r\n```"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Fixed it at the source in `CacheService.get()` so every caller benefits automatically."
+  },
+  {
+    "author": "fiebiga",
+    "body": "Right but you weigh that against a whole new library just for 2-3 functions... we have cryptography in portal-web for instance. And nobody has to actually import or use these if they don't want to. We're already a smidge heavy on the library department, I think each one should be definitively solid in the value it brings\n\nOpen for a tie breaking opinion. @dleyva-nasuni @dtrinchet-nasuni @jtolla-nasuni @og-snarf-snarf "
+  }
+]

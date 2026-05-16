@@ -1,0 +1,74 @@
+[
+  {
+    "author": "Copilot",
+    "body": "JWT base64 decoding here uses a fixed `\"==\"` padding suffix. Base64url segments need padding based on length (and may require 0\u20133 `=`), so this can fail for some tokens. Compute padding dynamically (e.g. `seg + '=' * (-len(seg) % 4)`) before `urlsafe_b64decode`.\n```suggestion\n    jwt_payload_segment = resp.jwt.split(\".\")[1]\n    jwt_payload_padded = jwt_payload_segment + \"=\" * (-len(jwt_payload_segment) % 4)\n    claims = json.loads(base64.urlsafe_b64decode(jwt_payload_padded))\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`ok()` conditionally chooses a colored prefix based on `_use_color()`, but these messages embed `_BOLD`/`_RST` directly, so ANSI escape codes will still be printed when stdout isn\u2019t a TTY (e.g. redirected output/CI logs). Use the `_b`/`_r` style variables (or a helper) consistently so non-TTY output is clean."
+  },
+  {
+    "author": "Copilot",
+    "body": "`should_rotate()` now special-cases naive datetimes by injecting UTC tzinfo, but `tests/test_rotation.py` doesn\u2019t cover this new branch. Add a unit test that passes a naive `created_at` (no offset) and asserts the function returns the expected value (and doesn\u2019t raise) with a timezone-aware `now`."
+  },
+  {
+    "author": "Copilot",
+    "body": "`active_data` comes from `SecretManagerService.get_secret()` (JSON-deserialized) and can be any JSON type, not guaranteed to be a dict. This new retry block calls `active_data.get(...)`, indexes `active_data[\"public_key\"]`, and later the handler indexes `active_data[\"created_at\"]`; if the secret is valid JSON but not an object (e.g. a string/list due to manual edit), the handler will raise an AttributeError/TypeError instead of treating it as uninitialized or emitting a clear error. Add an explicit `isinstance(active_data, dict)` guard (and required key presence) before using dict methods/keys, and fall back to initialization (or raise a controlled exception) when the payload shape is unexpected."
+  },
+  {
+    "author": "Copilot",
+    "body": "These assertions only check that `put_secret` was called twice, but they don\u2019t verify that the payload written after a successful NOC upload actually flips `noc_uploaded` to `True`. As written, a regression where the second write still stores `noc_uploaded=False` would pass. Consider asserting on the contents of both `put_secret` calls (first write contains `noc_uploaded=False`, second contains `noc_uploaded=True`)."
+  },
+  {
+    "author": "Copilot",
+    "body": "This test asserts `put_secret` was called 3 times, but it doesn\u2019t assert that the *final* active-secret write (after `upload_public_key_to_noc`) stores `noc_uploaded=True`. That means a regression where the handler never marks the new key as uploaded (or writes the wrong value) could still pass. Add an assertion against `mock_sm.put_secret.call_args_list[2]` (or similar) to validate the final payload\u2019s `noc_uploaded` value."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Added 2 new tests:\r\n- `test_naive_created_at_treated_as_utc` \u2014 passes a naive timestamp (no +00:00) at the rotation threshold and asserts it returns True without raising\r\n- `test_naive_created_at_no_rotation` \u2014 passes a recent naive timestamp and asserts False, confirming the UTC assumption produces correct arithmetic"
+  },
+  {
+    "author": "nick-falco",
+    "body": "The fix is a one-line change in `needs_initialization()` \u2014 splitting the old `isinstance and not .get()` into two separate guards so non-dict values (strings, lists, numbers) are correctly treated as uninitialized instead of falling through to an AttributeError."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Addressed, and added new helper methods."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Added copy.deepcopy snapshot capture in _recording_put_secret() so tests assert on the actual payload at each put_secret call, not the final mutated reference.\r\n\r\n"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Replaced call_count checks with `copy.deepcopy` snapshots so we assert the actual noc_uploaded value at each write, not a mutated reference."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Replaced the hardcoded `+ \"==\"` with `+ \"=\" * (-len(seg) % 4)` to compute correct base64url padding for any segment length."
+  },
+  {
+    "author": "fiebiga",
+    "body": "1) why are we using dicts here? We use pydantic for all return types everywhere else\n2) if we're modifying the practical use for this model, we should probably just include noc_uploaded in the standard definition for this model\n\nMagic dict keys require code hunting"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Good catch, thanks Adam. I added a `KeyPairSecret` model to config.py with noc_uploaded as a first-class field. "
+  },
+  {
+    "author": "Copilot",
+    "body": "`needs_initialization()` now explicitly handles non-dict JSON values, but the type signature is still `dict[str, Any] | None`. This forces callers/tests that intentionally pass strings/lists/ints to use `type: ignore` even though that input is now supported. Consider widening the parameter type (e.g., `Any | None` or `object | None`) so the typing matches the runtime behavior and the new tests don\u2019t need ignores."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Not needed. If a test passes something else, that is intentional."
+  },
+  {
+    "author": "fiebiga",
+    "body": "Now that we've added validation, this is an unnecessary test or assertion rather"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Removed"
+  }
+]

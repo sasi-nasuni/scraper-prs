@@ -1,0 +1,22 @@
+[
+  {
+    "author": "Copilot",
+    "body": "In `parse_frontend_coverage`, statementMap entries with missing/invalid `start.line` (defaulting to 0) will add line 0 into `line_hits`, inflating totals and producing an impossible line number in coverage calculations. Skip non-positive line numbers (and ideally ignore entries where start/end line are missing) before counting/building `line_hits`."
+  },
+  {
+    "author": "Copilot",
+    "body": "Same issue in main-mode frontend parser: `start_line` defaults to 0 and can cause line 0 to be counted in totals. Filter out statementMap ranges where `start_line <= 0` (and clamp `end_line` accordingly) before populating `line_hits`."
+  },
+  {
+    "author": "Copilot",
+    "body": "This workflow checks out the PR base SHA (trusted) to run `scripts/pr_coverage_report.py` and `scripts/pr_coverage_gh_pages_index.py`, but those scripts are introduced in this PR. On any PR run, the base SHA won't contain these scripts, so report generation/cleanup will fail (and even if it didn't, it would generate file pages without source). Consider either (1) staging this as two PRs (merge scripts first, then pin checkout to base), or (2) running from the checked-out PR head SHA (and update the comments about trust accordingly), or (3) moving the publish job to a default-branch workflow (`workflow_run` / `pull_request_target`) so both workflow + scripts always come from the trusted default branch.\n```suggestion\n          # Check out the PR head revision for report generation so the\n          # scripts and source being published match the PR contents. This\n          # job is already restricted to same-repository PRs above, so PR\n          # code does not run here for untrusted forks.\n          ref: ${{ github.event.pull_request.head.sha || inputs.head_ref || github.event.repository.default_branch }}\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "HTML files include non-ASCII characters (emoji, UTF-8 text) but are written with the platform default encoding. To avoid mojibake on non-UTF-8 locales, open the output file with `encoding='utf-8'` (both for index.html and per-file pages).\n```suggestion\n    with open(os.path.join(output_dir, \"index.html\"), \"w\", encoding=\"utf-8\") as f:\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Same encoding concern as the report generator: this index HTML contains emoji and should be written explicitly as UTF-8 (`open(..., encoding='utf-8')`) to avoid platform-default encoding issues.\n```suggestion\n    with open(gh_pages_dir / \"index.html\", \"w\", encoding=\"utf-8\") as f:\n```"
+  }
+]

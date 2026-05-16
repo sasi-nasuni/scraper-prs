@@ -1,0 +1,30 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The MCP tool names have been renamed (e.g., \"get_appliances\" -> \"list_appliances\", \"portal_list_volumes\" -> \"list_volumes\", etc.), which is a breaking change for any existing MCP clients. The current ToolRegistry only looks up tools by exact name and will raise UnknownToolError for the old names, so there\u2019s no backwards compatibility path.\n\nConsider registering deprecated aliases for the previous tool names (forwarding to the same handlers) for at least one release cycle, or introducing explicit tool/API versioning so existing clients don\u2019t break."
+  },
+  {
+    "author": "Copilot",
+    "body": "This PR makes user-facing contract changes (MCP tool renames, removal of pricing/cost fields from TCO outputs, and deletion of the pricing-api library), but the PR description\u2019s Summary/Testing sections are empty. Please add migration notes (what changed, whether any aliases exist, expected client updates) and a concrete testing section (commands run / key flows validated)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The copy interaction is communicated only via icon changes. Screen-reader users won\u2019t get any announcement when copying succeeds/fails, and the aria-label remains constant, so the state change is effectively silent.\n\nAdd an aria-live status message (e.g., visually-hidden text that updates to \u201cCopied\u201d/\u201cCopy failed\u201d) and/or update the button\u2019s accessible name based on copyStatus so the result of the action is conveyed non-visually."
+  },
+  {
+    "author": "Copilot",
+    "body": "When `memory_gib` is unavailable (e.g., `edge.machine.ram` is missing/unparseable), the analyzer currently treats it as `0.0` GiB. That makes `check_minimum_requirements()` fail and forces an \"upsize\" recommendation with a misleading \"below minimum requirements\" reason, even though the hardware spec is simply unknown.\n\nInstead of defaulting unknown specs to 0, consider representing missing memory as \"unknown\" (e.g., allow `memory_gib=None` through and skip the memory portion of the minimum-requirements check or return an indeterminate/partial check with a warning).\n```suggestion\n        actual_memory_gib = memory_gib\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`memory_gib` can be `None` (e.g., when `edge.machine.ram` is missing/unparseable), but the analyzer currently converts that to `0.0` and then runs `check_minimum_requirements`. That will always mark memory as below minimum and can force misleading \u201cbelow minimum \u2192 upsize\u201d recommendations when the memory size is simply unknown. Consider treating unknown memory as \u201cnot evaluated\u201d (e.g., set `min_req=None` when `memory_gib is None`, and ensure the recommendation engine doesn\u2019t force upsize based on missing specs), or introduce an explicit `hardware_specs_available` / `memory_gib_available` flag used by the minimum-requirements check."
+  },
+  {
+    "author": "Copilot",
+    "body": "The copy action changes visual state via icons, but there\u2019s no accessible status announcement for screen reader users (e.g., \u201cCopied\u201d / \u201cCopy failed\u201d). Consider adding an `aria-live` region (visually hidden) tied to `copyStatus` and/or updating the button\u2019s accessible name based on status so the outcome of the action is conveyed non-visually."
+  },
+  {
+    "author": "Copilot",
+    "body": "Replacing the read-only `TextInputWithCopy` field with a `<pre>` removes the standard form-field semantics (focusable textbox, associated label) that screen readers and keyboard users rely on. Consider keeping `TextInputWithCopy`, or make the URL container act like a read-only textbox (e.g., `role=\"textbox\"`, `aria-readonly`, `tabIndex={0}`, and link the label via `aria-labelledby`) so the value is discoverable/navigable without relying solely on the icon button."
+  }
+]

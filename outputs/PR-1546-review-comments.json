@@ -1,0 +1,122 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`used_capacity` is derived from `series_data.now[-1]`, but `now` is explicitly handled as potentially unsorted elsewhere (`preprocess_chart_data` sorts by timestamp). If `now` arrives unsorted from NOC, this can report an incorrect current usage. Derive `used_cap` from the max timestamp entry (or reuse the sorted/aggregated result) instead of the last list element.\n"
+  },
+  {
+    "author": "Copilot",
+    "body": "`parse_licensed_capacity` can raise a `ValueError` on `float(match.group(1))` because the regex `([\\d.]+)` allows values like `1.2.3` that still match. Tighten the regex to a valid numeric format (e.g., one optional decimal point) and/or wrap the float conversion in a try/except and return 0.0 on parse failure to avoid 500s on unexpected NOC values.\n"
+  },
+  {
+    "author": "Copilot",
+    "body": "`licensed` and `now` use mutable list defaults (`=[]`). In this codebase's Pydantic DTOs, list fields are typically declared with `Field(default_factory=list[...])` to avoid shared mutable defaults and to satisfy linters. Switch these fields to `Field(default_factory=...)` for consistency and safety."
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "_BYTES_PER_UNIT is defined identically in both files here and repo.py. Define it once and import to avoid drift."
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "When the regex doesn't match [new_value] (e.g. an unexpected unit like MB), the function returns 0.0 silently. Add a log.warning(\"Unable to parse licensed capacity value: %s\", last_entry.new_value) before the return 0.0 so operators can spot bad data from NOC."
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "The parent ([AccountStatusPage](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)) now handles [isUsageError](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) at page level and never renders [DataGrowthChart](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) in an error state. The internal [isError](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) branch is only reachable from Storybook. The error message text differs from the parent's \u2014 consider unifying wording or adding a comment noting it's Storybook-only or i think its better to update stories accordingly."
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "[max(relevant, key=lambda e: e.date)](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) relies on lexicographic ordering. Works for ISO dates (2026-03-16) but will silently break for non-ISO formats. Acceptable if NOC guarantees ISO \u2014 just flagging the assumption."
+  },
+  {
+    "author": "viramjain99",
+    "body": "avoid using names like i,e \n\n```suggestion\n        relevant = [licensed for licensed in licensed_entries if licensed.metric == \"max_now_storage\"]\n```"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "This removes the Data Growth region entirely on fetch failure. The existing route test at [status.test.tsx:331](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) still looks for a region named Data Growth, so the PR breaks the current integration contract and the section landmark disappears for assistive tech in the error state.\n\nKeep the panel shell mounted and render the warning inside it, or update the route test and landmark semantics together so the error state remains discoverable under the same region."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "We will get the sorted order data from the NOC."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "We will get the NOC response in the lexicographic order only."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Updated."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Used the default_factory for both."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Updated the regex."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Good Catch, Removed from the DataGrowth and Licensed Capacity."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Somehow missed it, updated this."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Updated the test file now."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Updated."
+  },
+  {
+    "author": "gkrishna214",
+    "body": "Any reason why we deleted ExpiredSubscriptionScenarios? Because it might reduce test coverage"
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "The expired status of account is no more needed. We will only show the trail as per PM requirement. Hence, removed it.  "
+  },
+  {
+    "author": "gkrishna214",
+    "body": "The regex above is already guarantees that this value if float. So this try catch might never raise ValueError.\nI guess we can simple use value = float(match.group(1)) and remove try catch?"
+  },
+  {
+    "author": "gkrishna214",
+    "body": "Just in case, if it is confusing, we can replace licensed with entry.\nLike entry for entry in licensed_entries, if its confusing. Not mandatory"
+  },
+  {
+    "author": "gkrishna214",
+    "body": "If NOC is returning data in chronological order, then i guess we dont need this test.\nEither we should remove this test, or address the issue related to \nused_cap = (series_data.now[-1][1] / bytes_per_unit) if series_data.now else 0.0 "
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Good Catch, Removed the test case and also unwanted sorted functions."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Correct, thought of it but added licensed."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Correct, removed the dead code."
+  },
+  {
+    "author": "Copilot",
+    "body": "`_build_monthly_points` no longer sorts `series_now` (or the resulting months) and returns `list(monthly_usage.items())`, so chart point ordering (and which value is treated as \u201clast value wins\u201d when upstream ordering changes) becomes dependent on NOC\u2019s input order. This also conflicts with `preprocess_chart_data`\u2019s docstring step that says raw telemetry is sorted by timestamp. Restore deterministic sorting here (timestamp and/or month key) or update the docstring and add a test that enforces the NOC ordering guarantee."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "not required, we will get in the sorted order only."
+  },
+  {
+    "author": "viramjain99",
+    "body": "why can't we sort by date in descending order and pick the first once"
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Its already in the sorted, why to do it again. We can just use the last value."
+  }
+]

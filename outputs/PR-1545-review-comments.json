@@ -1,0 +1,62 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The minimum versions for SQLAlchemy/asyncpg/alembic/SQLAlchemy-Utils were lowered substantially, but this service is currently locked/tested against much newer versions (e.g. portal-webbff/uv.lock pins SQLAlchemy 2.0.48, asyncpg 0.31.0, alembic 1.18.4). If the intent is to claim compatibility with these older floors, consider either (a) keeping the minimums aligned with the versions actually supported/tested across the repo (e.g. portal-data uses SQLAlchemy>=2.0.44, asyncpg>=0.31.0, alembic>=1.17.1), or (b) adding CI/constraints that exercise the stated minimum versions so we don\u2019t advertise unsupported dependency combinations.\n```suggestion\n    \"SQLAlchemy[asyncio]>=2.0.44\",\n    \"asyncpg>=0.31.0\",\n    \"alembic>=1.17.1\",\n    \"SQLAlchemy-Utils>=0.42.0\",\n```"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "This should be make install"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "Why decrement?"
+  },
+  {
+    "author": "viramjain99",
+    "body": "because we are using 2.9.10 in portal-data"
+  },
+  {
+    "author": "viramjain99",
+    "body": "done"
+  },
+  {
+    "author": "Copilot",
+    "body": "Removing the libpq-dev install step is likely to break the BFF deploy: the portal-webbff lock currently includes `psycopg2==2.9.11` as a source distribution on Linux (no manylinux wheel), which requires `pg_config`/libpq headers to build. Either keep installing `libpq-dev` here, or adjust portal-webbff dependencies/lock so that `psycopg2` is not installed on the BFF tier (and only the prebuilt `psycopg2-binary` is).\n```suggestion\nif [[ \"$TEMPLATE_TIER\" == \"BFF\" ]]; then\n    sudo apt-get update\n    sudo apt-get install -y libpq-dev\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`make install` runs `uv sync` (default groups), and it\u2019s immediately followed by `uv sync --group lambda`. This double-sync is redundant and increases deploy time. Consider replacing both with a single `uv sync --group lambda` (or adding a dedicated Makefile target for the lambda install) to keep the install step deterministic and faster.\n```suggestion\n\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The PR description says this change downgrades `psycopg2-binary`, but the constraint here is still permissive (`>=2.9.10`) and doesn\u2019t actually force 2.9.10. Also, the base dependency remains `psycopg2>=2.9.11`, so the BFF tier can still end up building/installing psycopg2 2.9.11 from source. If the intent is a real downgrade + avoiding `pg_config`, pin the exact psycopg2-binary version (or upper-bound it) and update the main `psycopg2` dependency/installation strategy accordingly, then regenerate the lock."
+  },
+  {
+    "author": "viramjain99",
+    "body": "updated the description"
+  },
+  {
+    "author": "Copilot",
+    "body": "This Makefile overrides the standard `install` target from `backend/common.mk` and duplicates the CodeArtifact env check logic. Consider keeping `install` consistent with other backend projects (i.e., `uv sync`) and adding a separate target like `install-lambda` (used by CodeDeploy) to run `uv sync --group lambda`, so local/dev workflows don\u2019t unexpectedly pull in the lambda-only dependency set and the shared logic stays centralized in `common.mk`.\n```suggestion\n.PHONY: install-lambda\ninstall-lambda:\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "For the BFF tier this switches from `uv sync --group lambda` to `make install`, but `make install` (via `backend/common.mk:install`) runs plain `uv sync` and does **not** install the `lambda` dependency group. That means `psycopg2-binary` from the lambda group will no longer be installed, while `psycopg2>=2.9.11` (sdist) will be installed instead; since this hunk also removed installing `libpq-dev`, the deploy is likely to fail due to missing `pg_config`/libpq headers. Consider either calling `uv sync --group lambda` here, adding an `install-lambda` make target that syncs the lambda group, or moving the needed runtime dependency into the default install set for BFF deployments.\n```suggestion\n    uv sync --group lambda\n```"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "We don't need this anymore, just the normal make install should work now."
+  },
+  {
+    "author": "viramjain99",
+    "body": "done"
+  },
+  {
+    "author": "Copilot",
+    "body": "The PR description mentions switching to a new `make install-lambda` target, but `backend/common.mk` does not define `install-lambda` and this script now calls `make install` for BFF. Either add the documented `install-lambda` target (e.g., `uv sync --group lambda` + CodeArtifact check) and use it here, or update the PR description/automation to match the actual behavior."
+  },
+  {
+    "author": "viramjain99",
+    "body": "updated the desc."
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The pre-initialize assertion is currently checking `mock_client.capture.assert_not_called()` even though `mock_client` is not attached to the tracker until later, so this part of the test can\u2019t actually detect an accidental emit before `initialize()`. Consider asserting on the tracker\u2019s internal state (e.g., `_client is None`) or patching/spying on `tracker._capture` to verify no capture attempt occurs before initialization.\n```suggestion\n    # Before initialize, the tracker should remain uninitialized and not attach a client\n    assert tracker._client is None\n    await tracker.track_tool_call(account_id=uuid4(), tool_name=\"noop\", success=True)\n    assert tracker._client is None\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`STACK_ENVIRONMENT` tiers in this repo include `test` (see CDK get_env_tier), but this logic treats anything other than `dev`/`production` as \u201cunsupported\u201d. If `test` should be a valid non-tracking environment, handle it explicitly (and adjust the log message accordingly). If it should track, include `test` in the enabled set so PostHog isn\u2019t silently disabled in that tier.\n```suggestion\n    elif env == \"test\":\n        log.info(\"PostHog disabled in test environment\")\n    else:\n        log.info(\"PostHog disabled: unknown STACK_ENVIRONMENT=%s\", env)\n```"
+  },
+  {
+    "author": "dan-poustovalov",
+    "body": "Intentional, it's proving that calling track_tool_call before initialize() doesn't touch the mock at all. Dismissing this."
+  },
+  {
+    "author": "dan-poustovalov",
+    "body": "Not really a concern, this is unchanged behavior from the original code. The dev/production check existed before my change. Dismissing,"
+  }
+]

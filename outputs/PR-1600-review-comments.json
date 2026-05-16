@@ -1,0 +1,46 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The period field descriptions state a maximum of P4D, but the DTO does not enforce this (plain `str` without validation) and existing unit tests pass through values like `P7D`/`P30D`. Either add validation to reject periods > P4D or adjust the description to avoid advertising an unenforced limit."
+  },
+  {
+    "author": "Copilot",
+    "body": "This tool description claims a maximum period of P4D, but the handler passes `params.period` straight through without validation and existing tests exercise longer periods (e.g., P7D/P30D). Please either enforce the stated maximum or update the description to match actual behavior."
+  },
+  {
+    "author": "Copilot",
+    "body": "This tool description claims a maximum period of P4D, but the handler passes `params.period` straight through without validation and existing tests exercise longer periods (e.g., P7D/P30D). Please either enforce the stated maximum or update the description to match actual behavior."
+  },
+  {
+    "author": "Copilot",
+    "body": "This tool description claims a maximum period of P4D, but the handler passes `params.period` straight through without validation and existing tests exercise longer periods (e.g., P7D/P30D). Please either enforce the stated maximum or update the description to match actual behavior."
+  },
+  {
+    "author": "dan-poustovalov",
+    "body": "Is 30 days still the maximum?"
+  },
+  {
+    "author": "dtrinchet-nasuni",
+    "body": "Good call, we don't have that limit established anywhere, removed [1763ef](https://github.com/nasuni/portal/pull/1600/commits/71763ef32a5e51ff8dc8ecaf566716fe5db834c6)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The `period` arg description no longer mentions the backend-enforced 30-day maximum range for appliance telemetry. Since the WebAPI validates appliance telemetry windows to <= 30 days, this tool arg doc should document that limit to prevent confusing 422s when users request larger ranges.\n```suggestion\n            \"Time period in ISO 8601 duration format (e.g. 'PT30M', 'PT1H', 'P7D') or interval format \"\n            \"(e.g. '2024-01-01/2024-01-07'). Appliance telemetry requests are limited to a maximum 30-day range.\"\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The `ApplianceHealthScoreArgs.period` description dropped the previously documented max range. The corresponding WebAPI request DTO enforces a 30-day maximum window for appliance telemetry, so this description should include that constraint (and ideally the minimum 6-minute range) to match actual validation behavior.\n```suggestion\n            \"Time period in ISO 8601 duration format (e.g. 'PT30M', 'PT1H', 'P7D') or interval format \"\n            \"(e.g. '2024-01-01/2024-01-07'). The requested telemetry window must be between 6 minutes \"\n            \"and 30 days inclusive.\"\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This changes the default `period` for `ApplianceTelemetryArgs` to PT1H, which affects several tool handlers (CPU, cache, network, SMB, core performance). There\u2019s currently no unit test asserting that at least one of those handlers uses the updated default when `period` is omitted (similar to the existing health score default test). Consider adding a focused unit test to prevent future drift from the UI default."
+  },
+  {
+    "author": "dtrinchet-nasuni",
+    "body": "Solved."
+  },
+  {
+    "author": "dtrinchet-nasuni",
+    "body": "Solved"
+  }
+]

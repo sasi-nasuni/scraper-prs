@@ -1,0 +1,66 @@
+[
+  {
+    "author": "aikido-pr-checks[bot]",
+    "body": "**Exposed secret in frontend/msw-portal/webbff/data/analytics-connector.ts** - high severity\nDetected a Generic API Key, potentially exposing access to various services and sensitive operations.\n\n<sub>Reply `@AikidoSec ignore: [REASON]` to ignore this issue.</sub>\n<sub>[More Info](https://app.aikido.dev/repositories/1052156/pull_requests/1562/latest?groupId=41271)</sub>"
+  },
+  {
+    "author": "aikido-pr-checks[bot]",
+    "body": "**Exposed secret in frontend/msw-portal/webbff/data/analytics-connector.ts** - high severity\nDetected a Generic API Key, potentially exposing access to various services and sensitive operations.\n\n<sub>Reply `@AikidoSec ignore: [REASON]` to ignore this issue.</sub>\n<sub>[More Info](https://app.aikido.dev/repositories/1052156/pull_requests/1562/latest?groupId=41271)</sub>"
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Nice catch. I replaced the mock key values with synthetic UUIDs"
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Nice catch. I replaced the mock key values with synthetic UUIDs"
+  },
+  {
+    "author": "Copilot",
+    "body": "`BackendAnalyticsConnectorDto` is defined as `SnakeCased<AnalyticsConnectorDto>`, and `AnalyticsConnectorDto` coerces `startTimestamp` to a `Date`. Because `SnakeCased` preserves `Date` types, `start_timestamp` should be a `Date` here as well; using a string breaks the mock\u2019s TS contract (and can fail typecheck). Prefer `start_timestamp: new Date('...')` (it will serialize to ISO in `HttpResponse.json`) or adjust the backend DTO type so it explicitly models the wire format as a string."
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "\r\nFixed: start_timestamp now uses Date values (not strings) to match SnakeCased<AnalyticsConnectorDto> type."
+  },
+  {
+    "author": "Copilot",
+    "body": "`getAnalyticsConnectorDto()` returns a connector with a hard-coded key ending in `...0001`, but `getAnalyticsConnectorKeyDto()` returns `...0002`. With stateless MSW handlers this can lead to inconsistent UI (e.g., after generating a key, a later refetch/refresh can \u201crevert\u201d to the GET key). Consider sharing a single default key constant between both factories (or have `getAnalyticsConnectorKeyDto()` default to `getAnalyticsConnectorDto().key`), and use `overrides` only when a test/scenario needs a different key."
+  },
+  {
+    "author": "Copilot",
+    "body": "The POST `/cloud_services/analytics_connector` handler returns `getAnalyticsConnectorKeyDto()` (currently a different key than the default GET handler returns via `getAnalyticsConnectorDto()`). Because MSW handlers are stateless, this can create inconsistent behavior if the page refetches after the mutation. Consider returning a key that matches the default GET response (or introducing a scenario/stateful mock for key rotation) so GET/POST stay consistent.\n"
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Fixed. POST /cloud_services/analytics_connector now returns the same key as default GET, so the stateless MSW behavior stays consistent across refetches."
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Good catch. I unified both mock factories to use a shared DEFAULT_ANALYTICS_CONNECTOR_KEY, so GET/POST defaults stay consistent and only diverge when explicitly overridden by a test/scenario."
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "This test says it verifies buttons are \"rendered in restricted mode\" but only asserts they're visible \u2014 it'll pass even if permissions aren't gated at all. Could you add toBeDisabled() (or whatever the restricted state is) so it actually proves the gating works?"
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "getAnalyticsConnectorKeyDto({ key: getAnalyticsConnectorDto().key }) creates the full DTO just to read .key, which already defaults to DEFAULT_ANALYTICS_CONNECTOR_KEY. You can simplify to getAnalyticsConnectorKeyDto()."
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "The negative assertions ([expect(locator).not.toBeInTheDocument()](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)) are sync, but every other integration test in the repo uses [await expect.element(locator).not.toBeInTheDocument()](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html). The sync form doesn't retry and could flake if the DOM hasn't fully settled. Mind switching these four to [await expect.element(\u2026)](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)? we can switch the other places also in this file"
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Updated the file to use retryable await expect.element(...).not.toBeInTheDocument() assertions for all negative checks."
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Simplified as suggested: the POST handler now just returns getAnalyticsConnectorKeyDto()"
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Strengthened the test to assert the restricted buttons are disabled,"
+  }
+]

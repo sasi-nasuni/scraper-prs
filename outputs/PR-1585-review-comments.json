@@ -1,0 +1,50 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`IamRepository` inherits `MultiTenantDbRepo.__init__(session_factory, auditor)`, so passing `activity_logger=...` will raise a `TypeError` and break this test. Use the correct `auditor` argument (or update `MultiTenantDbRepo`/`IamRepository` constructor consistently if it was intentionally renamed).\n```suggestion\n    return IamRepository(session_factory=tenant_session_factory, auditor=AsyncMock())\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This test now parametrizes/downgrades to revision `c31b517a460b`, but there is no migration file with that revision ID in `backend/libs/portal-data/migrations/versions/` (so `migrate`/`downgrade` will fail). Update the test to use an actual existing predecessor revision, or add the missing `c31b517a460b` migration to the PR."
+  },
+  {
+    "author": "Copilot",
+    "body": "`down_revision` was changed to `c31b517a460b`, but there is no migration with revision `c31b517a460b` in `backend/libs/portal-data/migrations/versions/` (only `7cbe8ce353c2` exists as the apparent prior revision). This breaks the Alembic revision graph and will prevent upgrades/downgrades. Point `down_revision` to an existing revision (likely `7cbe8ce353c2`) or include the missing `c31b517a460b` migration in this PR."
+  },
+  {
+    "author": "Copilot",
+    "body": "`DataGrowthOverCapacityScenario` now includes a successful `/account/contact` POST handler (contact-success behavior), but the class name still implies it only affects data-growth. This makes scenario selection/debugging harder because it\u2019s doing more than the name suggests. Consider renaming the scenario (or splitting into a separate OverCapacityContactSuccess scenario) so the name matches the handlers it registers."
+  },
+  {
+    "author": "Copilot",
+    "body": "This test locates the Ops IQ card by matching both the title and description (`/Ops IQ.*Observability/`). Since the description text is more likely to change than the service name, this makes the test unnecessarily brittle. Prefer selecting the card by the stable title only (e.g., role button name matching just \u201cOps IQ\u201d).\n```suggestion\n      await page.getByRole('button', { name: /Ops IQ/ }).click();\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The error body copy here uses present tense (\u201cwe are unable\u2026\u201d) while the similar error in `ActionableInfoAlert` uses past tense (\u201cwe were unable\u2026\u201d). If these are meant to be consistent, consider aligning the phrasing so users see the same wording across contact-request surfaces.\n```suggestion\n          Looks like we were unable to process your request. Try again later or contact <LinkInline to=\"/contact\">Support</LinkInline>.\n```"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "not needed"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "not needed"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "not needed"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "not required"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "not required"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "not required"
+  }
+]

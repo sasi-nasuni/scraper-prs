@@ -1,0 +1,542 @@
+[
+  {
+    "id": 4017118211,
+    "node_id": "PRR_kwDOMCclu87vcFwD",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nFixes and enhances the `portal/query-requires-error-alert` ESLint rule to better detect valid query error-handling patterns (including `isError` usage in JSX props/conditionals), avoid cross-scope false matches, and improve reporting/documentation.\n\n**Changes:**\n- Adds scope-aware `isError` identifier resolution and member-expression tracking (e.g., `query.isError`) to determine which specific query is handled.\n- Expands accepted “error handled” patterns to include passing `isError` into certain JSX props (e.g., `isInvalid`, `errorMessage`) and recursively parses complex conditional expressions.\n- Updates plugin README with detailed, example-driven documentation of accepted patterns.\n\n### Reviewed changes\n\nCopilot reviewed 2 out of 2 changed files in this pull request and generated 2 comments.\n\n| File | Description |\n| ---- | ----------- |\n| frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts | Reworks query tracking + adds scope-aware detection and multi-location reporting for unhandled queries/mutations. |\n| frontend/eslint-plugin-portal/README.md | Documents valid error-handling patterns supported by the rule with concrete TSX examples. |\n\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4017118211",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "ba5489cc0635e935c05ac338e15f2720ad58c1ef",
+    "submitted_at": "2026-03-26T20:18:04Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4017213267,
+    "node_id": "PRR_kwDOMCclu87vcc9T",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4017213267",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "ba5489cc0635e935c05ac338e15f2720ad58c1ef",
+    "submitted_at": "2026-03-26T20:37:05Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4017304606,
+    "node_id": "PRR_kwDOMCclu87vczQe",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4017304606",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "ba5489cc0635e935c05ac338e15f2720ad58c1ef",
+    "submitted_at": "2026-03-26T20:57:01Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4054668109,
+    "node_id": "PRR_kwDOMCclu87xrVNN",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 10 out of 10 changed files in this pull request and generated 7 comments.\n\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4054668109",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "submitted_at": "2026-04-03T07:39:17Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4054685893,
+    "node_id": "PRR_kwDOMCclu87xrZjF",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4054685893",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "submitted_at": "2026-04-03T07:45:15Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4054760800,
+    "node_id": "PRR_kwDOMCclu87xrr1g",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 9 out of 9 changed files in this pull request and generated 2 comments.\n\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4054760800",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "submitted_at": "2026-04-03T08:09:33Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4054885663,
+    "node_id": "PRR_kwDOMCclu87xsKUf",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4054885663",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "submitted_at": "2026-04-03T08:47:21Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4054886681,
+    "node_id": "PRR_kwDOMCclu87xsKkZ",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4054886681",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "submitted_at": "2026-04-03T08:47:41Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4055419631,
+    "node_id": "PRR_kwDOMCclu87xuMrv",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4055419631",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "submitted_at": "2026-04-03T11:53:50Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4055440895,
+    "node_id": "PRR_kwDOMCclu87xuR3_",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 10 out of 10 changed files in this pull request and generated 1 comment.\n\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4055440895",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "a1ec0a9c323def291bd632617990647054e07f90",
+    "submitted_at": "2026-04-03T12:02:09Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4055467863,
+    "node_id": "PRR_kwDOMCclu87xuYdX",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 10 out of 10 changed files in this pull request and generated 3 comments.\n\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4055467863",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "a34f20295e04d4f7eadc684b823814d4ea1cde3f",
+    "submitted_at": "2026-04-03T12:13:01Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4056116118,
+    "node_id": "PRR_kwDOMCclu87xw2uW",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4056116118",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "a34f20295e04d4f7eadc684b823814d4ea1cde3f",
+    "submitted_at": "2026-04-03T15:15:12Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4056118395,
+    "node_id": "PRR_kwDOMCclu87xw3R7",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4056118395",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "a34f20295e04d4f7eadc684b823814d4ea1cde3f",
+    "submitted_at": "2026-04-03T15:15:57Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4056168667,
+    "node_id": "PRR_kwDOMCclu87xxDjb",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 10 out of 10 changed files in this pull request and generated 2 comments.\n\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4056168667",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "ee58b5455553d971b9d796a46d298f8cc34340a2",
+    "submitted_at": "2026-04-03T15:30:45Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4056200851,
+    "node_id": "PRR_kwDOMCclu87xxLaT",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4056200851",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "ee58b5455553d971b9d796a46d298f8cc34340a2",
+    "submitted_at": "2026-04-03T15:40:47Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4056658086,
+    "node_id": "PRR_kwDOMCclu87xy7Cm",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 11 out of 11 changed files in this pull request and generated 1 comment.\n\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4056658086",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "8e6296a584a91a3d09d887e2598b2468358ad17a",
+    "submitted_at": "2026-04-03T17:55:04Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4061531239,
+    "node_id": "PRR_kwDOMCclu87yFgxn",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 15 out of 15 changed files in this pull request and generated 2 comments.\n\n\n<details>\n<summary>Comments suppressed due to low confidence (1)</summary>\n\n**frontend/msw-portal/webbff/queries/uaas.ts:145**\n* This PATCH handler also declares the route param as `:stack_id` but reads `stackId` from `params`, which will be undefined. This will cause provider selection and returned NDS config to be incorrect under MSW. Align the param name (`stack_id` vs `stackId`) consistently with the route template.\n```\n  http.patch(`${env.VITE_WEBBFF_URL}/uaas/stacks/:stack_id/nds`, ({ params }) => {\n    const { stackId } = params;\n\n    // Handler logic: get stack data to determine provider\n    let stack;\n    switch (stackId) {\n      case 'azure-stack-id':\n```\n</details>\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4061531239",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "5788d2b894c62d64a51e52ca61a358db05bd6edc",
+    "submitted_at": "2026-04-06T10:38:54Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4062405950,
+    "node_id": "PRR_kwDOMCclu87yI2U-",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 18 out of 19 changed files in this pull request and generated 2 comments.\n\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4062405950",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "987fcec48f17bea7124828d96b55f1f70cc94786",
+    "submitted_at": "2026-04-06T14:05:47Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4063636856,
+    "node_id": "PRR_kwDOMCclu87yNi14",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4063636856",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "987fcec48f17bea7124828d96b55f1f70cc94786",
+    "submitted_at": "2026-04-06T18:10:39Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4063695004,
+    "node_id": "PRR_kwDOMCclu87yNxCc",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 24 out of 26 changed files in this pull request and generated 1 comment.\n\n<details>\n<summary>Files not reviewed (1)</summary>\n\n* **frontend/eslint-plugin-portal/pnpm-lock.yaml**: Language not supported\n</details>\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4063695004",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "14be3365f9733427d32969bd230a1af941d18cf9",
+    "submitted_at": "2026-04-06T18:21:37Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4066951783,
+    "node_id": "PRR_kwDOMCclu87yaMJn",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 25 out of 27 changed files in this pull request and generated 1 comment.\n\n<details>\n<summary>Files not reviewed (1)</summary>\n\n* **frontend/eslint-plugin-portal/pnpm-lock.yaml**: Language not supported\n</details>\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4066951783",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "c6f3d84e7cf1f0798142c97604f8ace8dbb35eff",
+    "submitted_at": "2026-04-07T09:07:09Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4067333444,
+    "node_id": "PRR_kwDOMCclu87ybpVE",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 25 out of 27 changed files in this pull request and generated 2 comments.\n\n<details>\n<summary>Files not reviewed (1)</summary>\n\n* **frontend/eslint-plugin-portal/pnpm-lock.yaml**: Language not supported\n</details>\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4067333444",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "9cbb665e74cd44162250cb5810e98d22f42c5cb2",
+    "submitted_at": "2026-04-07T10:13:22Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4067479416,
+    "node_id": "PRR_kwDOMCclu87ycM94",
+    "user": {
+      "login": "copilot-pull-request-reviewer[bot]",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/copilot-pull-request-reviewer%5Bbot%5D",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "## Pull request overview\n\nCopilot reviewed 25 out of 27 changed files in this pull request and generated 2 comments.\n\n<details>\n<summary>Files not reviewed (1)</summary>\n\n* **frontend/eslint-plugin-portal/pnpm-lock.yaml**: Language not supported\n</details>\n\n\n",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4067479416",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "b05713cdd4a7dea838c0786dffc114e531b64b59",
+    "submitted_at": "2026-04-07T10:42:11Z",
+    "author_association": "NONE"
+  },
+  {
+    "id": 4087806744,
+    "node_id": "PRR_kwDOMCclu87zpvsY",
+    "user": {
+      "login": "rashmi-rdas",
+      "id": 239659709,
+      "avatar_url": "https://avatars.githubusercontent.com/u/239659709?v=4",
+      "url": "https://api.github.com/users/rashmi-rdas",
+      "html_url": "https://github.com/rashmi-rdas"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4087806744",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "2d58d77d8c86b3a0560e33538601049da0b1ac79",
+    "submitted_at": "2026-04-10T06:34:15Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4087835313,
+    "node_id": "PRR_kwDOMCclu87zp2qx",
+    "user": {
+      "login": "rashmi-rdas",
+      "id": 239659709,
+      "avatar_url": "https://avatars.githubusercontent.com/u/239659709?v=4",
+      "url": "https://api.github.com/users/rashmi-rdas",
+      "html_url": "https://github.com/rashmi-rdas"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4087835313",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "2d58d77d8c86b3a0560e33538601049da0b1ac79",
+    "submitted_at": "2026-04-10T06:38:41Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4087850233,
+    "node_id": "PRR_kwDOMCclu87zp6T5",
+    "user": {
+      "login": "rashmi-rdas",
+      "id": 239659709,
+      "avatar_url": "https://avatars.githubusercontent.com/u/239659709?v=4",
+      "url": "https://api.github.com/users/rashmi-rdas",
+      "html_url": "https://github.com/rashmi-rdas"
+    },
+    "body": "Last time also, I remember, when this eslint rule was introduced, and we placed error handling at several components, there was a regression where Contact Page was not loading or Web Access SSO was not loading.\r\nCheck this: https://nasuni.atlassian.net/browse/PORTAL-1561\r\n\r\nPlease do a sanity check on all the components changed and verify if its working fine.",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4087850233",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "2d58d77d8c86b3a0560e33538601049da0b1ac79",
+    "submitted_at": "2026-04-10T06:41:26Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4087946648,
+    "node_id": "PRR_kwDOMCclu87zqR2Y",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4087946648",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "2d58d77d8c86b3a0560e33538601049da0b1ac79",
+    "submitted_at": "2026-04-10T07:04:21Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4087959743,
+    "node_id": "PRR_kwDOMCclu87zqVC_",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4087959743",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "2d58d77d8c86b3a0560e33538601049da0b1ac79",
+    "submitted_at": "2026-04-10T07:06:45Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4088000730,
+    "node_id": "PRR_kwDOMCclu87zqfDa",
+    "user": {
+      "login": "rashmi-rdas",
+      "id": 239659709,
+      "avatar_url": "https://avatars.githubusercontent.com/u/239659709?v=4",
+      "url": "https://api.github.com/users/rashmi-rdas",
+      "html_url": "https://github.com/rashmi-rdas"
+    },
+    "body": "",
+    "state": "COMMENTED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4088000730",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "2d58d77d8c86b3a0560e33538601049da0b1ac79",
+    "submitted_at": "2026-04-10T07:13:15Z",
+    "author_association": "MEMBER"
+  },
+  {
+    "id": 4088005820,
+    "node_id": "PRR_kwDOMCclu87zqgS8",
+    "user": {
+      "login": "rashmi-rdas",
+      "id": 239659709,
+      "avatar_url": "https://avatars.githubusercontent.com/u/239659709?v=4",
+      "url": "https://api.github.com/users/rashmi-rdas",
+      "html_url": "https://github.com/rashmi-rdas"
+    },
+    "body": "LGTM. ",
+    "state": "DISMISSED",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#pullrequestreview-4088005820",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "commit_id": "3fb02cf9b2f336c5a4f9056a5b20ff67f50d6935",
+    "submitted_at": "2026-04-10T07:14:14Z",
+    "author_association": "MEMBER"
+  }
+]

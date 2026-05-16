@@ -1,0 +1,74 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`parse_licensed_capacity` now selects the \"latest\" entry by taking `storage_entries[-1]`, which silently assumes the NOC `licensed` list arrives in chronological order. Since the NOC DTO/client layer doesn\u2019t enforce or sort that ordering, this can return an outdated capacity if entries are ever unsorted. Consider selecting by `max(entry.date)` (previous behavior) or explicitly sorting/filtering by date before picking the latest."
+  },
+  {
+    "author": "Copilot",
+    "body": "`_build_monthly_points` relies on `series_now` being chronological (dict insertion order preserves month ordering and \"last value wins\"), but the code doesn\u2019t sort or validate the input. If NOC ever returns unsorted timestamps, month ordering and deduplication will be wrong. Consider sorting `series_now` by timestamp (or asserting monotonic timestamps) before aggregating.\n```suggestion\n        Sorts telemetry chronologically first so month ordering and the retained\n        value for each month remain correct even if upstream data is unsorted.\n        \"\"\"\n        monthly_usage: dict[str, float] = {}\n        sorted_series_now = sorted(series_now, key=lambda point: point[0])\n\n        for timestamp_ms, usage_bytes in sorted_series_now:\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The `RequestedStates` decorator writes contacted-service keys into `sessionStorage` but never clears them. Because `ServiceSection` now reads contacted IDs from `sessionStorage` on mount, visiting this story can leak state into other stories (e.g., `Grid`) within the same Storybook session. Consider clearing the relevant keys before/after the story (or using a per-story cleanup in a decorator)."
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "it is being sent in chronological order"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "invalid in this case"
+  },
+  {
+    "author": "Copilot",
+    "body": "`ContactRequestDto` renames the request field from `service` to `service_name`, which makes the `/account/contact` contract non-backward-compatible (e.g., a rolling deploy where the frontend/backend are briefly out of sync will cause 422 validation errors). Consider accepting both keys during a transition by adding a validation alias for the old `service` field while still normalizing to `service_name` internally."
+  },
+  {
+    "author": "Copilot",
+    "body": "The story decorator writes/removes `sessionStorage` keys without guarding against storage being unavailable (the app code already treats this as possible, e.g. Safari private browsing). Wrap the `setItem`/`removeItem` calls in try/catch so Storybook doesn\u2019t crash in those environments.\n```suggestion\n      actionableServiceIds.forEach((id) => {\n        try {\n          sessionStorage.setItem(`${CONTACT_REQUEST_SESSION_KEY_PREFIX}${id}`, 'true');\n        } catch {\n          // Ignore storage failures so Storybook still renders in restricted environments.\n        }\n      });\n\n      try {\n        return <Story />;\n      } finally {\n        actionableServiceIds.forEach((id) => {\n          try {\n            sessionStorage.removeItem(`${CONTACT_REQUEST_SESSION_KEY_PREFIX}${id}`);\n          } catch {\n            // Ignore storage failures so Storybook cleanup doesn't crash rendering.\n          }\n        });\n```"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "not valid. We have not deployed this code yet."
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "This is a Storybook decorator, not app code. Storybook always runs in a full browser environment where [sessionStorage](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) is available \u2014 it doesn't run in Safari private browsing or restricted contexts. The app code guards it because it runs in real user environments; stories don't need the same treatment.This is a Storybook decorator, not app code. Storybook always runs in a full browser environment where [sessionStorage](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) is available \u2014 it doesn't run in Safari private browsing or restricted contexts. The app code guards it because it runs in real user environments; stories don't need the same treatment."
+  },
+  {
+    "author": "gkrishna214",
+    "body": "Can we check this story once again?\nBecause finally will runs synchronously. So before try completes its execution, finally block has already run and clears sessionStorage. \nSo lets check this once again."
+  },
+  {
+    "author": "gkrishna214",
+    "body": "test name : shows Basic and Public Preview badges when unlicensed\ndescription : Verifies that File IQ shows \"Basic\" and Ops IQ shows \"Public Preview\" in the NoServicesLicensed scenario.\n\nSo assertions only verify that the text appears somewhere on the page. They don't verify the service.\n\nSo check, is it required to add like this or not :\n\nconst fileIqCard = page.getByRole('button', { name: /File IQ/ });\nconst opsIqCard  = page.getByRole('button', { name: /Ops IQ/ });\n\nawait expect.element(fileIqCard.getByText('Basic')).toBeVisible();\nawait expect.element(opsIqCard.getByText('Public Preview')).toBeVisible();"
+  },
+  {
+    "author": "gkrishna214",
+    "body": "new_value=\".0 TB\" : Is this typo for 0.0TB?"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "we dont require as of now because no other service is using Basic & Public Preview badges"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "intentional"
+  },
+  {
+    "author": "Copilot",
+    "body": "`parse_licensed_capacity` selects the most recent entry by taking `storage_entries[-1]`. Since that is only correct when NOC returns `licensed_entries` in chronological order, the docstring should explicitly state that ordering assumption (similar to the note added for `preprocess_chart_data` / `_build_monthly_points`) to prevent future regressions if the upstream contract changes.\n```suggestion\n        Filters to ``max_now_storage`` metric entries and takes the last entry as the most recent one.\n        Assumes NOC returns ``licensed_entries`` in chronological order; if that upstream ordering\n        contract changes, ``storage_entries[-1]`` will no longer represent the latest entry.\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The decorator performs `sessionStorage.setItem(...)` as a render-time side effect. In React (and especially with StrictMode/double-invoked renders), this can run multiple times and is best moved into `useEffect` along with the corresponding cleanup so the story\u2019s storage setup is only applied on mount/unmount."
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "not necessary"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "not valid [setItem](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) must stay in the render body because [ServiceSection](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) reads sessionStorage synchronously in a [useState](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) initializer, which runs before useEffect."
+  }
+]

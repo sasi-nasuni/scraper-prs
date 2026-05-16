@@ -1,0 +1,4 @@
+{
+  "error": true,
+  "message": "{\"code\":429,\"message\":\"Request has been rate limited\"}"
+}

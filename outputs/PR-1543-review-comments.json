@@ -1,0 +1,122 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The page header contains a Unicode replacement character (\"\ufffd\") before \"Coverage Reports\", which will render as a broken glyph in the generated gh-pages index. Replace it with the intended icon/text (e.g., \"\ud83d\udcca Coverage Reports\") and ensure the file is saved as UTF-8."
+  },
+  {
+    "author": "Copilot",
+    "body": "This workflow log message contains a Unicode replacement character (\"\ufffd\ufe0f\"), which makes logs hard to read and usually indicates an encoding/copy-paste issue. Replace it with the intended emoji/text (or plain ASCII) and ensure the YAML is UTF-8 encoded.\n```suggestion\n            echo \"Removing coverage report for PR #${PR_NUM}\"\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The header badge label is hard-coded to \"Overall Coverage\" even in PR mode, while the rest of the page uses the mode-specific `coverage_label` (\"PR Coverage\" vs \"Overall Coverage\"). Use the computed `coverage_label` here too so the header matches the report mode.\n```suggestion\n                <div class=\"overall-label\">{coverage_label}</div>\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`actions.listWorkflowRuns` is called with `status: 'success'`, but GitHub's workflow run filtering uses `status` values like `completed` and a separate `conclusion: 'success'`. As written, this is likely to return no runs and silently skip publishing main-branch coverage after merges. Update the query to use a valid status and filter by conclusion success.\n```suggestion\n              status: 'completed',\n              per_page: 10,\n            });\n\n            const run = runs.data.workflow_runs.find(\n              (workflowRun) => workflowRun.conclusion === 'success'\n            );\n\n            if (!run) {\n              core.warning('No successful Check Codebase run found for merge commit \u2014 skipping main coverage');\n              core.setOutput('found', 'false');\n              return;\n            }\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`safe_name` is derived from `fc.filepath` and interpolated into an HTML attribute without escaping. A repo file path can legally contain quotes or other special characters, which can break the generated HTML and can enable XSS in the published report. Sanitize/encode the generated filename (e.g., restrict to `[A-Za-z0-9_-]` or use a hash) and HTML-escape any attribute values."
+  },
+  {
+    "author": "Copilot",
+    "body": "The per-file report filename uses `safe_name` derived from `fc.filepath` and is used both for writing the output file and as a link target. If `filepath` contains characters like quotes or `..`, this can create invalid filenames/links and (when embedded in HTML elsewhere) XSS risk. Use a strict slug/hash for output filenames and keep the original `filepath` only for display (escaped)."
+  },
+  {
+    "author": "Copilot",
+    "body": "HTML output is written without an explicit encoding. Since the report includes non-ASCII characters (e.g., emoji/icons), relying on the platform default encoding can produce corrupted output on non-UTF-8 locales. Open the output files with `encoding='utf-8'` (and preferably `newline='\\n'`).\n```suggestion\n    with open(os.path.join(output_dir, \"index.html\"), \"w\", encoding=\"utf-8\", newline=\"\\n\") as f:\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "HTML output is written without an explicit encoding. Since the report includes non-ASCII characters, relying on the platform default encoding can produce corrupted output on non-UTF-8 locales. Open the output files with `encoding='utf-8'` (and preferably `newline='\\n'`).\n```suggestion\n    with open(\n        os.path.join(output_dir, f\"{safe_name}.html\"),\n        \"w\",\n        encoding=\"utf-8\",\n        newline=\"\\n\",\n    ) as f:\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`sys` is imported but never used in this module. Remove the unused import to keep the script tidy and avoid lint failures if/when scripts are included in static analysis.\n```suggestion\n\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`os` is imported but never used in this script. Remove the unused import to reduce noise and avoid lint failures if/when scripts are linted."
+  },
+  {
+    "author": "Copilot",
+    "body": "The page header contains a Unicode replacement character (\"\ufffd\"), which indicates an encoding/copy-paste issue and will render incorrectly in the published GitHub Pages index. Replace it with the intended character (or plain text) and ensure the file is saved as UTF-8."
+  },
+  {
+    "author": "Copilot",
+    "body": "`os` and `textwrap` are imported but never used in this test module. Remove unused imports to reduce noise and avoid potential lint failures.\n```suggestion\n\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Links opened with `target=\"_blank\"` are missing `rel=\"noopener noreferrer\"`, which leaves the report vulnerable to reverse-tabnabbing if any linked page is compromised. Add the `rel` attribute to all external links that open in a new tab/window."
+  },
+  {
+    "author": "Copilot",
+    "body": "This script writes HTML containing non-ASCII characters (emoji) but opens the output file without an explicit encoding. On systems where the default encoding is not UTF-8, this can raise UnicodeEncodeError or produce mojibake. Open the file with encoding='utf-8' (and consider errors='strict' or a deliberate error strategy).\n```suggestion\n    with open(gh_pages_dir / \"index.html\", \"w\", encoding=\"utf-8\", errors=\"strict\") as f:\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The log line contains a replacement character (\"\ufffd\ufe0f\"), which is typically caused by encoding issues and will render inconsistently in Actions logs. Replace it with the intended glyph (e.g., \"\ud83d\uddd1\ufe0f\" or plain ASCII) and ensure the YAML file is saved as UTF-8.\n```suggestion\n            echo \"\ud83d\uddd1\ufe0f  Removing coverage report for PR #${PR_NUM}\"\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The step name/comment says \"Checkout gh-pages branch\", but the configured ref/publish branch is hard-coded to \"PORTAL-0/gh-pages\". This is inconsistent with the workflow documentation and can easily break publishing if the branch name differs across repos/environments. Consider using the standard \"gh-pages\" branch (or making the branch configurable via an env var/input) and keep the step name consistent with the configured ref."
+  },
+  {
+    "author": "aikido-pr-checks[bot]",
+    "body": "**3rd party Github Actions should be pinned** - medium severity\nA third-party GitHub Action was imported, and is not pinned via a hash. This leaves your CI/CD at risk for potential supply chain attacks, if the affected GitHub Action is compromised.\n\n```suggestion\n        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4\n```\n\n<sub>Reply `@AikidoSec ignore: [REASON]` to ignore this issue.</sub>\n<sub>[More info](https://app.aikido.dev/repositories/1052156/pull_requests/1543/latest?groupId=41271)</sub>"
+  },
+  {
+    "author": "aikido-pr-checks[bot]",
+    "body": "**3rd party Github Actions should be pinned** - medium severity\nA third-party GitHub Action was imported, and is not pinned via a hash. This leaves your CI/CD at risk for potential supply chain attacks, if the affected GitHub Action is compromised.\n\n```suggestion\n        uses: marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405 # v2.9.4\n```\n\n<sub>Reply `@AikidoSec ignore: [REASON]` to ignore this issue.</sub>\n<sub>[More info](https://app.aikido.dev/repositories/1052156/pull_requests/1543/latest?groupId=41271)</sub>"
+  },
+  {
+    "author": "Copilot",
+    "body": "Istanbul statement hit counts are being collapsed to 1/0 when building LineCoverage (see hits=1 if >0). That makes the per-line \"Nx\" gutter misleading and loses useful signal for frequently executed lines; consider storing the real hit count from Istanbul in LineCoverage.hits and only treating >0 as covered for styling.\n```suggestion\n                        fc.lines.append(LineCoverage(line_number=line_num, hits=line_hits[line_num]))\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Same as PR-mode: in main-mode frontend parsing, line hits are reduced to 1/0, so the file detail pages can\u2019t show real execution counts. Preserve the actual Istanbul hit counts in LineCoverage.hits instead of mapping everything covered to 1.\n```suggestion\n                    fc.lines.append(LineCoverage(line_number=line_num, hits=line_hits[line_num]))\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The filter input/select rely on placeholder text only and have no accessible label. Add a <label> (visually-hidden if desired) or aria-label/aria-labelledby for both controls so screen readers can announce them reliably.\n```suggestion\n                    <input type=\"text\" id=\"fileFilter\" placeholder=\"Filter files...\" aria-label=\"Filter files\" class=\"filter-input\" oninput=\"filterTable()\">\n                    <select id=\"categoryFilter\" aria-label=\"Filter by category\" class=\"filter-select\" onchange=\"filterTable()\">\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Sortable table headers are click-only (onclick on <th>) and aren\u2019t keyboard accessible by default. Consider rendering the sort controls as <button> elements inside the headers (or add tabindex=0 + key handlers + appropriate aria-sort) so keyboard and assistive-tech users can sort.\n```suggestion\n                        <th class=\"sortable\" scope=\"col\">\n                            <button type=\"button\" class=\"sortable-header-button\" onclick=\"sortTable(0)\" aria-label=\"Sort by file\">\n                                File\n                            </button>\n                        </th>\n                        <th class=\"text-center sortable\" scope=\"col\">\n                            <button type=\"button\" class=\"sortable-header-button\" onclick=\"sortTable(1)\" aria-label=\"Sort by type\">\n                                Type\n                            </button>\n                        </th>\n                        <th class=\"sortable\" scope=\"col\">\n                            <button type=\"button\" class=\"sortable-header-button\" onclick=\"sortTable(2)\" aria-label=\"Sort by coverage\">\n                                Coverage\n                            </button>\n                        </th>\n                        <th scope=\"col\">Visual</th>\n                        <th class=\"text-center sortable\" scope=\"col\">\n                            <button type=\"button\" class=\"sortable-header-button\" onclick=\"sortTable(4)\" aria-label=\"Sort by statements\">\n                                Statements\n                            </button>\n                        </th>\n                        <th class=\"text-center sortable\" scope=\"col\">\n                            <button type=\"button\" class=\"sortable-header-button\" onclick=\"sortTable(5)\" aria-label=\"Sort by covered\">\n                                Covered\n                            </button>\n                        </th>\n                        <th class=\"text-center sortable\" scope=\"col\">\n                            <button type=\"button\" class=\"sortable-header-button\" onclick=\"sortTable(6)\" aria-label=\"Sort by missed\">\n                                Missed\n                            </button>\n                        </th>\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`sys` is imported but never used in this script. Removing unused imports keeps the module clean and avoids lint noise.\n```suggestion\n\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The gh-pages branch name is hard-coded to `PORTAL-0/gh-pages` for checkout. That will break once the feature branch is removed and makes the workflow repo-specific. Consider using the standard `gh-pages` branch (or a workflow input/variable) instead of a ticket-scoped branch name."
+  },
+  {
+    "author": "Copilot",
+    "body": "`publish_branch` is hard-coded to `PORTAL-0/gh-pages`. This is fragile (ties deployment to a nonstandard branch) and likely prevents publishing to the actual GitHub Pages branch. Consider switching to `gh-pages` (or make it configurable via inputs/env)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The merge step duplicates the `cp coverage-*/coverage-final.json` commands (they appear twice). Removing the redundant copies reduces confusion and keeps the workflow easier to maintain."
+  },
+  {
+    "author": "Copilot",
+    "body": "`os` is imported but never used in this script. Remove the unused import to avoid lint noise and keep the module clean.\n```suggestion\n\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Building `fc.lines` by iterating from 1..max_line creates one `LineCoverage` per physical line up to the highest covered/missed line. For large files this can blow up memory and HTML size (especially in main mode); instead, only materialize entries for executed/missing lines and rely on the default `-1` when rendering.\n```suggestion\n            # Only materialize executed/missing lines and let rendering treat\n            # absent entries as the default \"no data\" state (hits = -1).\n            for line_num in sorted(executed | missing):\n                if line_num in executed:\n                    fc.lines.append(LineCoverage(line_number=line_num, hits=1))\n                else:\n                    fc.lines.append(LineCoverage(line_number=line_num, hits=0))\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Same scalability concern as PR mode: iterating 1..max_line for every file in main mode can create millions of `LineCoverage` entries across the repo, making the merge-to-main workflow slow or memory-heavy. Consider storing only executed/missing lines and deriving non-instrumentable lines at render time.\n```suggestion\n        for line_num, hits in sorted(\n            [(line_num, 1) for line_num in executed]\n            + [(line_num, 0) for line_num in missing]\n        ):\n            fc.lines.append(LineCoverage(line_number=line_num, hits=hits))\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The frontend line map also expands to a dense 1..max_line range, which can be very large if the statement map contains a high line number. To avoid generating huge `fc.lines` arrays, consider only recording lines present in `line_hits` and treating missing lines as `-1` during rendering.\n```suggestion\n                for line_num in sorted(line_hits):\n                    fc.lines.append(\n                        LineCoverage(\n                            line_number=line_num,\n                            hits=1 if line_hits[line_num] > 0 else 0,\n                        )\n                    )\n```"
+  }
+]

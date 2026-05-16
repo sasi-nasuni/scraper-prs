@@ -1,0 +1,42 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`subscriptionPillConfig` no longer defines an entry for the `expired` subscription status, but `AccountSubscriptionStatus` still includes `expired` and the UI will silently omit the status Pill for expired accounts. Either restore the `expired` mapping (red/\"Expired\") or handle all possible `AccountSubscriptionStatus` values so the status indicator is consistently rendered.\n```suggestion\n  'free trial': { color: 'yellow', label: 'Trial' },\n  expired: { color: 'red', label: 'Expired' },\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`SlackWebhookCapability` is instantiated with `self.env_name`, but the capability's `__init__` currently takes no arguments. This will raise a `TypeError` during CDK synth. Either update `SlackWebhookCapability.__init__` to accept/use `env_name` (and ideally `region`), or remove the argument at the call site.\n```suggestion\n        self._capabilities.append(SlackWebhookCapability())\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "SlackWebhookCapability fetches the webhook secret with `boto3.client(\"secretsmanager\")` without an explicit `region_name`. Because this runs at synth time, it will rely on the deployer's ambient AWS region configuration and may not match where the secret actually lives (notably, webbff config references a us-west-2 ARN). Pass an explicit region (e.g., from EnvConfigBuilder / capability init) or fetch by ARN and derive the region to avoid missing/incorrect secrets."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Intentional not needed here, but `AccountSubscriptionStatus` is being used elsewhere."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Fixed."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "There wont be a region mistach, so the region will be taken from the synth time only just like other secrets."
+  },
+  {
+    "author": "Copilot",
+    "body": "SlackWebhookCapability now fetches/injects the Slack webhook URL at synth time, but `get_secret_refs()` still returns the Slack secret ref. In EnvConfigBuilder this adds a `secretsmanager:GetSecretValue` IAM permission for the runtime Lambda even though runtime secret access should no longer be required. Consider returning an empty list here (or only including the ref when a runtime-secret fallback is intentionally supported) to keep IAM least-privilege aligned with the new synth-time injection approach.\n```suggestion\n        return []\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The new permission guard on POST /account/contact is implemented via a FastAPI dependency, but existing unit tests for `send_contact_message` call the handler directly and won't exercise the permission check. Add a test that hits the route through the FastAPI app (or explicitly tests `require_permission(PermissionKey.can_manage_licenses)`) to assert 403/ActionNotAllowed when the permission is missing and success when present."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Not required."
+  },
+  {
+    "author": "kanugokrishnaganesh",
+    "body": "Not required"
+  }
+]

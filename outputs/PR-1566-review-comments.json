@@ -1,0 +1,6 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`CLOUDFRONT_ORIGIN_VERIFY_VALUE` is effectively a shared secret that bypasses the IP allowlist (any request can be allowed if it sets the header). Hardcoding this value in-repo makes it easy to leak/guess and undermines the WAF protection.\n\nConsider sourcing the value from a secure runtime config (e.g., Secrets Manager/SSM parameter) and/or generating a per-environment/per-stack value (passed to both CloudFront custom header and WAF rule) instead of committing a constant."
+  }
+]

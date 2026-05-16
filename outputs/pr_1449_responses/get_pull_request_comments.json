@@ -1,0 +1,1082 @@
+[
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/2997449988",
+    "id": 2997449988,
+    "node_id": "PRRC_kwDOMCclu86yqXUE",
+    "pull_request_review_id": 4017118211,
+    "diff_hunk": "@@ -77,6 +82,75 @@ const rule: Rule.RuleModule = {\n       return false;\n     }\n \n+    // Helper function to recursively collect isError variables and member expressions from complex conditions\n+    function collectIsErrorFromExpression(expr: any): void {\n+      if (!expr) return;\n+      \n+      // Direct identifier (e.g., isError, isCategoryError)\n+      // Find the specific query node that this identifier refers to using scope awareness\n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Use ESLint v9 API: sourceCode.getScope(node)\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (variable && variable.defs.length > 0) {\n+          // Get the VariableDeclarator node where this variable was defined\n+          const def = variable.defs[0];\n+          if (def.type === 'Variable' && def.parent && def.parent.type === 'VariableDeclaration') {\n+            const declarator = def.node;",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 67,
+    "commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "original_commit_id": "ba5489cc0635e935c05ac338e15f2720ad58c1ef",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "The scope-resolution logic for destructured variables appears incorrect: `variable.defs[0].parent` for a destructured identifier (e.g., `const { isError } = useQuery(...)`) is typically a `VariableDeclarator`, not a `VariableDeclaration`. As written, this `def.parent.type === 'VariableDeclaration'` guard will likely never pass, and `declarator = def.node` is not the `VariableDeclarator` you later compare against `metadata.variableDeclarator`, so handled queries may be falsely reported as unhandled. Consider using the `VariableDeclarator` node (e.g., `def.parent`) for matching.\n```suggestion\n          if (def.type === 'Variable' && def.parent && def.parent.type === 'VariableDeclarator') {\n            const declarator = def.parent;\n```",
+    "created_at": "2026-03-26T20:18:04Z",
+    "updated_at": "2026-03-26T20:18:04Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r2997449988",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/2997449988"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r2997449988"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/2997450008",
+    "id": 2997450008,
+    "node_id": "PRRC_kwDOMCclu86yqXUY",
+    "pull_request_review_id": 4017118211,
+    "diff_hunk": "@@ -77,6 +82,75 @@ const rule: Rule.RuleModule = {\n       return false;\n     }\n \n+    // Helper function to recursively collect isError variables and member expressions from complex conditions\n+    function collectIsErrorFromExpression(expr: any): void {\n+      if (!expr) return;\n+      \n+      // Direct identifier (e.g., isError, isCategoryError)\n+      // Find the specific query node that this identifier refers to using scope awareness\n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Use ESLint v9 API: sourceCode.getScope(node)\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        ",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 62,
+    "commit_id": "987fcec48f17bea7124828d96b55f1f70cc94786",
+    "original_commit_id": "ba5489cc0635e935c05ac338e15f2720ad58c1ef",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "`collectIsErrorFromExpression` treats any `Identifier` in a conditional/prop expression as potential error handling and then matches by `VariableDeclarator`. This can incorrectly mark a query as handled when the identifier is something else from the same destructuring (e.g., `isLoading`, `data`, or `error`) rather than the destructured `isError` alias. Use the stored `metadata.isErrorVar` (and compare it to `expr.name`) so only the `isError` variable for that query counts as handling.",
+    "created_at": "2026-03-26T20:18:04Z",
+    "updated_at": "2026-03-26T20:18:04Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r2997450008",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/2997450008"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r2997450008"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/2997540456",
+    "id": 2997540456,
+    "node_id": "PRRC_kwDOMCclu86yqtZo",
+    "pull_request_review_id": 4017213267,
+    "diff_hunk": "@@ -77,6 +82,75 @@ const rule: Rule.RuleModule = {\n       return false;\n     }\n \n+    // Helper function to recursively collect isError variables and member expressions from complex conditions\n+    function collectIsErrorFromExpression(expr: any): void {\n+      if (!expr) return;\n+      \n+      // Direct identifier (e.g., isError, isCategoryError)\n+      // Find the specific query node that this identifier refers to using scope awareness\n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Use ESLint v9 API: sourceCode.getScope(node)\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (variable && variable.defs.length > 0) {\n+          // Get the VariableDeclarator node where this variable was defined\n+          const def = variable.defs[0];\n+          if (def.type === 'Variable' && def.parent && def.parent.type === 'VariableDeclaration') {\n+            const declarator = def.node;",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 67,
+    "commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "original_commit_id": "ba5489cc0635e935c05ac338e15f2720ad58c1ef",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "I believe only `{ isError } = useQuery(...);` is VariableDeclarator and the whole `const { isError } = useQuery(...)` is VariableDeclaration. The same can be confirmed via the interfaces defined in estree package.\r\n```\r\nexport interface VariableDeclaration extends BaseDeclaration {\r\n    type: \"VariableDeclaration\";\r\n    declarations: VariableDeclarator[];\r\n    kind: \"var\" | \"let\" | \"const\" | \"using\" | \"await using\";\r\n}\r\n\r\nexport interface VariableDeclarator extends BaseNode {\r\n    type: \"VariableDeclarator\";\r\n    id: Pattern;\r\n    init?: Expression | null | undefined;\r\n}\r\n```\r\nAccording to this accessing def.node will be as if accessing the VariableDeclarator.",
+    "created_at": "2026-03-26T20:37:05Z",
+    "updated_at": "2026-03-26T20:37:05Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r2997540456",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "MEMBER",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/2997540456"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r2997540456"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/2997629290",
+    "id": 2997629290,
+    "node_id": "PRRC_kwDOMCclu86yrDFq",
+    "pull_request_review_id": 4017304606,
+    "diff_hunk": "@@ -77,6 +82,75 @@ const rule: Rule.RuleModule = {\n       return false;\n     }\n \n+    // Helper function to recursively collect isError variables and member expressions from complex conditions\n+    function collectIsErrorFromExpression(expr: any): void {\n+      if (!expr) return;\n+      \n+      // Direct identifier (e.g., isError, isCategoryError)\n+      // Find the specific query node that this identifier refers to using scope awareness\n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Use ESLint v9 API: sourceCode.getScope(node)\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        ",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 62,
+    "commit_id": "987fcec48f17bea7124828d96b55f1f70cc94786",
+    "original_commit_id": "ba5489cc0635e935c05ac338e15f2720ad58c1ef",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "Yes, missed this. Updated now",
+    "created_at": "2026-03-26T20:57:01Z",
+    "updated_at": "2026-03-26T20:57:01Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r2997629290",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "MEMBER",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/2997629290"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r2997629290"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838096",
+    "id": 3031838096,
+    "node_id": "PRRC_kwDOMCclu860ti2Q",
+    "pull_request_review_id": 4054668109,
+    "diff_hunk": "@@ -38,10 +38,15 @@ export async function fetchUaasStack(stackId: string): Promise<UaasStackDetailsR\n   }\n }\n \n+export async function fetchUaasStackCopy(stackId: string): Promise<UaasStackDetailsRequestDto | null> {\n+  await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay\n+  throw new HTTPStatusError('GET', `/uaas/stacks/${stackId}`, 500, 'Internal Server Error');\n+}\n+\n export function useFetchUaasStack(stackId: string) {\n   return useQuery({\n-    queryKey: uaasStack.details(stackId),\n-    queryFn: () => fetchUaasStack(stackId),\n+    queryKey: uaasStack.details(stackId + 'copy'),\n+    queryFn: () => fetchUaasStackCopy(stackId),",
+    "path": "frontend/src/webbff/queries/uaas.ts",
+    "position": 1,
+    "original_position": 14,
+    "commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "original_commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "`useFetchUaasStack` was changed to call `fetchUaasStackCopy`, which intentionally delays and then always throws an HTTP 500. This will break all UaaS stack pages that rely on this hook, and the `queryKey` change (`stackId + 'copy'`) will also fragment caching/invalidation for the real resource. Please restore the hook to use the real `fetchUaasStack` and a stable key, and keep any simulation-only behavior in tests/MSW or behind an explicit dev-only flag so it cannot ship to production.\n```suggestion\n    queryKey: uaasStack.details(stackId),\n    queryFn: () => fetchUaasStack(stackId),\n```",
+    "created_at": "2026-04-03T07:39:15Z",
+    "updated_at": "2026-04-03T07:39:17Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838096",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838096"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838096"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838115",
+    "id": 3031838115,
+    "node_id": "PRRC_kwDOMCclu860ti2j",
+    "pull_request_review_id": 4054668109,
+    "diff_hunk": "@@ -60,6 +65,14 @@ export async function fetchUaasStackSraas(stackId: string): Promise<UaasStackSra\n   }\n }\n \n+// Simulation function to test \"no data\" scenario\n+// eslint-disable-next-line @typescript-eslint/no-unused-vars\n+export async function fetchUaasStackSraasCopy(_stackId: string): Promise<UaasStackSraasRequestDto | null> {\n+  await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay\n+  // Simulate a 404 scenario where the stack exists but has no SRaaS data\n+  return null;\n+}",
+    "path": "frontend/src/webbff/queries/uaas.ts",
+    "position": 1,
+    "original_position": 28,
+    "commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "original_commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "These exported \"Copy\" fetch functions include artificial delays and/or simulated responses (e.g., always returning null). Since this module appears to be the production query layer, shipping simulation helpers here risks accidental use in routes and makes behavior environment-dependent. Please move simulation helpers to test/MSW code (or guard them behind an explicit dev/test-only export) so production code paths can only call real API fetchers.",
+    "created_at": "2026-04-03T07:39:15Z",
+    "updated_at": "2026-04-03T07:39:17Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838115",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838115"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838115"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838122",
+    "id": 3031838122,
+    "node_id": "PRRC_kwDOMCclu860ti2q",
+    "pull_request_review_id": 4054668109,
+    "diff_hunk": "@@ -15,17 +14,19 @@ import { compareDates, compareNumbers } from '@utils/sorting';\n import AutoAnimateTableBorder from '@components/lib/tables/AutoAnimateTableBorder';\n import { formatDateTime } from '@utils/date';\n import { getPage } from '@utils/array';\n-import { useLocation, notFound } from '@tanstack/react-router';\n+import { useLocation } from '@tanstack/react-router';\n import Pagination from '@components/lib/content/pagination/Pagination';\n \n interface UaasSRaasMetricsProps {\n   stackId: string;\n }\n \n export default function UaasSRaasMetrics({ stackId }: UaasSRaasMetricsProps) {\n-  const { isLoading, data, error, isSuccess } = useFetchUaasStackSraas(stackId);\n+  const { isLoading, data, error } = useFetchUaasStackSraasCopy(stackId);\n+  // Error handling for this query here is redundant as we already handle error for\n+  // stack fetch in the layout component frontend/src/routes/_authed.cloud-services/-components/UaasStackLayout.tsx\n+  // eslint-disable-next-line portal/query-requires-error-alert\n   const { data: stack } = useFetchUaasStack(stackId);",
+    "path": "frontend/src/routes/_authed.cloud-services/uaas/$stackId/-components/UaasSRaasMetrics.tsx",
+    "position": 24,
+    "original_position": 25,
+    "commit_id": "90bcc3d24d2fc6ea612741026e6b8c871abc7117",
+    "original_commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "This route component now uses `useFetchUaasStackSraasCopy`, whose queryFn in `@webbff/queries/uaas` simulates a \"no data\" response. That means the SRaaS metrics page can silently show an empty state even when real data exists. If the intent is to test the ESLint rule, please keep this kind of simulation out of production routes (use MSW/test fixtures or a dedicated test route guarded by a dev flag), and switch this component back to `useFetchUaasStackSraas`.",
+    "created_at": "2026-04-03T07:39:15Z",
+    "updated_at": "2026-04-03T07:39:17Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838122",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838122"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838122"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838135",
+    "id": 3031838135,
+    "node_id": "PRRC_kwDOMCclu860ti23",
+    "pull_request_review_id": 4054668109,
+    "diff_hunk": "@@ -76,6 +89,266 @@ const rule: Rule.RuleModule = {\n       }\n       return false;\n     }\n+    \n+    // Helper to mark query/mutation as handled by checking both variable maps\n+    function markAsHandledViaVariableLookup(varName: string): void {\n+      const queryNode = queryVariables.get(varName);\n+      if (queryNode) {\n+        queriesHandledViaObjectAccess.add(queryNode);\n+      }\n+      \n+      const mutationNode = mutationVariables.get(varName);\n+      if (mutationNode) {\n+        mutationsHandledViaErrorAccess.add(mutationNode);\n+      }\n+    }\n+    \n+    // Helper to mark query/mutation as handled by checking reverse error var maps\n+    function markAsHandledViaErrorVariable(varName: string): boolean {\n+      const queryNode = errorVarToQueryNode.get(varName);\n+      if (queryNode) {\n+        queriesHandledViaDestructuredIsError.add(queryNode);\n+        return true;\n+      }\n+      \n+      const mutationNode = errorVarToMutationNode.get(varName);\n+      if (mutationNode) {\n+        mutationsHandledViaDestructuredIsError.add(mutationNode);\n+        return true;\n+      }\n+      \n+      return false;\n+    }\n+    \n+    // Helper to mark query/mutation as handled by finding declarator match\n+    function markAsHandledViaDeclarator(declarator: any, varName: string): void {\n+      // Check queries\n+      for (const [queryNode, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          queriesHandledViaDestructuredIsError.add(queryNode);\n+          break;\n+        }\n+      }\n+      \n+      // Check mutations\n+      for (const [mutationNode, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          mutationsHandledViaDestructuredIsError.add(mutationNode);\n+          break;\n+        }\n+      }\n+    }\n+    \n+    // Helper to check if a variable is an error variable from query/mutation declarator\n+    function isErrorVariableFromDeclarator(declarator: any, varName: string): boolean {\n+      // Check if this variable comes from a query\n+      for (const [, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      // Check if this variable comes from a mutation\n+      for (const [, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      return false;\n+    }\n+    \n+    // Helper to process destructured properties and extract error variables and rest elements\n+    function processDestructuredProperties(\n+      properties: any[],\n+      callNode: any,\n+      errorVarMap: Map<string, any>\n+    ): { isErrorVars: string[]; restElementVar: string | undefined } {\n+      const isErrorVars: string[] = [];\n+      let restElementVar: string | undefined;\n+      \n+      properties.forEach((prop: any) => {\n+        if (prop.type === 'Property' && \n+            prop.key.type === 'Identifier' &&\n+            (prop.key.name === 'isError' || prop.key.name === 'error')) {\n+          // Track the local variable name (could be renamed like {isError: isCategoryError})\n+          const varName = prop.value.type === 'Identifier' \n+            ? prop.value.name \n+            : prop.key.name;\n+          isErrorVars.push(varName);\n+          // Create reverse mapping for fast lookup\n+          errorVarMap.set(varName, callNode);\n+        }\n+        \n+        // Track rest element (e.g., {...queryState})\n+        if (prop.type === 'RestElement' && prop.argument.type === 'Identifier') {\n+          restElementVar = prop.argument.name;\n+        }\n+      });\n+      \n+      return { isErrorVars, restElementVar };\n+    }\n+\n+    // Helper function to check if an expression contains any tracked error variables\n+    // Recursively checks identifiers, member expressions, logical expressions, conditional expressions, and unary expressions\n+    function expressionContainsErrorState(expr: any, visited = new Set<string>()): boolean {\n+      if (!expr) return false;\n+      \n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Prevent infinite recursion\n+        if (visited.has(varName)) return false;\n+        visited.add(varName);\n+        \n+        // Check if it's a derived error variable\n+        if (derivedErrorVariables.has(varName)) {\n+          const sourceExpr = derivedErrorVariables.get(varName);\n+          return expressionContainsErrorState(sourceExpr, visited);\n+        }\n+        \n+        // Check if it's a direct error variable from query/mutation\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (variable && variable.defs.length > 0) {\n+          const def = variable.defs[0];\n+          if (def.type === 'Variable' && def.parent && def.parent.type === 'VariableDeclaration') {\n+            const declarator = def.node;\n+            \n+            // Check if this variable is an error variable from any query/mutation\n+            if (isErrorVariableFromDeclarator(declarator, varName)) {\n+              return true;\n+            }\n+          }",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 192,
+    "commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "original_commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "Scope-aware matching for identifiers appears broken here: `variable.defs[0].node` is the identifier node, while the query/mutation metadata stores `variableDeclarator` as the `VariableDeclarator` AST node from the `VariableDeclarator` visitor. With the current `def.parent.type === 'VariableDeclaration'` guard and `declarator = def.node`, `isErrorVariableFromDeclarator(...)` will never match the stored declarator, so derived error variables may not be detected correctly. Use the actual `VariableDeclarator` node (typically `def.parent`) when comparing to `metadata.variableDeclarator`.",
+    "created_at": "2026-04-03T07:39:16Z",
+    "updated_at": "2026-04-03T07:39:17Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838135",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838135"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838135"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838139",
+    "id": 3031838139,
+    "node_id": "PRRC_kwDOMCclu860ti27",
+    "pull_request_review_id": 4054668109,
+    "diff_hunk": "@@ -76,6 +89,266 @@ const rule: Rule.RuleModule = {\n       }\n       return false;\n     }\n+    \n+    // Helper to mark query/mutation as handled by checking both variable maps\n+    function markAsHandledViaVariableLookup(varName: string): void {\n+      const queryNode = queryVariables.get(varName);\n+      if (queryNode) {\n+        queriesHandledViaObjectAccess.add(queryNode);\n+      }\n+      \n+      const mutationNode = mutationVariables.get(varName);\n+      if (mutationNode) {\n+        mutationsHandledViaErrorAccess.add(mutationNode);\n+      }\n+    }\n+    \n+    // Helper to mark query/mutation as handled by checking reverse error var maps\n+    function markAsHandledViaErrorVariable(varName: string): boolean {\n+      const queryNode = errorVarToQueryNode.get(varName);\n+      if (queryNode) {\n+        queriesHandledViaDestructuredIsError.add(queryNode);\n+        return true;\n+      }\n+      \n+      const mutationNode = errorVarToMutationNode.get(varName);\n+      if (mutationNode) {\n+        mutationsHandledViaDestructuredIsError.add(mutationNode);\n+        return true;\n+      }\n+      \n+      return false;\n+    }\n+    \n+    // Helper to mark query/mutation as handled by finding declarator match\n+    function markAsHandledViaDeclarator(declarator: any, varName: string): void {\n+      // Check queries\n+      for (const [queryNode, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          queriesHandledViaDestructuredIsError.add(queryNode);\n+          break;\n+        }\n+      }\n+      \n+      // Check mutations\n+      for (const [mutationNode, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          mutationsHandledViaDestructuredIsError.add(mutationNode);\n+          break;\n+        }\n+      }\n+    }\n+    \n+    // Helper to check if a variable is an error variable from query/mutation declarator\n+    function isErrorVariableFromDeclarator(declarator: any, varName: string): boolean {\n+      // Check if this variable comes from a query\n+      for (const [, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      // Check if this variable comes from a mutation\n+      for (const [, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      return false;\n+    }\n+    \n+    // Helper to process destructured properties and extract error variables and rest elements\n+    function processDestructuredProperties(\n+      properties: any[],\n+      callNode: any,\n+      errorVarMap: Map<string, any>\n+    ): { isErrorVars: string[]; restElementVar: string | undefined } {\n+      const isErrorVars: string[] = [];\n+      let restElementVar: string | undefined;\n+      \n+      properties.forEach((prop: any) => {\n+        if (prop.type === 'Property' && \n+            prop.key.type === 'Identifier' &&\n+            (prop.key.name === 'isError' || prop.key.name === 'error')) {\n+          // Track the local variable name (could be renamed like {isError: isCategoryError})\n+          const varName = prop.value.type === 'Identifier' \n+            ? prop.value.name \n+            : prop.key.name;\n+          isErrorVars.push(varName);\n+          // Create reverse mapping for fast lookup\n+          errorVarMap.set(varName, callNode);\n+        }\n+        \n+        // Track rest element (e.g., {...queryState})\n+        if (prop.type === 'RestElement' && prop.argument.type === 'Identifier') {\n+          restElementVar = prop.argument.name;\n+        }\n+      });\n+      \n+      return { isErrorVars, restElementVar };\n+    }\n+\n+    // Helper function to check if an expression contains any tracked error variables\n+    // Recursively checks identifiers, member expressions, logical expressions, conditional expressions, and unary expressions\n+    function expressionContainsErrorState(expr: any, visited = new Set<string>()): boolean {\n+      if (!expr) return false;\n+      \n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Prevent infinite recursion\n+        if (visited.has(varName)) return false;\n+        visited.add(varName);\n+        \n+        // Check if it's a derived error variable\n+        if (derivedErrorVariables.has(varName)) {\n+          const sourceExpr = derivedErrorVariables.get(varName);\n+          return expressionContainsErrorState(sourceExpr, visited);\n+        }\n+        \n+        // Check if it's a direct error variable from query/mutation\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (variable && variable.defs.length > 0) {\n+          const def = variable.defs[0];\n+          if (def.type === 'Variable' && def.parent && def.parent.type === 'VariableDeclaration') {\n+            const declarator = def.node;\n+            \n+            // Check if this variable is an error variable from any query/mutation\n+            if (isErrorVariableFromDeclarator(declarator, varName)) {\n+              return true;\n+            }\n+          }\n+        }\n+        \n+        // Check if it's from mutation variable access (mutation.error)\n+        if (queryVariables.has(varName) || mutationVariables.has(varName)) {\n+          return true;\n+        }\n+        \n+        return false;\n+      }\n+      \n+      if (expr.type === 'MemberExpression' && \n+          expr.property?.type === 'Identifier' &&\n+          (expr.property.name === 'isError' || expr.property.name === 'error')) {\n+        if (expr.object?.type === 'Identifier') {\n+          return queryVariables.has(expr.object.name) || mutationVariables.has(expr.object.name);\n+        }\n+      }\n+      \n+      if (expr.type === 'LogicalExpression') {\n+        return expressionContainsErrorState(expr.left, visited) || \n+               expressionContainsErrorState(expr.right, visited);\n+      }\n+      \n+      if (expr.type === 'ConditionalExpression') {\n+        return expressionContainsErrorState(expr.test, visited) ||\n+               expressionContainsErrorState(expr.consequent, visited) ||\n+               expressionContainsErrorState(expr.alternate, visited);\n+      }\n+      \n+      if (expr.type === 'UnaryExpression') {\n+        return expressionContainsErrorState(expr.argument, visited);\n+      }\n+      \n+      return false;\n+    }\n+\n+    // Helper function to recursively collect error state variables (isError/error) and member expressions from complex conditions\n+    function collectErrorStateFromExpression(expr: any): void {\n+      if (!expr) return;\n+      \n+      // Unwrap ChainExpression (optional chaining like error?.message)\n+      if (expr.type === 'ChainExpression') {\n+        collectErrorStateFromExpression(expr.expression);\n+        return;\n+      }\n+      \n+      // Direct identifier (e.g., isError, isCategoryError, or derived variables)\n+      // Find the specific query node that this identifier refers to using scope awareness\n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Check if this is a derived error variable - if so, recursively track its source\n+        if (derivedErrorVariables.has(varName)) {\n+          const sourceExpr = derivedErrorVariables.get(varName);\n+          collectErrorStateFromExpression(sourceExpr);\n+          return;\n+        }\n+        \n+        // Use ESLint v9 API: sourceCode.getScope(node)\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (variable && variable.defs.length > 0) {\n+          // Get the VariableDeclarator node where this variable was defined\n+          const def = variable.defs[0];\n+          if (def.type === 'Variable' && def.parent && def.parent.type === 'VariableDeclaration') {\n+            const declarator = def.node;\n+            // Match both the VariableDeclarator AND the specific isError variable name\n+            // This prevents false matches when other properties from the same destructuring are used\n+            markAsHandledViaDeclarator(declarator, varName);\n+          }",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 265,
+    "commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "original_commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "Same issue as above in `collectErrorStateFromExpression`: the code derives `declarator` from `def.node` and gates on `def.parent.type === 'VariableDeclaration'`, but `metadata.variableDeclarator` is the `VariableDeclarator` node. As a result, identifiers like `isError` in JSX conditionals/props may never be traced back to the correct query/mutation, leading to false reports. Resolve the identifier to its defining `VariableDeclarator` (typically via `def.parent`) and pass that to `markAsHandledViaDeclarator`.",
+    "created_at": "2026-04-03T07:39:16Z",
+    "updated_at": "2026-04-03T07:39:17Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838139",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838139"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838139"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838142",
+    "id": 3031838142,
+    "node_id": "PRRC_kwDOMCclu860ti2-",
+    "pull_request_review_id": 4054668109,
+    "diff_hunk": "@@ -6,9 +6,68 @@ Custom ESLint rules for the portal project.\n \n - `route-component-naming` - Route page components must end with \"Page\" and layout components must end with \"Layout\"\n - `route-error-component` - createFileRoute must include an errorComponent\n-- `query-requires-error-alert` - Queries/mutations without throwOnError: true must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert,ChartWarningAlert or WarningAlert)\n+- `query-requires-error-alert` - Queries/mutations without throwOnError: true must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert, ChartWarningAlert or WarningAlert) **OR** use isError in component props (e.g., `isInvalid={isError}`)\n - `auto-animate-conditional-children` - AutoAnimate should have conditional children\n \n+### Valid Error Handling Patterns for `query-requires-error-alert`\n+\n+This rule accepts multiple ways to handle errors from queries and mutations:\n+\n+#### For Queries (useQuery and custom query hooks):\n+\n+1. **Error Alert Components** - Render error alert components conditionally based on isError:\n+   ```tsx\n+   // Using destructured isError\n+   const { data, isError } = useQuery(...);\n+   {isError && <UnexpectedErrorAlert />}\n+   \n+   // Using object access\n+   const query = useQuery(...);\n+   {query.isError && <ErrorAlert heading=\"Error\" text=\"Operation failed\" />}\n+   \n+   // Complex conditions supported\n+   {(queryA.isError || queryB.isError) && <UnexpectedErrorAlert />}\n+   {isError ? <ErrorAlert /> : null}\n+   if (query.isError) return <ErrorAlert />;\n+   ```\n+\n+2. **Component Props with isError** - Pass isError to recognized error-handling attributes:\n+   ```tsx\n+   // Recognized attributes: isInvalid, errorMessage\n+   const { isError } = useQuery(...);\n+   <TextInput isInvalid={isError} errorMessage=\"...\" />\n+   <Select isInvalid={query.isError} errorMessage=\"...\" />\n+   \n+   // Complex expressions supported\n+   <Input isInvalid={query1.isError || query2.isError} />",
+    "path": "frontend/eslint-plugin-portal/README.md",
+    "position": 1,
+    "original_position": 38,
+    "commit_id": "6dde1c0f4707985836e0d63724a25ac6d503978a",
+    "original_commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "Documentation mismatch: the README says the only recognized error-handling props are `isInvalid` and `errorMessage`, but the rule implementation also whitelists `isError` and `error` attributes. Please either update the README to include all supported attributes (and examples) or tighten the rule to match the documented list so developers don’t rely on undocumented behavior.\n```suggestion\n   // Recognized attributes: isInvalid, errorMessage, isError, error\n   const { isError, error } = useQuery(...);\n   <TextInput isInvalid={isError} errorMessage=\"...\" />\n   <Select isInvalid={query.isError} errorMessage=\"...\" />\n   <FormField isError={isError} />\n   <InlineAlert error={error} />\n   \n   // Complex expressions supported\n   <Input isInvalid={query1.isError || query2.isError} />\n   <FormField isError={query1.isError || query2.isError} />\n```",
+    "created_at": "2026-04-03T07:39:16Z",
+    "updated_at": "2026-04-03T07:39:17Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838142",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838142"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838142"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838156",
+    "id": 3031838156,
+    "node_id": "PRRC_kwDOMCclu860ti3M",
+    "pull_request_review_id": 4054668109,
+    "diff_hunk": "@@ -21,6 +21,8 @@ export default function IndexPage() {\n   // eslint-disable-next-line portal/query-requires-error-alert\n   const { data: userProperties, isLoading } = usePosthogUserProperties(user?.userId ?? '');\n \n+  // disabling as this will only hide the advisory and user need not be aware of this error",
+    "path": "frontend/src/routes/-components/IndexPage.tsx",
+    "position": 1,
+    "original_position": 4,
+    "commit_id": "6dde1c0f4707985836e0d63724a25ac6d503978a",
+    "original_commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "Grammar in this comment: \"user need not\" should be \"users need not\" (or \"the user need not\") to read correctly.\n```suggestion\n  // disabling as this will only hide the advisory and the user need not be aware of this error\n```",
+    "created_at": "2026-04-03T07:39:16Z",
+    "updated_at": "2026-04-03T07:39:17Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838156",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031838156"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3031838156"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031856232",
+    "id": 3031856232,
+    "node_id": "PRRC_kwDOMCclu860tnRo",
+    "pull_request_review_id": 4054685893,
+    "diff_hunk": "@@ -38,10 +38,15 @@ export async function fetchUaasStack(stackId: string): Promise<UaasStackDetailsR\n   }\n }\n \n+export async function fetchUaasStackCopy(stackId: string): Promise<UaasStackDetailsRequestDto | null> {\n+  await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay\n+  throw new HTTPStatusError('GET', `/uaas/stacks/${stackId}`, 500, 'Internal Server Error');\n+}\n+\n export function useFetchUaasStack(stackId: string) {\n   return useQuery({\n-    queryKey: uaasStack.details(stackId),\n-    queryFn: () => fetchUaasStack(stackId),\n+    queryKey: uaasStack.details(stackId + 'copy'),\n+    queryFn: () => fetchUaasStackCopy(stackId),",
+    "path": "frontend/src/webbff/queries/uaas.ts",
+    "position": 1,
+    "original_position": 14,
+    "commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "original_commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "These were for testing in local. Removed them now",
+    "created_at": "2026-04-03T07:45:15Z",
+    "updated_at": "2026-04-03T07:45:15Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3031856232",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "MEMBER",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031856232"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3031856232"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031927574",
+    "id": 3031927574,
+    "node_id": "PRRC_kwDOMCclu860t4sW",
+    "pull_request_review_id": 4054760800,
+    "diff_hunk": "@@ -4,24 +4,29 @@ const rule: Rule.RuleModule = {\n   meta: {\n     type: 'problem',\n     docs: {\n-      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components',\n+      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components or use isError in component props',\n       recommended: true,\n     },\n     messages: {\n-      missingErrorAlert: 'Queries (without throwOnError) and mutations (without onError or .catch()) must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert, ChartWarningAlert or WarningAlert)',\n+      missingErrorAlert: 'Query or mutation without error handling must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert, ChartWarningAlert or WarningAlert) or use isError in component props',\n     },\n     schema: [],\n   },\n   create(context) {\n-    let hasQueryWithoutThrow = false;\n-    let hasMutationWithoutOnError = false;\n-    let hasErrorAlert = false;\n-    let queryNode: any = null;\n-    let mutationNode: any = null;\n     const importedQueryHooks = new Set<string>();\n     const importedMutationHooks = new Set<string>();\n     const mutationVariables = new Map<string, any>(); // Track mutation variable names and their nodes\n-    const mutationsWithOnError = new Set<string>(); // Track which mutations have onError in .mutate() calls\n+    const mutationsWithOnError = new Set<any>(); // Track which mutation NODES have onError in .mutate() calls (changed from Set<string> to Set<any>)\n+    const mutationsHandledViaErrorAccess = new Set<any>(); // Track mutations handled via obj.error or obj.isError\n+    const mutationNodes = new Map<any, { isErrorVars?: string[]; variableDeclarator?: any }>(); // Map mutation node to metadata (similar to queryNodes)\n+    const mutationsHandledViaDestructuredIsError = new Set<any>(); // Track mutation nodes handled via destructured isError or error\n+    const queryNodes = new Map<any, { isErrorVars?: string[]; variableDeclarator?: any }>(); // Map query node to metadata\n+    const queryVariables = new Map<string, any>(); // Map variable name to query CallExpression node (for obj.isError/obj.error tracking)\n+    const queriesHandledViaDestructuredIsError = new Set<any>(); // Track query nodes handled via destructured isError or error\n+    const queriesHandledViaObjectAccess = new Set<any>(); // Track query nodes handled via obj.isError or obj.error\n+    const derivedErrorVariables = new Map<string, any>(); // Track variables derived from error states (e.g., const isError = isError1 || isError2)\n+    const errorVarToQueryNode = new Map<string, any>(); // Reverse map: error variable name → query node (for fast lookup)\n+    const errorVarToMutationNode = new Map<string, any>(); // Reverse map: error variable name → mutation node (for fast lookup)",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 34,
+    "commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "original_commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "The rule claims scope awareness, but several core tracking structures are still keyed only by variable name (`queryVariables`, `mutationVariables`, `derivedErrorVariables`, and the reverse maps `errorVarToQueryNode`/`errorVarToMutationNode`). If the same identifier name is reused in nested scopes/components (the exact false-positive scenario described in the PR), these maps will overwrite/cross-contaminate and can mark the wrong query/mutation as handled (or unhandled). Consider keying these maps by the resolved ESLint-scope Variable (or by `VariableDeclarator` node + local name) instead of plain strings, and resolve `MemberExpression.object` identifiers via scope before marking handled.",
+    "created_at": "2026-04-03T08:09:33Z",
+    "updated_at": "2026-04-03T08:09:33Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3031927574",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031927574"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3031927574"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031927591",
+    "id": 3031927591,
+    "node_id": "PRRC_kwDOMCclu860t4sn",
+    "pull_request_review_id": 4054760800,
+    "diff_hunk": "@@ -196,7 +552,82 @@ const rule: Rule.RuleModule = {\n         if (node.openingElement.name.type === 'JSXIdentifier') {\n           const componentName = node.openingElement.name.name;\n           if (errorHandlingComponents.has(componentName)) {\n-            hasErrorAlert = true;\n+            // Check if this component is conditionally rendered based on a specific isError variable\n+            // Walk up the parent tree to find conditional contexts\n+            let parent = node.parent;\n+            \n+            // Walk up the tree until we find a conditional context or reach the top.\n+            // This loop will always terminate because:\n+            // 1. ASTs are trees (acyclic graphs) - parent pointers only go UP, never create cycles\n+            // 2. Either we find a conditional context and break, OR\n+            // 3. We reach the Program (root) node where parent = null and the loop exits\n+            // Worst case: traverses the entire depth of the AST tree from leaf to root\n+            while (parent) {\n+              // Check if parent is a LogicalExpression (e.g., {isError && <Alert />})\n+              if (parent.type === 'LogicalExpression') {\n+                // Recursively collect all error state variables and member expressions from the left side\n+                collectErrorStateFromExpression(parent.left);\n+                break;\n+              }\n+              \n+              // Check if parent is a ConditionalExpression (e.g., {isError ? <Alert /> : null})\n+              if (parent.type === 'ConditionalExpression') {\n+                // Recursively collect all error state variables and member expressions from the test condition\n+                collectErrorStateFromExpression(parent.test);\n+                break;\n+              }\n+              \n+              // Check if parent is an IfStatement (e.g., if (isError) return <Alert />;)\n+              if (parent.type === 'IfStatement') {\n+                collectErrorStateFromExpression(parent.test);\n+                break;\n+              }\n+              \n+              // Check if parent is a ReturnStatement that might be inside an if block\n+              if (parent.type === 'ReturnStatement' && parent.parent?.type === 'BlockStatement') {\n+                const blockParent = parent.parent.parent;\n+                if (blockParent?.type === 'IfStatement') {\n+                  collectErrorStateFromExpression(blockParent.test);\n+                  break;\n+                }\n+              }\n+              \n+              parent = parent.parent;\n+            }\n+            \n+            // Note: If no conditional context was found, we don't treat it as valid error handling.\n+            // Unconditionally rendered error alerts are likely bugs and shouldn't suppress the rule.\n+          }\n+        }\n+      },\n+\n+      // Track isError used in JSX attributes (only for error-related attributes)\n+      JSXAttribute(node: any) {\n+        // Only check attributes that are meant for error handling\n+        if (node.name?.type === 'JSXIdentifier') {\n+          const attrName = node.name.name;\n+          \n+          // Only track if this is a recognized error-handling attribute\n+          if (errorHandlingAttributes.has(attrName)) {\n+            if (node.value?.type === 'JSXExpressionContainer') {\n+              const expr = node.value.expression;\n+              \n+              // Use the helper to recursively collect error state variables from any expression type\n+              collectErrorStateFromExpression(expr);\n+            }\n+          }\n+        }\n+      },\n+\n+      // Track error/isError variables used in JSX conditionals (even without error alerts)\n+      // This handles graceful degradation patterns like: {!queryError && <Component />}\n+      JSXExpressionContainer(node: any) {\n+        if (node.expression) {\n+          // Check if this is a conditional expression (LogicalExpression, ConditionalExpression)\n+          if (node.expression.type === 'LogicalExpression' || \n+              node.expression.type === 'ConditionalExpression') {\n+            // Track error variables used in any JSX conditional\n+            collectErrorStateFromExpression(node.expression);\n           }\n         }\n       },",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 569,
+    "commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "original_commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "`JSXExpressionContainer` currently treats *any* JSX conditional that references `error`/`isError` as “handled” (even when it only hides UI and does not render an alert or pass error state to props). This behavior contradicts the rule’s `meta.docs.description` / `missingErrorAlert` message (which require an alert component or error state in props) and can create false negatives where errors are silently ignored. Either tighten this logic to only count conditionals that actually render an alert / propagate error props, or update the rule docs/messages to explicitly allow silent graceful-degradation patterns.\n```suggestion\n\n```",
+    "created_at": "2026-04-03T08:09:33Z",
+    "updated_at": "2026-04-03T08:09:33Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3031927591",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3031927591"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3031927591"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032041250",
+    "id": 3032041250,
+    "node_id": "PRRC_kwDOMCclu860uUci",
+    "pull_request_review_id": 4054885663,
+    "diff_hunk": "@@ -76,6 +89,266 @@ const rule: Rule.RuleModule = {\n       }\n       return false;\n     }\n+    \n+    // Helper to mark query/mutation as handled by checking both variable maps\n+    function markAsHandledViaVariableLookup(varName: string): void {\n+      const queryNode = queryVariables.get(varName);\n+      if (queryNode) {\n+        queriesHandledViaObjectAccess.add(queryNode);\n+      }\n+      \n+      const mutationNode = mutationVariables.get(varName);\n+      if (mutationNode) {\n+        mutationsHandledViaErrorAccess.add(mutationNode);\n+      }\n+    }\n+    \n+    // Helper to mark query/mutation as handled by checking reverse error var maps\n+    function markAsHandledViaErrorVariable(varName: string): boolean {\n+      const queryNode = errorVarToQueryNode.get(varName);\n+      if (queryNode) {\n+        queriesHandledViaDestructuredIsError.add(queryNode);\n+        return true;\n+      }\n+      \n+      const mutationNode = errorVarToMutationNode.get(varName);\n+      if (mutationNode) {\n+        mutationsHandledViaDestructuredIsError.add(mutationNode);\n+        return true;\n+      }\n+      \n+      return false;\n+    }\n+    \n+    // Helper to mark query/mutation as handled by finding declarator match\n+    function markAsHandledViaDeclarator(declarator: any, varName: string): void {\n+      // Check queries\n+      for (const [queryNode, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          queriesHandledViaDestructuredIsError.add(queryNode);\n+          break;\n+        }\n+      }\n+      \n+      // Check mutations\n+      for (const [mutationNode, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          mutationsHandledViaDestructuredIsError.add(mutationNode);\n+          break;\n+        }\n+      }\n+    }\n+    \n+    // Helper to check if a variable is an error variable from query/mutation declarator\n+    function isErrorVariableFromDeclarator(declarator: any, varName: string): boolean {\n+      // Check if this variable comes from a query\n+      for (const [, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      // Check if this variable comes from a mutation\n+      for (const [, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      return false;\n+    }\n+    \n+    // Helper to process destructured properties and extract error variables and rest elements\n+    function processDestructuredProperties(\n+      properties: any[],\n+      callNode: any,\n+      errorVarMap: Map<string, any>\n+    ): { isErrorVars: string[]; restElementVar: string | undefined } {\n+      const isErrorVars: string[] = [];\n+      let restElementVar: string | undefined;\n+      \n+      properties.forEach((prop: any) => {\n+        if (prop.type === 'Property' && \n+            prop.key.type === 'Identifier' &&\n+            (prop.key.name === 'isError' || prop.key.name === 'error')) {\n+          // Track the local variable name (could be renamed like {isError: isCategoryError})\n+          const varName = prop.value.type === 'Identifier' \n+            ? prop.value.name \n+            : prop.key.name;\n+          isErrorVars.push(varName);\n+          // Create reverse mapping for fast lookup\n+          errorVarMap.set(varName, callNode);\n+        }\n+        \n+        // Track rest element (e.g., {...queryState})\n+        if (prop.type === 'RestElement' && prop.argument.type === 'Identifier') {\n+          restElementVar = prop.argument.name;\n+        }\n+      });\n+      \n+      return { isErrorVars, restElementVar };\n+    }\n+\n+    // Helper function to check if an expression contains any tracked error variables\n+    // Recursively checks identifiers, member expressions, logical expressions, conditional expressions, and unary expressions\n+    function expressionContainsErrorState(expr: any, visited = new Set<string>()): boolean {\n+      if (!expr) return false;\n+      \n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Prevent infinite recursion\n+        if (visited.has(varName)) return false;\n+        visited.add(varName);\n+        \n+        // Check if it's a derived error variable\n+        if (derivedErrorVariables.has(varName)) {\n+          const sourceExpr = derivedErrorVariables.get(varName);\n+          return expressionContainsErrorState(sourceExpr, visited);\n+        }\n+        \n+        // Check if it's a direct error variable from query/mutation\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (variable && variable.defs.length > 0) {\n+          const def = variable.defs[0];\n+          if (def.type === 'Variable' && def.parent && def.parent.type === 'VariableDeclaration') {\n+            const declarator = def.node;\n+            \n+            // Check if this variable is an error variable from any query/mutation\n+            if (isErrorVariableFromDeclarator(declarator, varName)) {\n+              return true;\n+            }\n+          }",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 192,
+    "commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "original_commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "Resolution Added in code comments and also in https://github.com/nasuni/portal/pull/1449#discussion_r2997540456",
+    "created_at": "2026-04-03T08:47:20Z",
+    "updated_at": "2026-04-03T08:47:21Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3032041250",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "MEMBER",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032041250"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3032041250"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032042355",
+    "id": 3032042355,
+    "node_id": "PRRC_kwDOMCclu860uUtz",
+    "pull_request_review_id": 4054886681,
+    "diff_hunk": "@@ -76,6 +89,266 @@ const rule: Rule.RuleModule = {\n       }\n       return false;\n     }\n+    \n+    // Helper to mark query/mutation as handled by checking both variable maps\n+    function markAsHandledViaVariableLookup(varName: string): void {\n+      const queryNode = queryVariables.get(varName);\n+      if (queryNode) {\n+        queriesHandledViaObjectAccess.add(queryNode);\n+      }\n+      \n+      const mutationNode = mutationVariables.get(varName);\n+      if (mutationNode) {\n+        mutationsHandledViaErrorAccess.add(mutationNode);\n+      }\n+    }\n+    \n+    // Helper to mark query/mutation as handled by checking reverse error var maps\n+    function markAsHandledViaErrorVariable(varName: string): boolean {\n+      const queryNode = errorVarToQueryNode.get(varName);\n+      if (queryNode) {\n+        queriesHandledViaDestructuredIsError.add(queryNode);\n+        return true;\n+      }\n+      \n+      const mutationNode = errorVarToMutationNode.get(varName);\n+      if (mutationNode) {\n+        mutationsHandledViaDestructuredIsError.add(mutationNode);\n+        return true;\n+      }\n+      \n+      return false;\n+    }\n+    \n+    // Helper to mark query/mutation as handled by finding declarator match\n+    function markAsHandledViaDeclarator(declarator: any, varName: string): void {\n+      // Check queries\n+      for (const [queryNode, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          queriesHandledViaDestructuredIsError.add(queryNode);\n+          break;\n+        }\n+      }\n+      \n+      // Check mutations\n+      for (const [mutationNode, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          mutationsHandledViaDestructuredIsError.add(mutationNode);\n+          break;\n+        }\n+      }\n+    }\n+    \n+    // Helper to check if a variable is an error variable from query/mutation declarator\n+    function isErrorVariableFromDeclarator(declarator: any, varName: string): boolean {\n+      // Check if this variable comes from a query\n+      for (const [, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      // Check if this variable comes from a mutation\n+      for (const [, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      return false;\n+    }\n+    \n+    // Helper to process destructured properties and extract error variables and rest elements\n+    function processDestructuredProperties(\n+      properties: any[],\n+      callNode: any,\n+      errorVarMap: Map<string, any>\n+    ): { isErrorVars: string[]; restElementVar: string | undefined } {\n+      const isErrorVars: string[] = [];\n+      let restElementVar: string | undefined;\n+      \n+      properties.forEach((prop: any) => {\n+        if (prop.type === 'Property' && \n+            prop.key.type === 'Identifier' &&\n+            (prop.key.name === 'isError' || prop.key.name === 'error')) {\n+          // Track the local variable name (could be renamed like {isError: isCategoryError})\n+          const varName = prop.value.type === 'Identifier' \n+            ? prop.value.name \n+            : prop.key.name;\n+          isErrorVars.push(varName);\n+          // Create reverse mapping for fast lookup\n+          errorVarMap.set(varName, callNode);\n+        }\n+        \n+        // Track rest element (e.g., {...queryState})\n+        if (prop.type === 'RestElement' && prop.argument.type === 'Identifier') {\n+          restElementVar = prop.argument.name;\n+        }\n+      });\n+      \n+      return { isErrorVars, restElementVar };\n+    }\n+\n+    // Helper function to check if an expression contains any tracked error variables\n+    // Recursively checks identifiers, member expressions, logical expressions, conditional expressions, and unary expressions\n+    function expressionContainsErrorState(expr: any, visited = new Set<string>()): boolean {\n+      if (!expr) return false;\n+      \n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Prevent infinite recursion\n+        if (visited.has(varName)) return false;\n+        visited.add(varName);\n+        \n+        // Check if it's a derived error variable\n+        if (derivedErrorVariables.has(varName)) {\n+          const sourceExpr = derivedErrorVariables.get(varName);\n+          return expressionContainsErrorState(sourceExpr, visited);\n+        }\n+        \n+        // Check if it's a direct error variable from query/mutation\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (variable && variable.defs.length > 0) {\n+          const def = variable.defs[0];\n+          if (def.type === 'Variable' && def.parent && def.parent.type === 'VariableDeclaration') {\n+            const declarator = def.node;\n+            \n+            // Check if this variable is an error variable from any query/mutation\n+            if (isErrorVariableFromDeclarator(declarator, varName)) {\n+              return true;\n+            }\n+          }\n+        }\n+        \n+        // Check if it's from mutation variable access (mutation.error)\n+        if (queryVariables.has(varName) || mutationVariables.has(varName)) {\n+          return true;\n+        }\n+        \n+        return false;\n+      }\n+      \n+      if (expr.type === 'MemberExpression' && \n+          expr.property?.type === 'Identifier' &&\n+          (expr.property.name === 'isError' || expr.property.name === 'error')) {\n+        if (expr.object?.type === 'Identifier') {\n+          return queryVariables.has(expr.object.name) || mutationVariables.has(expr.object.name);\n+        }\n+      }\n+      \n+      if (expr.type === 'LogicalExpression') {\n+        return expressionContainsErrorState(expr.left, visited) || \n+               expressionContainsErrorState(expr.right, visited);\n+      }\n+      \n+      if (expr.type === 'ConditionalExpression') {\n+        return expressionContainsErrorState(expr.test, visited) ||\n+               expressionContainsErrorState(expr.consequent, visited) ||\n+               expressionContainsErrorState(expr.alternate, visited);\n+      }\n+      \n+      if (expr.type === 'UnaryExpression') {\n+        return expressionContainsErrorState(expr.argument, visited);\n+      }\n+      \n+      return false;\n+    }\n+\n+    // Helper function to recursively collect error state variables (isError/error) and member expressions from complex conditions\n+    function collectErrorStateFromExpression(expr: any): void {\n+      if (!expr) return;\n+      \n+      // Unwrap ChainExpression (optional chaining like error?.message)\n+      if (expr.type === 'ChainExpression') {\n+        collectErrorStateFromExpression(expr.expression);\n+        return;\n+      }\n+      \n+      // Direct identifier (e.g., isError, isCategoryError, or derived variables)\n+      // Find the specific query node that this identifier refers to using scope awareness\n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Check if this is a derived error variable - if so, recursively track its source\n+        if (derivedErrorVariables.has(varName)) {\n+          const sourceExpr = derivedErrorVariables.get(varName);\n+          collectErrorStateFromExpression(sourceExpr);\n+          return;\n+        }\n+        \n+        // Use ESLint v9 API: sourceCode.getScope(node)\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (variable && variable.defs.length > 0) {\n+          // Get the VariableDeclarator node where this variable was defined\n+          const def = variable.defs[0];\n+          if (def.type === 'Variable' && def.parent && def.parent.type === 'VariableDeclaration') {\n+            const declarator = def.node;\n+            // Match both the VariableDeclarator AND the specific isError variable name\n+            // This prevents false matches when other properties from the same destructuring are used\n+            markAsHandledViaDeclarator(declarator, varName);\n+          }",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 265,
+    "commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "original_commit_id": "cd8e2b2d125a02287107d684b44d5fed202de7db",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "Same as https://github.com/nasuni/portal/pull/1449#discussion_r3032041250",
+    "created_at": "2026-04-03T08:47:41Z",
+    "updated_at": "2026-04-03T08:47:41Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3032042355",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "MEMBER",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032042355"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3032042355"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032580781",
+    "id": 3032580781,
+    "node_id": "PRRC_kwDOMCclu860wYKt",
+    "pull_request_review_id": 4055419631,
+    "diff_hunk": "@@ -4,24 +4,29 @@ const rule: Rule.RuleModule = {\n   meta: {\n     type: 'problem',\n     docs: {\n-      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components',\n+      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components or use isError in component props',\n       recommended: true,\n     },\n     messages: {\n-      missingErrorAlert: 'Queries (without throwOnError) and mutations (without onError or .catch()) must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert, ChartWarningAlert or WarningAlert)',\n+      missingErrorAlert: 'Query or mutation without error handling must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert, ChartWarningAlert or WarningAlert) or use isError in component props',\n     },\n     schema: [],\n   },\n   create(context) {\n-    let hasQueryWithoutThrow = false;\n-    let hasMutationWithoutOnError = false;\n-    let hasErrorAlert = false;\n-    let queryNode: any = null;\n-    let mutationNode: any = null;\n     const importedQueryHooks = new Set<string>();\n     const importedMutationHooks = new Set<string>();\n     const mutationVariables = new Map<string, any>(); // Track mutation variable names and their nodes\n-    const mutationsWithOnError = new Set<string>(); // Track which mutations have onError in .mutate() calls\n+    const mutationsWithOnError = new Set<any>(); // Track which mutation NODES have onError in .mutate() calls (changed from Set<string> to Set<any>)\n+    const mutationsHandledViaErrorAccess = new Set<any>(); // Track mutations handled via obj.error or obj.isError\n+    const mutationNodes = new Map<any, { isErrorVars?: string[]; variableDeclarator?: any }>(); // Map mutation node to metadata (similar to queryNodes)\n+    const mutationsHandledViaDestructuredIsError = new Set<any>(); // Track mutation nodes handled via destructured isError or error\n+    const queryNodes = new Map<any, { isErrorVars?: string[]; variableDeclarator?: any }>(); // Map query node to metadata\n+    const queryVariables = new Map<string, any>(); // Map variable name to query CallExpression node (for obj.isError/obj.error tracking)\n+    const queriesHandledViaDestructuredIsError = new Set<any>(); // Track query nodes handled via destructured isError or error\n+    const queriesHandledViaObjectAccess = new Set<any>(); // Track query nodes handled via obj.isError or obj.error\n+    const derivedErrorVariables = new Map<string, any>(); // Track variables derived from error states (e.g., const isError = isError1 || isError2)\n+    const errorVarToQueryNode = new Map<string, any>(); // Reverse map: error variable name → query node (for fast lookup)\n+    const errorVarToMutationNode = new Map<string, any>(); // Reverse map: error variable name → mutation node (for fast lookup)",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 34,
+    "commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "original_commit_id": "4136a7dd9e4e9db8dc87b51e3a6563b61d98889c",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "Refactored the code now to properly track queries and mutations using the nodes instead of using names and then using scoping to find the node from name.",
+    "created_at": "2026-04-03T11:53:50Z",
+    "updated_at": "2026-04-03T11:53:50Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3032580781",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "MEMBER",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032580781"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3032580781"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032602499",
+    "id": 3032602499,
+    "node_id": "PRRC_kwDOMCclu860wdeD",
+    "pull_request_review_id": 4055440895,
+    "diff_hunk": "@@ -4,31 +4,48 @@ const rule: Rule.RuleModule = {\n   meta: {\n     type: 'problem',\n     docs: {\n-      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components',\n+      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components or use isError in component props',\n       recommended: true,\n     },\n     messages: {\n-      missingErrorAlert: 'Queries (without throwOnError) and mutations (without onError or .catch()) must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert, ChartWarningAlert or WarningAlert)',\n+      missingErrorAlert: 'Query or mutation without error handling must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert, ChartWarningAlert or WarningAlert) or use isError in component props',",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 10,
+    "commit_id": "a1ec0a9c323def291bd632617990647054e07f90",
+    "original_commit_id": "a1ec0a9c323def291bd632617990647054e07f90",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "The rule’s docs/message text says “use isError in component props”, but the implementation also treats `error`, `errorMessage`, and `isInvalid` attributes as valid handling. Updating the description/message to reference “error state” (isError/error) more generally would avoid confusing consumers of the rule.",
+    "created_at": "2026-04-03T12:02:08Z",
+    "updated_at": "2026-04-03T12:02:09Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3032602499",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032602499"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3032602499"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032630770",
+    "id": 3032630770,
+    "node_id": "PRRC_kwDOMCclu860wkXy",
+    "pull_request_review_id": 4055467863,
+    "diff_hunk": "@@ -59,6 +76,51 @@ const rule: Rule.RuleModule = {\n       return false;\n     }\n \n+    \n+    // Helper to find query/mutation node from an identifier using scope resolution\n+    function findQueryOrMutationNode(identifierNode: any): { node: any; type: 'query' | 'mutation' } | null {\n+      const sourceCode = context.sourceCode;\n+      const scope = sourceCode.getScope(identifierNode);\n+      const variable = scope.variables.find(v => v.name === identifierNode.name) || \n+                      scope.references.find(ref => ref.identifier.name === identifierNode.name)?.resolved;\n+      \n+      if (!variable || variable.defs.length === 0) return null;\n+      \n+      const def = variable.defs[0];\n+      if (def.type !== 'Variable') return null;\n+      \n+      const declarator = def.node;\n+      const varName = identifierNode.name;\n+      \n+      // Check if this declarator matches any query (via direct match or rest element)\n+      for (const [queryNode, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator || metadata.restElementVar === varName) {\n+          return { node: queryNode, type: 'query' };\n+        }\n+      }\n+      \n+      // Check if this declarator matches any mutation (via direct match or rest element)\n+      for (const [mutationNode, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator || metadata.restElementVar === varName) {\n+          return { node: mutationNode, type: 'mutation' };\n+        }",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 95,
+    "original_position": 89,
+    "commit_id": "90bcc3d24d2fc6ea612741026e6b8c871abc7117",
+    "original_commit_id": "a34f20295e04d4f7eadc684b823814d4ea1cde3f",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "`findQueryOrMutationNode` falls back to matching rest-element destructured variables purely by name (`metadata.restElementVar === varName`). If the same rest variable name is reused in different scopes/components, this can still cross-contaminate and associate the identifier with the wrong query/mutation node, undermining the scope-aware matching this rule is aiming for.\n\nConsider removing the name-only match and instead matching rest variables using the resolved scope Variable (or at least requiring the resolved definition’s declarator/parent to match the tracked `metadata.variableDeclarator`).",
+    "created_at": "2026-04-03T12:13:00Z",
+    "updated_at": "2026-04-03T12:13:01Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3032630770",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032630770"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3032630770"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032630784",
+    "id": 3032630784,
+    "node_id": "PRRC_kwDOMCclu860wkYA",
+    "pull_request_review_id": 4055467863,
+    "diff_hunk": "@@ -4,31 +4,48 @@ const rule: Rule.RuleModule = {\n   meta: {\n     type: 'problem',\n     docs: {\n-      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components',\n+      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components or use isError in component props',\n       recommended: true,\n     },\n     messages: {\n-      missingErrorAlert: 'Queries (without throwOnError) and mutations (without onError or .catch()) must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert, ChartWarningAlert or WarningAlert)',\n+      missingErrorAlert: 'Query/mutation requires error handling: use throwOnError/onError/.catch(), render error alert component (UnexpectedErrorAlert, ErrorAlert, WarningAlert, ChartWarningAlert), or pass isError/error to component props',\n     },\n     schema: [],\n   },\n   create(context) {\n-    let hasQueryWithoutThrow = false;\n-    let hasMutationWithoutOnError = false;\n-    let hasErrorAlert = false;\n-    let queryNode: any = null;\n-    let mutationNode: any = null;\n     const importedQueryHooks = new Set<string>();\n     const importedMutationHooks = new Set<string>();\n-    const mutationVariables = new Map<string, any>(); // Track mutation variable names and their nodes\n-    const mutationsWithOnError = new Set<string>(); // Track which mutations have onError in .mutate() calls\n+    \n+    // Core tracking: Map CallExpression nodes to metadata about the query/mutation\n+    const queryNodes = new Map<any, { isErrorVars?: string[]; restElementVar?: string; variableDeclarator?: any }>();\n+    const mutationNodes = new Map<any, { isErrorVars?: string[]; restElementVar?: string; variableDeclarator?: any }>();\n+    \n+    // Track which queries/mutations have been handled (by their CallExpression nodes)\n+    const queriesHandledViaDestructuredIsError = new Set<any>();\n+    const queriesHandledViaObjectAccess = new Set<any>();\n+    const mutationsHandledViaDestructuredIsError = new Set<any>();\n+    const mutationsHandledViaErrorAccess = new Set<any>();\n+    const mutationsWithOnError = new Set<any>();\n+    \n+    // Track derived error variables: VariableDeclarator → source expression\n+    // Example: const isError = isError1 || isError2\n+    const derivedErrorVariables = new Map<any, any>();\n \n     // Component names that indicate error/warning handling\n     const errorHandlingComponents = new Set([\n       'UnexpectedErrorAlert',\n       'ErrorAlert',\n       'WarningAlert',\n       'ChartWarningAlert',\n+      'UnexpectedFieldError',\n+    ]);\n+\n+    // JSX attribute names that indicate error handling (communicating error state to user)\n+    const errorHandlingAttributes = new Set([\n+      'isInvalid',\n+      'errorMessage',\n+      'isError',\n+      'error',\n     ]);",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 55,
+    "original_position": 55,
+    "commit_id": "90bcc3d24d2fc6ea612741026e6b8c871abc7117",
+    "original_commit_id": "a34f20295e04d4f7eadc684b823814d4ea1cde3f",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "The rule treats `isInvalid`/`errorMessage` as valid error-handling props (`errorHandlingAttributes`), but the rule message text only mentions passing `isError/error` to component props. This can confuse users of the rule when they comply via `isInvalid`/`errorMessage`.\n\nUpdate the `missingErrorAlert` message (and/or `docs.description`) to reflect the full set of supported props.",
+    "created_at": "2026-04-03T12:13:01Z",
+    "updated_at": "2026-04-03T12:13:01Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3032630784",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032630784"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3032630784"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032630795",
+    "id": 3032630795,
+    "node_id": "PRRC_kwDOMCclu860wkYL",
+    "pull_request_review_id": 4055467863,
+    "diff_hunk": "@@ -6,9 +6,129 @@ Custom ESLint rules for the portal project.\n \n - `route-component-naming` - Route page components must end with \"Page\" and layout components must end with \"Layout\"\n - `route-error-component` - createFileRoute must include an errorComponent\n-- `query-requires-error-alert` - Queries/mutations without throwOnError: true must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert,ChartWarningAlert or WarningAlert)\n+- `query-requires-error-alert` - Queries/mutations without throwOnError: true must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert, ChartWarningAlert or WarningAlert) **OR** use error state in component props (e.g., `isInvalid={isError}`, `errorMessage={error?.message}`)\n - `auto-animate-conditional-children` - AutoAnimate should have conditional children\n ",
+    "path": "frontend/eslint-plugin-portal/README.md",
+    "position": 7,
+    "original_position": 7,
+    "commit_id": "90bcc3d24d2fc6ea612741026e6b8c871abc7117",
+    "original_commit_id": "a34f20295e04d4f7eadc684b823814d4ea1cde3f",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "The rule implementation also treats `UnexpectedFieldError` as an error-handling component, but the README’s description/examples list the accepted alert components and doesn’t mention `UnexpectedFieldError`. This mismatch makes it harder to understand why some files pass lint without rendering one of the documented alerts.\n\nEither document `UnexpectedFieldError` here as an accepted handler, or remove it from the rule’s `errorHandlingComponents` if it shouldn’t count.",
+    "created_at": "2026-04-03T12:13:01Z",
+    "updated_at": "2026-04-03T12:13:01Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3032630795",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3032630795"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3032630795"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033249762",
+    "id": 3033249762,
+    "node_id": "PRRC_kwDOMCclu860y7fi",
+    "pull_request_review_id": 4056116118,
+    "diff_hunk": "@@ -59,6 +76,51 @@ const rule: Rule.RuleModule = {\n       return false;\n     }\n \n+    \n+    // Helper to find query/mutation node from an identifier using scope resolution\n+    function findQueryOrMutationNode(identifierNode: any): { node: any; type: 'query' | 'mutation' } | null {\n+      const sourceCode = context.sourceCode;\n+      const scope = sourceCode.getScope(identifierNode);\n+      const variable = scope.variables.find(v => v.name === identifierNode.name) || \n+                      scope.references.find(ref => ref.identifier.name === identifierNode.name)?.resolved;\n+      \n+      if (!variable || variable.defs.length === 0) return null;\n+      \n+      const def = variable.defs[0];\n+      if (def.type !== 'Variable') return null;\n+      \n+      const declarator = def.node;\n+      const varName = identifierNode.name;\n+      \n+      // Check if this declarator matches any query (via direct match or rest element)\n+      for (const [queryNode, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator || metadata.restElementVar === varName) {\n+          return { node: queryNode, type: 'query' };\n+        }\n+      }\n+      \n+      // Check if this declarator matches any mutation (via direct match or rest element)\n+      for (const [mutationNode, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator || metadata.restElementVar === varName) {\n+          return { node: mutationNode, type: 'mutation' };\n+        }",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 95,
+    "original_position": 89,
+    "commit_id": "90bcc3d24d2fc6ea612741026e6b8c871abc7117",
+    "original_commit_id": "a34f20295e04d4f7eadc684b823814d4ea1cde3f",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "Modified now",
+    "created_at": "2026-04-03T15:15:12Z",
+    "updated_at": "2026-04-03T15:15:12Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3033249762",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "MEMBER",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033249762"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3033249762"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033252208",
+    "id": 3033252208,
+    "node_id": "PRRC_kwDOMCclu860y8Fw",
+    "pull_request_review_id": 4056118395,
+    "diff_hunk": "@@ -4,31 +4,48 @@ const rule: Rule.RuleModule = {\n   meta: {\n     type: 'problem',\n     docs: {\n-      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components',\n+      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components or use isError in component props',\n       recommended: true,\n     },\n     messages: {\n-      missingErrorAlert: 'Queries (without throwOnError) and mutations (without onError or .catch()) must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert, ChartWarningAlert or WarningAlert)',\n+      missingErrorAlert: 'Query/mutation requires error handling: use throwOnError/onError/.catch(), render error alert component (UnexpectedErrorAlert, ErrorAlert, WarningAlert, ChartWarningAlert), or pass isError/error to component props',\n     },\n     schema: [],\n   },\n   create(context) {\n-    let hasQueryWithoutThrow = false;\n-    let hasMutationWithoutOnError = false;\n-    let hasErrorAlert = false;\n-    let queryNode: any = null;\n-    let mutationNode: any = null;\n     const importedQueryHooks = new Set<string>();\n     const importedMutationHooks = new Set<string>();\n-    const mutationVariables = new Map<string, any>(); // Track mutation variable names and their nodes\n-    const mutationsWithOnError = new Set<string>(); // Track which mutations have onError in .mutate() calls\n+    \n+    // Core tracking: Map CallExpression nodes to metadata about the query/mutation\n+    const queryNodes = new Map<any, { isErrorVars?: string[]; restElementVar?: string; variableDeclarator?: any }>();\n+    const mutationNodes = new Map<any, { isErrorVars?: string[]; restElementVar?: string; variableDeclarator?: any }>();\n+    \n+    // Track which queries/mutations have been handled (by their CallExpression nodes)\n+    const queriesHandledViaDestructuredIsError = new Set<any>();\n+    const queriesHandledViaObjectAccess = new Set<any>();\n+    const mutationsHandledViaDestructuredIsError = new Set<any>();\n+    const mutationsHandledViaErrorAccess = new Set<any>();\n+    const mutationsWithOnError = new Set<any>();\n+    \n+    // Track derived error variables: VariableDeclarator → source expression\n+    // Example: const isError = isError1 || isError2\n+    const derivedErrorVariables = new Map<any, any>();\n \n     // Component names that indicate error/warning handling\n     const errorHandlingComponents = new Set([\n       'UnexpectedErrorAlert',\n       'ErrorAlert',\n       'WarningAlert',\n       'ChartWarningAlert',\n+      'UnexpectedFieldError',\n+    ]);\n+\n+    // JSX attribute names that indicate error handling (communicating error state to user)\n+    const errorHandlingAttributes = new Set([\n+      'isInvalid',\n+      'errorMessage',\n+      'isError',\n+      'error',\n     ]);",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 55,
+    "original_position": 55,
+    "commit_id": "90bcc3d24d2fc6ea612741026e6b8c871abc7117",
+    "original_commit_id": "a34f20295e04d4f7eadc684b823814d4ea1cde3f",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "Updated",
+    "created_at": "2026-04-03T15:15:57Z",
+    "updated_at": "2026-04-03T15:15:57Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3033252208",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "MEMBER",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033252208"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3033252208"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033301842",
+    "id": 3033301842,
+    "node_id": "PRRC_kwDOMCclu860zINS",
+    "pull_request_review_id": 4056168667,
+    "diff_hunk": "@@ -76,6 +144,260 @@ const rule: Rule.RuleModule = {\n       }\n       return false;\n     }\n+    \n+    // Helper to mark query/mutation as handled by finding declarator match\n+    function markAsHandledViaDeclarator(declarator: any, varName: string): void {\n+      // Check queries\n+      for (const [queryNode, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          queriesHandledViaDestructuredIsError.add(queryNode);\n+          break;\n+        }\n+      }\n+      \n+      // Check mutations\n+      for (const [mutationNode, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          mutationsHandledViaDestructuredIsError.add(mutationNode);\n+          break;\n+        }\n+      }\n+    }\n+    \n+    // Helper to check if a variable is an error variable from query/mutation declarator\n+    function isErrorVariableFromDeclarator(declarator: any, varName: string): boolean {\n+      // Check if this variable comes from a query\n+      for (const [, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      // Check if this variable comes from a mutation\n+      for (const [, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      return false;\n+    }\n+    \n+    // Helper to process destructured properties and extract error variables and rest elements\n+    function processDestructuredProperties(\n+      properties: any[]\n+    ): { isErrorVars: string[]; restElementVar: string | undefined } {\n+      const isErrorVars: string[] = [];\n+      let restElementVar: string | undefined;\n+      \n+      properties.forEach((prop: any) => {\n+        if (prop.type === 'Property' && \n+            prop.key.type === 'Identifier' &&\n+            (prop.key.name === 'isError' || prop.key.name === 'error')) {\n+          // Track the local variable name (could be renamed like {isError: isCategoryError})\n+          const varName = prop.value.type === 'Identifier' \n+            ? prop.value.name \n+            : prop.key.name;\n+          isErrorVars.push(varName);\n+        }\n+        \n+        // Track rest element (e.g., {...queryState})\n+        if (prop.type === 'RestElement' && prop.argument.type === 'Identifier') {\n+          restElementVar = prop.argument.name;\n+        }\n+      });\n+      \n+      return { isErrorVars, restElementVar };\n+    }\n+\n+    // Helper function to check if an expression contains any tracked error variables\n+    // Recursively checks identifiers, member expressions, logical expressions, conditional expressions, and unary expressions\n+    function expressionContainsErrorState(expr: any, visited = new Set<any>()): boolean {\n+      if (!expr) return false;\n+      \n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Check if it's a direct error variable from query/mutation using scope resolution\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (!variable || variable.defs.length === 0) return false;\n+        \n+        const def = variable.defs[0];\n+        if (def.type !== 'Variable') return false;\n+        \n+        const declarator = def.node;\n+        \n+        // Prevent infinite recursion (use declarator node as key, not string)\n+        if (visited.has(declarator)) return false;\n+        visited.add(declarator);\n+        \n+        // Check if it's a derived error variable\n+        if (derivedErrorVariables.has(declarator)) {\n+          const sourceExpr = derivedErrorVariables.get(declarator);\n+          return expressionContainsErrorState(sourceExpr, visited);\n+        }\n+        \n+        // Check if this variable is an error variable from any query/mutation\n+        if (isErrorVariableFromDeclarator(declarator, varName)) {\n+          return true;\n+        }\n+        \n+        // Check if it's from a query/mutation variable (non-destructured)\n+        if (findQueryOrMutationNode(expr)) {\n+          return true;\n+        }\n+        \n+        return false;\n+      }\n+      \n+      // Check for MemberExpression patterns like query.isError, query.error, mutation.error\n+      // Uses scope resolution to ensure we're referencing the correct query/mutation in this scope\n+      // Example: query.isError where 'query' was defined as const query = useQuery(...)\n+      if (expr.type === 'MemberExpression' && \n+          expr.property?.type === 'Identifier' &&\n+          (expr.property.name === 'isError' || expr.property.name === 'error')) {\n+        if (expr.object?.type === 'Identifier') {\n+          // Use scope-aware lookup to avoid false positives from identifiers with the same name in different scopes\n+          return findQueryOrMutationNode(expr.object) !== null;\n+        }\n+      }\n+      \n+      if (expr.type === 'LogicalExpression') {\n+        return expressionContainsErrorState(expr.left, visited) || \n+               expressionContainsErrorState(expr.right, visited);\n+      }\n+      \n+      if (expr.type === 'ConditionalExpression') {\n+        return expressionContainsErrorState(expr.test, visited) ||\n+               expressionContainsErrorState(expr.consequent, visited) ||\n+               expressionContainsErrorState(expr.alternate, visited);\n+      }\n+      \n+      if (expr.type === 'UnaryExpression') {\n+        return expressionContainsErrorState(expr.argument, visited);\n+      }\n+      \n+      return false;\n+    }\n+\n+    // Helper function to recursively collect error state variables (isError/error) and member expressions from complex conditions\n+    function collectErrorStateFromExpression(expr: any): void {\n+      if (!expr) return;\n+      \n+      // Unwrap ChainExpression (optional chaining like error?.message)\n+      if (expr.type === 'ChainExpression') {\n+        collectErrorStateFromExpression(expr.expression);\n+        return;\n+      }\n+      \n+      // Direct identifier (e.g., isError, isCategoryError, or derived variables)\n+      // Find the specific query node that this identifier refers to using scope awareness\n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Use ESLint v9 API: sourceCode.getScope(node)\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (!variable || variable.defs.length === 0) return;\n+        \n+        const def = variable.defs[0];\n+        if (def.type !== 'Variable' || !def.parent || def.parent.type !== 'VariableDeclaration') return;\n+        \n+        const declarator = def.node;\n+        \n+        // Check if this is a derived error variable - if so, recursively track its source\n+        if (derivedErrorVariables.has(declarator)) {\n+          const sourceExpr = derivedErrorVariables.get(declarator);\n+          collectErrorStateFromExpression(sourceExpr);\n+          return;\n+        }\n+        \n+        // Match both the VariableDeclarator AND the specific isError variable name\n+        // This prevents false matches when other properties from the same destructuring are used\n+        markAsHandledViaDeclarator(declarator, varName);\n+        return;\n+      }\n+      \n+      // Member expression - handles two cases:\n+      // Case 1: query.isError, query.error, mutation.error (property is 'isError' or 'error')\n+      // Case 2: error.message, error.code (object is a tracked error variable)\n+      if (expr.type === 'MemberExpression') {\n+        // Case 1: Check if property is 'isError' or 'error'\n+        if (expr.property?.type === 'Identifier' &&\n+            (expr.property.name === 'isError' || expr.property.name === 'error')) {\n+          if (expr.object?.type === 'Identifier') {",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 310,
+    "commit_id": "ee58b5455553d971b9d796a46d298f8cc34340a2",
+    "original_commit_id": "ee58b5455553d971b9d796a46d298f8cc34340a2",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "`collectErrorStateFromExpression` only treats a MemberExpression as an error state when the *immediate* property is `isError`/`error` (case 1) or when the object is a destructured identifier (case 2). This misses common nested patterns like `query.error?.message` (object is itself a MemberExpression), so conditional rendering/prop-passing based on `query.error?.message` won't mark the query as handled and will be falsely reported. Consider recursively walking `expr.object` (and unwrapping `ChainExpression`) for MemberExpressions where the property is not `isError`/`error`, and mirror the same recursion in `expressionContainsErrorState` so derived variables also work with nested access.",
+    "created_at": "2026-04-03T15:30:44Z",
+    "updated_at": "2026-04-03T15:30:45Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3033301842",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033301842"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3033301842"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033301862",
+    "id": 3033301862,
+    "node_id": "PRRC_kwDOMCclu860zINm",
+    "pull_request_review_id": 4056168667,
+    "diff_hunk": "@@ -69,9 +69,11 @@ export default function S3EdgeConfigurationPage() {\n   }\n \n   return (\n+    // Without the status query response we will not be able to know if there are any appliances\n+    // connected to the S3 Edge service. So we show the error state.\n     <>\n-      {isError && <UnexpectedErrorAlert />}\n-      {!isError && (\n+      {(isError || isStatusError) && <UnexpectedErrorAlert />}\n+      {!isError && !isStatusError && (\n         <>",
+    "path": "frontend/src/routes/_authed.appliance-services/s3-edge/-components/S3EdgeConfigurationPage.tsx",
+    "position": 11,
+    "original_position": 11,
+    "commit_id": "90bcc3d24d2fc6ea612741026e6b8c871abc7117",
+    "original_commit_id": "ee58b5455553d971b9d796a46d298f8cc34340a2",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "`error: isStatusError` is an Error value (truthy/falsy), but the name `isStatusError` suggests a boolean. This makes conditions like `!isStatusError` harder to read and can be misleading for future edits. Consider destructuring as `error: statusError` and deriving `const isStatusError = Boolean(statusError)` (or using `statusError` directly where the Error object is needed).",
+    "created_at": "2026-04-03T15:30:45Z",
+    "updated_at": "2026-04-03T15:30:45Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3033301862",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033301862"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3033301862"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033334433",
+    "id": 3033334433,
+    "node_id": "PRRC_kwDOMCclu860zQKh",
+    "pull_request_review_id": 4056200851,
+    "diff_hunk": "@@ -76,6 +144,260 @@ const rule: Rule.RuleModule = {\n       }\n       return false;\n     }\n+    \n+    // Helper to mark query/mutation as handled by finding declarator match\n+    function markAsHandledViaDeclarator(declarator: any, varName: string): void {\n+      // Check queries\n+      for (const [queryNode, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          queriesHandledViaDestructuredIsError.add(queryNode);\n+          break;\n+        }\n+      }\n+      \n+      // Check mutations\n+      for (const [mutationNode, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          mutationsHandledViaDestructuredIsError.add(mutationNode);\n+          break;\n+        }\n+      }\n+    }\n+    \n+    // Helper to check if a variable is an error variable from query/mutation declarator\n+    function isErrorVariableFromDeclarator(declarator: any, varName: string): boolean {\n+      // Check if this variable comes from a query\n+      for (const [, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      // Check if this variable comes from a mutation\n+      for (const [, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      return false;\n+    }\n+    \n+    // Helper to process destructured properties and extract error variables and rest elements\n+    function processDestructuredProperties(\n+      properties: any[]\n+    ): { isErrorVars: string[]; restElementVar: string | undefined } {\n+      const isErrorVars: string[] = [];\n+      let restElementVar: string | undefined;\n+      \n+      properties.forEach((prop: any) => {\n+        if (prop.type === 'Property' && \n+            prop.key.type === 'Identifier' &&\n+            (prop.key.name === 'isError' || prop.key.name === 'error')) {\n+          // Track the local variable name (could be renamed like {isError: isCategoryError})\n+          const varName = prop.value.type === 'Identifier' \n+            ? prop.value.name \n+            : prop.key.name;\n+          isErrorVars.push(varName);\n+        }\n+        \n+        // Track rest element (e.g., {...queryState})\n+        if (prop.type === 'RestElement' && prop.argument.type === 'Identifier') {\n+          restElementVar = prop.argument.name;\n+        }\n+      });\n+      \n+      return { isErrorVars, restElementVar };\n+    }\n+\n+    // Helper function to check if an expression contains any tracked error variables\n+    // Recursively checks identifiers, member expressions, logical expressions, conditional expressions, and unary expressions\n+    function expressionContainsErrorState(expr: any, visited = new Set<any>()): boolean {\n+      if (!expr) return false;\n+      \n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Check if it's a direct error variable from query/mutation using scope resolution\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (!variable || variable.defs.length === 0) return false;\n+        \n+        const def = variable.defs[0];\n+        if (def.type !== 'Variable') return false;\n+        \n+        const declarator = def.node;\n+        \n+        // Prevent infinite recursion (use declarator node as key, not string)\n+        if (visited.has(declarator)) return false;\n+        visited.add(declarator);\n+        \n+        // Check if it's a derived error variable\n+        if (derivedErrorVariables.has(declarator)) {\n+          const sourceExpr = derivedErrorVariables.get(declarator);\n+          return expressionContainsErrorState(sourceExpr, visited);\n+        }\n+        \n+        // Check if this variable is an error variable from any query/mutation\n+        if (isErrorVariableFromDeclarator(declarator, varName)) {\n+          return true;\n+        }\n+        \n+        // Check if it's from a query/mutation variable (non-destructured)\n+        if (findQueryOrMutationNode(expr)) {\n+          return true;\n+        }\n+        \n+        return false;\n+      }\n+      \n+      // Check for MemberExpression patterns like query.isError, query.error, mutation.error\n+      // Uses scope resolution to ensure we're referencing the correct query/mutation in this scope\n+      // Example: query.isError where 'query' was defined as const query = useQuery(...)\n+      if (expr.type === 'MemberExpression' && \n+          expr.property?.type === 'Identifier' &&\n+          (expr.property.name === 'isError' || expr.property.name === 'error')) {\n+        if (expr.object?.type === 'Identifier') {\n+          // Use scope-aware lookup to avoid false positives from identifiers with the same name in different scopes\n+          return findQueryOrMutationNode(expr.object) !== null;\n+        }\n+      }\n+      \n+      if (expr.type === 'LogicalExpression') {\n+        return expressionContainsErrorState(expr.left, visited) || \n+               expressionContainsErrorState(expr.right, visited);\n+      }\n+      \n+      if (expr.type === 'ConditionalExpression') {\n+        return expressionContainsErrorState(expr.test, visited) ||\n+               expressionContainsErrorState(expr.consequent, visited) ||\n+               expressionContainsErrorState(expr.alternate, visited);\n+      }\n+      \n+      if (expr.type === 'UnaryExpression') {\n+        return expressionContainsErrorState(expr.argument, visited);\n+      }\n+      \n+      return false;\n+    }\n+\n+    // Helper function to recursively collect error state variables (isError/error) and member expressions from complex conditions\n+    function collectErrorStateFromExpression(expr: any): void {\n+      if (!expr) return;\n+      \n+      // Unwrap ChainExpression (optional chaining like error?.message)\n+      if (expr.type === 'ChainExpression') {\n+        collectErrorStateFromExpression(expr.expression);\n+        return;\n+      }\n+      \n+      // Direct identifier (e.g., isError, isCategoryError, or derived variables)\n+      // Find the specific query node that this identifier refers to using scope awareness\n+      if (expr.type === 'Identifier') {\n+        const varName = expr.name;\n+        \n+        // Use ESLint v9 API: sourceCode.getScope(node)\n+        const sourceCode = context.sourceCode;\n+        const scope = sourceCode.getScope(expr);\n+        const variable = scope.variables.find(v => v.name === varName) || \n+                        scope.references.find(ref => ref.identifier.name === varName)?.resolved;\n+        \n+        if (!variable || variable.defs.length === 0) return;\n+        \n+        const def = variable.defs[0];\n+        if (def.type !== 'Variable' || !def.parent || def.parent.type !== 'VariableDeclaration') return;\n+        \n+        const declarator = def.node;\n+        \n+        // Check if this is a derived error variable - if so, recursively track its source\n+        if (derivedErrorVariables.has(declarator)) {\n+          const sourceExpr = derivedErrorVariables.get(declarator);\n+          collectErrorStateFromExpression(sourceExpr);\n+          return;\n+        }\n+        \n+        // Match both the VariableDeclarator AND the specific isError variable name\n+        // This prevents false matches when other properties from the same destructuring are used\n+        markAsHandledViaDeclarator(declarator, varName);\n+        return;\n+      }\n+      \n+      // Member expression - handles two cases:\n+      // Case 1: query.isError, query.error, mutation.error (property is 'isError' or 'error')\n+      // Case 2: error.message, error.code (object is a tracked error variable)\n+      if (expr.type === 'MemberExpression') {\n+        // Case 1: Check if property is 'isError' or 'error'\n+        if (expr.property?.type === 'Identifier' &&\n+            (expr.property.name === 'isError' || expr.property.name === 'error')) {\n+          if (expr.object?.type === 'Identifier') {",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 310,
+    "commit_id": "ee58b5455553d971b9d796a46d298f8cc34340a2",
+    "original_commit_id": "ee58b5455553d971b9d796a46d298f8cc34340a2",
+    "user": {
+      "login": "sasi-nasuni",
+      "id": 245838181,
+      "avatar_url": "https://avatars.githubusercontent.com/u/245838181?v=4",
+      "url": "https://api.github.com/users/sasi-nasuni",
+      "html_url": "https://github.com/sasi-nasuni"
+    },
+    "body": "Handled this case as well",
+    "created_at": "2026-04-03T15:40:47Z",
+    "updated_at": "2026-04-03T15:40:47Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3033334433",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "MEMBER",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033334433"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3033334433"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033777524",
+    "id": 3033777524,
+    "node_id": "PRRC_kwDOMCclu86008V0",
+    "pull_request_review_id": 4056658086,
+    "diff_hunk": "@@ -76,6 +144,275 @@ const rule: Rule.RuleModule = {\n       }\n       return false;\n     }\n+    \n+    // Helper to mark query/mutation as handled by finding declarator match\n+    function markAsHandledViaDeclarator(declarator: any, varName: string): void {\n+      // Check queries\n+      for (const [queryNode, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          queriesHandledViaDestructuredIsError.add(queryNode);\n+          break;\n+        }\n+      }\n+      \n+      // Check mutations\n+      for (const [mutationNode, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && \n+            metadata.isErrorVars?.includes(varName)) {\n+          mutationsHandledViaDestructuredIsError.add(mutationNode);\n+          break;\n+        }\n+      }\n+    }\n+    \n+    // Helper to check if a variable is an error variable from query/mutation declarator\n+    function isErrorVariableFromDeclarator(declarator: any, varName: string): boolean {\n+      // Check if this variable comes from a query\n+      for (const [, metadata] of queryNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      // Check if this variable comes from a mutation\n+      for (const [, metadata] of mutationNodes.entries()) {\n+        if (metadata.variableDeclarator === declarator && metadata.isErrorVars?.includes(varName)) {\n+          return true;\n+        }\n+      }\n+      \n+      return false;\n+    }\n+    \n+    // Helper to process destructured properties and extract error variables and rest elements\n+    function processDestructuredProperties(\n+      properties: any[]\n+    ): { isErrorVars: string[]; restElementVar: string | undefined } {\n+      const isErrorVars: string[] = [];\n+      let restElementVar: string | undefined;\n+      \n+      properties.forEach((prop: any) => {\n+        if (prop.type === 'Property' && \n+            prop.key.type === 'Identifier' &&\n+            (prop.key.name === 'isError' || prop.key.name === 'error')) {\n+          // Track the local variable name (could be renamed like {isError: isCategoryError})\n+          const varName = prop.value.type === 'Identifier' \n+            ? prop.value.name \n+            : prop.key.name;\n+          isErrorVars.push(varName);\n+        }\n+        \n+        // Track rest element (e.g., {...queryState})\n+        if (prop.type === 'RestElement' && prop.argument.type === 'Identifier') {\n+          restElementVar = prop.argument.name;\n+        }\n+      });\n+      \n+      return { isErrorVars, restElementVar };\n+    }\n+\n+    // Helper function to check if an expression contains any tracked error variables\n+    // Recursively checks identifiers, member expressions, logical expressions, conditional expressions, and unary expressions\n+    function expressionContainsErrorState(expr: any, visited = new Set<any>()): boolean {\n+      if (!expr) return false;",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 1,
+    "original_position": 191,
+    "commit_id": "8e6296a584a91a3d09d887e2598b2468358ad17a",
+    "original_commit_id": "8e6296a584a91a3d09d887e2598b2468358ad17a",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "`expressionContainsErrorState()` does not handle `ChainExpression` (optional chaining). As a result, derived error variables like `const hasError = query.error?.message` / `const hasError = !!query.error?.message` won't be recognized as error state sources, so `derivedErrorVariables` won't be recorded and the rule may falsely report the underlying query/mutation as unhandled. Consider unwrapping `ChainExpression` (similar to `collectErrorStateFromExpression`) before checking `Identifier`/`MemberExpression`/etc.\n```suggestion\n    // Recursively checks identifiers, member expressions, chain expressions, logical expressions, conditional expressions, and unary expressions\n    function expressionContainsErrorState(expr: any, visited = new Set<any>()): boolean {\n      if (!expr) return false;\n\n      if (expr.type === 'ChainExpression') {\n        return expressionContainsErrorState(expr.expression, visited);\n      }\n```",
+    "created_at": "2026-04-03T17:55:03Z",
+    "updated_at": "2026-04-03T17:55:04Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3033777524",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3033777524"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3033777524"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3039041622",
+    "id": 3039041622,
+    "node_id": "PRRC_kwDOMCclu861JBhW",
+    "pull_request_review_id": 4061531239,
+    "diff_hunk": "@@ -1,20 +1,19 @@\n import env from '@/env';\n-import { http, HttpResponse } from 'msw';\n+import { http, HttpResponse, delay } from 'msw';\n import { getTestStack, getAzureStack, getAwsStack, getTestStackNdsConfig } from '../data/uaas-stacks';\n import { getAzureStackNdsConfig, getAwsStackNdsConfig, getDefaultNdsConfig, getDisabledStackNdsConfig } from '../data/nds-configurations';\n import { getDefaultUaasStackSraasDto, getEmptyUaasStackSraasDto } from '../data/uaas-sraas';\n+import { BffRoute } from '@webbff/utils';\n \n-export const handlers = [\n-  // Handler for fetching specific stack details\n-  http.get(`${env.VITE_WEBBFF_URL}/uaas/stacks/:stackId`, ({ params }) => {\n+// UaaS stack handlers with variants\n+export const uaasStackHandlers = {\n+  default: http.get(BffRoute('/uaas/stacks/:stack_id'), ({ params }) => {\n     const { stackId } = params;\n \n-    // Handle non-existent stack ID with 404\n     if (stackId === 'non-existent-stack-id') {\n       return HttpResponse.json({ error: 'Stack not found' }, { status: 404 });\n     }\n ",
+    "path": "frontend/msw-portal/webbff/queries/uaas.ts",
+    "position": 21,
+    "original_position": 21,
+    "commit_id": "90bcc3d24d2fc6ea612741026e6b8c871abc7117",
+    "original_commit_id": "5788d2b894c62d64a51e52ca61a358db05bd6edc",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "MSW path uses `:stack_id`, so `params` will expose `stack_id` (snake_case), not `stackId`. Destructuring `const { stackId } = params;` will yield `undefined`, breaking the handler routing (404 logic, switch cases, and `id` assignment). Update the param access to use `params.stack_id` (or rename the route param back to `:stackId`).",
+    "created_at": "2026-04-06T10:38:53Z",
+    "updated_at": "2026-04-06T10:38:54Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3039041622",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3039041622"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3039041622"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3039041649",
+    "id": 3039041649,
+    "node_id": "PRRC_kwDOMCclu861JBhx",
+    "pull_request_review_id": 4061531239,
+    "diff_hunk": "@@ -1,40 +1,72 @@\n import { http, HttpResponse } from 'msw';\n-import { getDefaultS3ConfigDto } from '../data/s3-edge';\n+import { getDefaultS3ConfigDto, getDefaultS3StatusDto, getEmptyS3ConfigDto } from '../data/s3-edge';\n import { BffRoute } from '@webbff/utils';\n \n-// Default handlers - always return data (stateless)\n-export const handlers = [\n-  // Get S3 Edge configuration\n-  http.get(BffRoute('/configurations/s3_edge'), () => {\n+// S3 Edge configuration handlers with variants\n+export const s3EdgeConfigHandlers = {\n+  default: http.get(BffRoute('/configurations/s3_edge'), () => {\n     return HttpResponse.json(getDefaultS3ConfigDto(), { status: 200 });\n   }),\n+  error: http.get(BffRoute('/configurations/s3_edge'), () => {\n+    return HttpResponse.json({ error: 'Internal Server Error' }, { status: 500 });\n+  }),\n+  notFound: http.get(BffRoute('/configurations/s3_edge'), () => {\n+    return HttpResponse.json({ error: 'Not Found' }, { status: 404 });\n+  }),\n+  empty: http.get(BffRoute('/configurations/s3_edge'), () => {\n+    return HttpResponse.json(getEmptyS3ConfigDto(), { status: 200 });\n+  }),\n+};\n \n-  // Update S3 Edge configuration\n-  http.post(BffRoute('/configurations/s3_edge'), async ({ request }) => {\n+// S3 Edge status handlers with variants\n+export const s3EdgeStatusHandlers = {\n+  default: http.get(BffRoute('/s3_edge'), () => {\n+    return HttpResponse.json(getDefaultS3StatusDto(), { status: 200 });\n+  }),\n+  error: http.get(BffRoute('/s3_edge'), () => {\n+    return HttpResponse.json({ error: 'Internal Server Error' }, { status: 500 });\n+  }),\n+  empty: http.get(BffRoute('/s3_edge'), () => {\n+    return HttpResponse.json({ items: [] }, { status: 200 });\n+  }),\n+};\n+\n+// S3 Edge configuration update handlers with variants\n+export const s3EdgeConfigUpdateHandlers = {\n+  default: http.post(BffRoute('/configurations/s3_edge'), async ({ request }) => {\n     const body = await request.json();\n     return HttpResponse.json(body, { status: 200 });\n   }),\n+  error: http.post(BffRoute('/configurations/s3_edge'), () => {\n+    return HttpResponse.json({ message: 'Server validation error', detail: ['Internal server error occurred'] }, { status: 500 });\n+  }),\n+  errorRecovery: (() => {\n+    let hasEncounteredError = false;\n+    return http.post(BffRoute('/configurations/s3_edge'), async ({ request }) => {\n+      if (!hasEncounteredError) {\n+        hasEncounteredError = true;\n+        return HttpResponse.json({ message: 'Server validation error', detail: ['Configuration format is invalid'] }, { status: 500 });\n+      }\n+      // Subsequent requests succeed\n+      const body = await request.json();\n+      return HttpResponse.json(body, { status: 200 });\n+    });\n+  })(),",
+    "path": "frontend/msw-portal/webbff/queries/s3-edge.ts",
+    "position": 1,
+    "original_position": 61,
+    "commit_id": "5788d2b894c62d64a51e52ca61a358db05bd6edc",
+    "original_commit_id": "5788d2b894c62d64a51e52ca61a358db05bd6edc",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "`errorRecovery` uses a module-scoped `hasEncounteredError` closure, so its state persists across story/test runs even after `worker.resetHandlers()`. That can make later runs unexpectedly skip the simulated error. Prefer modeling this as a Scenario (there’s already `S3EdgeConfigUpdateWithErrorRecoveryScenario`) or make the handler stateless and keep state in scenario instance with teardown reset.\n```suggestion\n  get errorRecovery() {\n    let hasEncounteredError = false;\n    return http.post(BffRoute('/configurations/s3_edge'), async ({ request }) => {\n      if (!hasEncounteredError) {\n        hasEncounteredError = true;\n        return HttpResponse.json({ message: 'Server validation error', detail: ['Configuration format is invalid'] }, { status: 500 });\n      }\n      // Subsequent requests succeed for this handler instance.\n      const body = await request.json();\n      return HttpResponse.json(body, { status: 200 });\n    });\n  },\n```",
+    "created_at": "2026-04-06T10:38:53Z",
+    "updated_at": "2026-04-06T10:38:54Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3039041649",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3039041649"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3039041649"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  },
+  {
+    "url": "https://api.github.com/repos/nasuni/portal/pulls/comments/3039827388",
+    "id": 3039827388,
+    "node_id": "PRRC_kwDOMCclu861MBW8",
+    "pull_request_review_id": 4062405950,
+    "diff_hunk": "@@ -4,31 +4,48 @@ const rule: Rule.RuleModule = {\n   meta: {\n     type: 'problem',\n     docs: {\n-      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components',\n+      description: 'Files using useQuery (without throwOnError) or useMutation (without onError or .catch()) must include error/warning alert components or pass error/isError to component props (isInvalid, errorMessage, isError, error)',\n       recommended: true,\n     },\n     messages: {\n-      missingErrorAlert: 'Queries (without throwOnError) and mutations (without onError or .catch()) must render an error/warning alert component (UnexpectedErrorAlert, ErrorAlert, ChartWarningAlert or WarningAlert)',\n+      missingErrorAlert: 'Query/mutation requires error handling: use throwOnError/onError/.catch(), render error alert component (UnexpectedErrorAlert, ErrorAlert, WarningAlert, ChartWarningAlert, UnexpectedFieldError), or pass error/isError to component props (isInvalid, errorMessage, isError, error)',\n     },\n     schema: [],\n   },\n   create(context) {\n-    let hasQueryWithoutThrow = false;\n-    let hasMutationWithoutOnError = false;\n-    let hasErrorAlert = false;\n-    let queryNode: any = null;\n-    let mutationNode: any = null;\n     const importedQueryHooks = new Set<string>();\n     const importedMutationHooks = new Set<string>();\n-    const mutationVariables = new Map<string, any>(); // Track mutation variable names and their nodes\n-    const mutationsWithOnError = new Set<string>(); // Track which mutations have onError in .mutate() calls\n+    \n+    // Core tracking: Map CallExpression nodes to metadata about the query/mutation",
+    "path": "frontend/eslint-plugin-portal/src/rules/query-requires-error-alert.ts",
+    "position": 25,
+    "original_position": 25,
+    "commit_id": "90bcc3d24d2fc6ea612741026e6b8c871abc7117",
+    "original_commit_id": "987fcec48f17bea7124828d96b55f1f70cc94786",
+    "user": {
+      "login": "Copilot",
+      "id": 175728472,
+      "avatar_url": "https://avatars.githubusercontent.com/in/946600?v=4",
+      "url": "https://api.github.com/users/Copilot",
+      "html_url": "https://github.com/apps/copilot-pull-request-reviewer"
+    },
+    "body": "This rule’s logic is now fairly complex (scope resolution, derived vars, recursive AST walking), but the eslint-plugin-portal package doesn’t include any automated tests for the rule. Adding a small RuleTester suite with representative valid/invalid fixtures would help prevent regressions and verify the documented patterns (queries, mutations, JSX attrs, derived vars, shadowed identifiers) keep working as intended.",
+    "created_at": "2026-04-06T14:05:46Z",
+    "updated_at": "2026-04-06T14:05:47Z",
+    "html_url": "https://github.com/nasuni/portal/pull/1449#discussion_r3039827388",
+    "pull_request_url": "https://api.github.com/repos/nasuni/portal/pulls/1449",
+    "author_association": "NONE",
+    "_links": {
+      "self": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/comments/3039827388"
+      },
+      "html": {
+        "href": "https://github.com/nasuni/portal/pull/1449#discussion_r3039827388"
+      },
+      "pull_request": {
+        "href": "https://api.github.com/repos/nasuni/portal/pulls/1449"
+      }
+    }
+  }
+]

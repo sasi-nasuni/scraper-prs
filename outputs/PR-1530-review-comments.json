@@ -1,0 +1,122 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`StatusCell` renders an icon-only `IconButton` without an accessible name (no `aria-label`). When used as a tooltip trigger this leaves keyboard/screen-reader users with an unnamed control.\n\nAlso, the inline `style={{ outline: 'none', boxShadow: 'none' }}` suppresses the focus-visible ring styles from `IconButton`, removing the visible focus indicator."
+  },
+  {
+    "author": "Copilot",
+    "body": "`align` currently only toggles `justify-center` / `flex-row-reverse` on the inner wrapper, but the wrapper isn't forced to span the full header cell width, and the outer column remains `text-left`. In practice this likely won't right-align/center the header content as intended (e.g. `align=\"right\"` in the new DataTable story).\n\nAlso, `title={`Sort ${sortDirection}`}` will produce `\"Sort undefined\"` when the column isn't sorted; use a stable label like \"Sort\" / \"Not sorted\" or derive from `sortDirection ?? 'none'`."
+  },
+  {
+    "author": "Copilot",
+    "body": "`durationValue` returns the provided value (or 0 for reduced motion) and is used elsewhere with millisecond values (e.g. `durationValue(150)`). Passing `0.15` here makes the transition effectively instantaneous; this should likely be `150` (or `0.15` without `durationValue` if `motion` expects seconds, but then other call sites should be consistent).\n```suggestion\n        transition={{ duration: durationValue(150), ease: 'easeInOut' }}\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`ExpandCell` can render an icon-only button when `isExpandable` is true, but `ariaLabel` is optional and may be omitted, resulting in an unnamed control for assistive tech. Consider making `ariaLabel` required when the toggle is rendered (or providing a sensible default like \"Expand row\" / \"Collapse row\")."
+  },
+  {
+    "author": "viramjain99",
+    "body": "can you please also add a story for TableItemActionsMenu.\nStory will be helpful in future if we want to make any changes in future"
+  },
+  {
+    "author": "viramjain99",
+    "body": "please add a story"
+  },
+  {
+    "author": "viramjain99",
+    "body": "I think we should also add a storybook stories for all the new component that we are implementing."
+  },
+  {
+    "author": "viramjain99",
+    "body": "Please add a story."
+  },
+  {
+    "author": "viramjain99",
+    "body": "can we use CalculateWidthColumn directly instead of having this wrapper ? we can add default props"
+  },
+  {
+    "author": "viramjain99",
+    "body": "```suggestion\n    function RenderNameCell(row: FlattenedRow) {\n```"
+  },
+  {
+    "author": "viramjain99",
+    "body": "```suggestion\n    function RenderCellValue(row: FlattenedRow, field: 'filer' | 'protocol' | 'accessibleDataLabel' | 'lastSnapshotLabel') {\n```"
+  },
+  {
+    "author": "LeeStovall",
+    "body": "It's gotta be more than just these two, right? Google Cloud, IBM, AWS Gov etc?"
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "This only sample data not real prod code"
+  },
+  {
+    "author": "viramjain99",
+    "body": "just for the knowledge why we are using spaceX prop why we are not accepting padding inside style ?"
+  },
+  {
+    "author": "viramjain99",
+    "body": "can we move this doc to storybook if it is related to component"
+  },
+  {
+    "author": "viramjain99",
+    "body": "```suggestion\nimport  format  from 'date-fns/format';\n```"
+  },
+  {
+    "author": "viramjain99",
+    "body": "can we move this functions , constant and mock data to some other files to keep the story clean"
+  },
+  {
+    "author": "viramjain99",
+    "body": "can we move this component and then import and use"
+  },
+  {
+    "author": "viramjain99",
+    "body": "we can use CalculatedWidthColumn directly instead of having this wrapper"
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "fixed"
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "fixed"
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "this is fine as is"
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "fixed"
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "included in Table stories to avoid repetitiveness"
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "Added"
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "All table primitives are used in the table stories. Independent stories for each are redundant and too repetitive."
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "same as previous comment"
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "They serve different purposes. ActionsColumn auto adjust to however many actions you have. CalculatedWidthColumn adds padding and table edge calculations. You can use CalculatedWidthColumn on its own if you need it. It is meant for columns that need a default width value based on it's contents"
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "Its a render util not a functional component. Will keep as is."
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "Same as previous comment. Util not component."
+  }
+]

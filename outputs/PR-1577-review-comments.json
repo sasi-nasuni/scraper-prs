@@ -1,0 +1,86 @@
+[
+  {
+    "author": "Copilot",
+    "body": "Enabling at-rest and in-transit encryption on an existing ElastiCache replication group typically forces a CloudFormation replacement (new nodes / potentially new endpoint). If this stack is ever deployed against a non-ephemeral environment, plan for cutover (e.g., snapshot/restore or explicit data migration) and document expected downtime/data-loss characteristics; otherwise deployments may unexpectedly drop cached state or fail due to immutable property changes."
+  },
+  {
+    "author": "Copilot",
+    "body": "The post-deploy `HealthCheck` construct only performs a raw TCP connect to REDIS_HOST/PORT; it does not negotiate TLS. With `ssl=True` and ElastiCache transit encryption enabled, this check can still pass even if the application cannot establish a TLS session (cert/SSL settings), so a broken Redis configuration may not be caught during deployment."
+  },
+  {
+    "author": "Copilot",
+    "body": "The post-deploy `HealthCheck` construct only performs a raw TCP connect to REDIS_HOST/PORT; it does not negotiate TLS. With `ssl=True` and ElastiCache transit encryption enabled, this check can still pass even if the application cannot establish a TLS session (cert/SSL settings), so a broken Redis configuration may not be caught during deployment."
+  },
+  {
+    "author": "Copilot",
+    "body": "The post-deploy `HealthCheck` construct only performs a raw TCP connect to REDIS_HOST/PORT; it does not negotiate TLS. With `ssl=True` and ElastiCache transit encryption enabled, this check can still pass even if the application cannot establish a TLS session (cert/SSL settings), so a broken Redis configuration may not be caught during deployment."
+  },
+  {
+    "author": "Copilot",
+    "body": "The post-deploy `HealthCheck` construct only performs a raw TCP connect to REDIS_HOST/PORT; it does not negotiate TLS. With `ssl=True` and ElastiCache transit encryption enabled, this check can still pass even if the application cannot establish a TLS session (cert/SSL settings), so a broken Redis configuration may not be caught during deployment."
+  },
+  {
+    "author": "rashmi-rdas",
+    "body": "`transit_encryption_mode` is not specified. When `transit_encryption_enabled=True` and `transit_encryption_mode` is omitted, the CloudFormation default is preferred, which still allows unencrypted client connections alongside TLS ones.\n\nI think we should add `transit_encryption_mode=\"required\"` here. "
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "Copilot",
+    "body": "With `transit_encryption_enabled=True`/`transit_encryption_mode=\"required\"`, any portal-pvt consumer that still connects without TLS will fail. `portal-eventhub` is part of the portal-pvt deploy phases and its CDK stack still sets `.with_redis(ssl=False)` (which also makes the HealthCheck send plaintext PING), so portal-eventhub deployments in portal-pvt mode will break after this infra change. Update portal-eventhub to use TLS (or conditionally enable TLS when using PortalPvtInfraResources) to keep portal-pvt deploys consistent."
+  },
+  {
+    "author": "Copilot",
+    "body": "The inline Lambda handler opens sockets and only closes them on the happy path. If the TLS handshake, send, or recv fails, the socket can be left unclosed until GC. Consider using a context manager or a `try/finally` to reliably close the socket (both for the raw and TLS-wrapped socket)."
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`actions/checkout` for `gh-pages` is marked `continue-on-error: true`, but the next step unconditionally runs `git commit` and `git push origin gh-pages`. If the checkout fails (e.g., branch doesn\u2019t exist or transient failure), this can end up pushing whatever branch is currently checked out to `gh-pages`, potentially overwriting it. Make the checkout fail the job, or add an explicit guard that verifies `HEAD` is on `gh-pages` (and that the branch exists) before deleting/committing/pushing."
+  },
+  {
+    "author": "Copilot",
+    "body": "`publish_coverage_to_pages` deletes and recreates `coverage/pr-$PR_NUMBER` unconditionally, but backend/frontend coverage artifacts are only produced when their respective `paths-filter` flags are true. When a job is skipped due to no changes, this publish job can still run (job result is still `success`) and deploy empty directories, leaving broken links. Consider propagating `backend_changed`/`frontend_changed` as job outputs and gating this job (and/or the directory deletion) on at least one report actually existing."
+  },
+  {
+    "author": "Copilot",
+    "body": "This job uses `continue-on-error: true` for artifact downloads and for the `git push`, but still posts \u201cView Report\u201d links. If downloads/push fail, reviewers get URLs that 404 while the workflow still appears green. Prefer failing the job when the expected `index.html` files aren\u2019t present after download (or generate a placeholder `index.html` per missing report), and only post the links comment after a successful push."
+  },
+  {
+    "author": "Copilot",
+    "body": "Mapping *all* 400 Bad Request responses to `ResourceNotFound` can misclassify real client errors (e.g., schema/contract changes) as \u201cnot found\u201d. Other methods in this client map 400s conditionally based on response content; consider doing the same here (e.g., check for a known \u201cfiler not found\u201d message/code) and otherwise re-raise `HTTPStatusError`."
+  },
+  {
+    "author": "Copilot",
+    "body": "`publish_coverage_to_pages` runs on the `pull_request` event but requests `contents: write` (and posts PR comments). On PRs from forks this commonly fails due to the read-only token, and more broadly it\u2019s risky to grant write permissions in a PR-triggered workflow. Consider gating this job to same-repo PRs only (e.g., `github.event.pull_request.head.repo.full_name == github.repository`), or moving the gh-pages publish to a safer event (e.g., `workflow_run` / `pull_request_target` with strict controls)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The gh-pages deploy step does a plain `git push origin gh-pages` without handling non-fast-forward updates. Concurrent workflow runs (or other gh-pages updates) can cause the push to fail and mark the PR checks red. Consider adding a small retry with `git pull --rebase` (or a concurrency group keyed by PR number with `cancel-in-progress: true`) before pushing, or otherwise making the push resilient.\n```suggestion\n\n          for attempt in 1 2 3; do\n            if git push origin gh-pages; then\n              exit 0\n            fi\n\n            if [ \"$attempt\" -eq 3 ]; then\n              echo \"\u274c Failed to push to gh-pages after ${attempt} attempts\"\n              exit 1\n            fi\n\n            echo \"Push rejected, rebasing on latest origin/gh-pages and retrying (attempt ${attempt})...\"\n            git pull --rebase origin gh-pages\n          done\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The workflow downloads coverage artifacts produced from PR code, then writes placeholder HTML into the extracted directories via `cat > \"${dir}/index.html\"`. If an artifact contains a symlinked directory (or unexpected path structure), this redirection could write outside the intended `coverage/pr-<n>` tree. Before generating placeholders/committing, add a sanitization step to remove symlinks (and/or validate the extracted tree is regular files/dirs under `coverage/pr-${PR_NUMBER}` only)."
+  },
+  {
+    "author": "Copilot",
+    "body": "`actions/checkout` of `gh-pages` is marked `continue-on-error: true`, but the job then proceeds and may silently skip cleanup if checkout fails (e.g., transient GitHub outage). Consider capturing the checkout step outcome and explicitly short-circuiting (or failing) when the branch should exist but cannot be checked out, so stale coverage reports don\u2019t accumulate unnoticed.\n```suggestion\n      - name: Checkout gh-pages branch\n        id: checkout_gh_pages\n        uses: actions/checkout@v4\n        with:\n          ref: gh-pages\n          fetch-depth: 1\n        continue-on-error: true\n\n      - name: Fail if gh-pages checkout did not succeed\n        if: steps.checkout_gh_pages.outcome != 'success'\n        run: |\n          echo \"\u274c Failed to checkout the gh-pages branch; aborting cleanup so stale coverage reports are not silently left behind.\"\n          exit 1\n\n      - name: Remove coverage report for this PR\n        if: steps.checkout_gh_pages.outcome == 'success'\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "PR title/description indicates this change is about handling \u201cfiler not found\u201d, but the PR also introduces substantial CI behavior changes (publishing coverage HTML to GitHub Pages and adding a cleanup workflow). Consider updating the PR description to cover the workflow changes (or splitting the CI changes into a separate PR) so reviewers can assess risk and intent appropriately."
+  },
+  {
+    "author": "Copilot",
+    "body": "`publish_coverage_to_pages` deploys coverage to the root of GitHub Pages and explicitly notes that each deployment replaces the previous one. That makes the PR coverage links unstable (they will point to whatever PR ran last) while the landing page/title and PR comments reference a specific PR number. Consider publishing under a PR-specific subpath (e.g., `pr-<number>/...`) or adjusting the messaging/comments so it\u2019s clear the links are not PR-scoped (and avoid embedding the PR number in the site title)."
+  },
+  {
+    "author": "Copilot",
+    "body": "`post_coverage_comment` hard-codes `PAGES_URL: https://nasuni.github.io/portal`, but the Pages URL is already available from `actions/deploy-pages` (`steps.deploy.outputs.page_url`) in the publishing job. Hard-coding the URL makes the workflow brittle if the repo name/org or Pages base URL changes; consider passing the deployed `page_url` through as a job output and using that in the comment builder."
+  },
+  {
+    "author": "Copilot",
+    "body": "The PR title/description focus on handling a \u201cfiler not found\u201d error, but this diff also introduces a substantial change to CI coverage publishing (GitHub Pages deployment + new cleanup workflow). Consider splitting the workflow changes into a separate PR or updating the PR description to explain the motivation/risk of the CI changes."
+  },
+  {
+    "author": "Copilot",
+    "body": "`mock_async_client.__aenter__.return_value = mock_async_client` is unused/misleading here because `_build_client` is awaited and the `async with` uses the returned object's `__aenter__` (i.e., `mock_async_client.return_value.__aenter__`). Removing this line (or setting `mock_async_client.return_value.__aenter__.return_value` explicitly) will make the mock setup clearer and less error-prone.\n```suggestion\n    mock_async_client.return_value.__aenter__.return_value = mock_async_client.return_value\n    mock_async_client.return_value.request.return_value = Response(\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The `ResourceNotFound` message is duplicated in two branches (404 and the special-case 400). Consider consolidating the conditions and raising once (e.g., compute a boolean `is_missing_filer` and raise a single `ResourceNotFound(...)`) to reduce duplication and prevent the branches drifting over time.\n```suggestion\n            is_missing_filer = e.response.status_code == HTTPStatus.NOT_FOUND or (\n                e.response.status_code == HTTPStatus.BAD_REQUEST and str(filer_id) in e.response.text\n            )\n            if is_missing_filer:\n                raise ResourceNotFound(f\"Filer with ID {filer_id} not found\") from e\n```"
+  },
+  {
+    "author": "viramjain99",
+    "body": "done"
+  },
+  {
+    "author": "viramjain99",
+    "body": "done"
+  },
+  {
+    "author": "Copilot",
+    "body": "The `ResourceNotFound` raise/message is duplicated across the 404 and the special-case 400 branch. This makes it easy for the branches to drift (e.g., message changes applied to one path but not the other). Consider consolidating into a single boolean (e.g., `is_missing_filer`) and raise `ResourceNotFound(...)` once based on that condition, then `raise` for all other cases.\n```suggestion\n            is_missing_filer = e.response.status_code == HTTPStatus.NOT_FOUND\n            if e.response.status_code == HTTPStatus.BAD_REQUEST:\n                body = e.response.text.lower()\n                is_missing_filer = str(filer_id).lower() in body and \"not found\" in body\n            if is_missing_filer:\n                raise ResourceNotFound(f\"Filer with ID {filer_id} not found\") from e\n```"
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "move this to top of the file."
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "`from uuid import UUID` is repeated inside each of the 5 new test functions, and is duplicated 5 times. Can we move the import to the top of the file and extract a module-level FILER_ID constant?"
+  },
+  {
+    "author": "viramjain99",
+    "body": "done"
+  },
+  {
+    "author": "viramjain99",
+    "body": "done"
+  },
+  {
+    "author": "viramjain99",
+    "body": "done"
+  },
+  {
+    "author": "Copilot",
+    "body": "`httpx.Response` does not accept a `text=` keyword argument; this will raise `TypeError` and/or leave `response.content` empty, which breaks the test\u2019s intent (the production code checks `e.response.text`). Use `content=` (bytes/str) or `json=` instead so `response.text` contains the expected message.\n```suggestion\n        content=f\"Filer {FILER_ID} not found\",\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`httpx.Response` does not accept a `text=` keyword argument; this will cause the test to error or not populate `response.text` as expected. Use `content=` (bytes/str) or `json=` so the client\u2019s `e.response.text` inspection matches the fixture.\n```suggestion\n        content=\"Invalid request: missing required field\",\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`httpx.Response` does not accept a `text=` keyword argument; this fixture should use `content=` or `json=` so `response.text` is populated and the test remains valid.\n```suggestion\n        content=f\"Invalid configuration for filer {FILER_ID}: unsupported platform\",\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The docstring now has a `Raises: ResourceNotFound` section, but `get_filer` can still raise `HTTPStatusError` (and any exceptions from `_authenticated_call_validated`, e.g. `TimeoutException`). Either document the additional exceptions or remove the `Raises` section to avoid implying `ResourceNotFound` is the only error case."
+  },
+  {
+    "author": "viramjain99",
+    "body": "done"
+  },
+  {
+    "author": "viramjain99",
+    "body": "done"
+  },
+  {
+    "author": "viramjain99",
+    "body": "done"
+  },
+  {
+    "author": "viramjain99",
+    "body": "done"
+  }
+]

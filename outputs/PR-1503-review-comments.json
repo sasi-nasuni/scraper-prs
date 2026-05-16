@@ -1,0 +1,122 @@
+[
+  {
+    "author": "Copilot",
+    "body": "Using `process.env.NODE_ENV` in browser code is likely to throw at runtime under Vite (\"process is not defined\"), since Vite exposes environment via `import.meta.env` instead. Please switch this test-mode check to something Vite-safe (e.g. `import.meta.env.MODE === 'test'`) or a shared env helper used elsewhere in the app."
+  },
+  {
+    "author": "Copilot",
+    "body": "`process.env.NODE_ENV` is referenced in a React component that runs in the browser. Under Vite this can be undefined at runtime, causing a crash. Prefer `import.meta.env.MODE === 'test'` (or another Vite-provided flag) for test-only behavior gating.\n```suggestion\n    if (import.meta.env.MODE === 'test') {\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This component reads `process.env.NODE_ENV` to detect tests. In Vite-built browser bundles, `process` is not guaranteed to exist and can cause a ReferenceError. Use `import.meta.env.MODE === 'test'` (or equivalent) for test detection instead.\n```suggestion\n  const isTest = import.meta.env.MODE === 'test';\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This test now uses MSW (`msw/node`) and no longer exercises real backend integration, so keeping it under `tests/e2e/` is misleading and can weaken the purpose of the e2e suite. Consider moving it to the unit/integration test folders (or renaming the suite) so CI intent remains clear.\n```suggestion\ndescribe('Mocked MSW contracts for file iq queries', () => {\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This file introduces a full custom `useMutation` mock implementation. The exact same mock block is duplicated in multiple File IQ unit tests; extracting it into a shared test utility (e.g. `@tests/utils/unit/mocks/useMutation.ts`) would reduce duplication and make future changes safer."
+  },
+  {
+    "author": "Copilot",
+    "body": "This file introduces a full custom `useMutation` mock implementation. The exact same mock block is duplicated in multiple File IQ unit tests; extracting it into a shared test utility would reduce duplication and make the mock behavior consistent across tests."
+  },
+  {
+    "author": "Copilot",
+    "body": "This file introduces a full custom `useMutation` mock implementation. The exact same mock block is duplicated in multiple File IQ unit tests; extracting it into a shared test helper would reduce duplication and make it easier to keep the mock in sync with the real `useMutation` contract.\n```suggestion\ntype MockMutationOptions = {\n  mutationFn: (variables: unknown) => Promise<unknown>;\n  onSuccess?: (data: unknown, variables: unknown) => void | Promise<void>;\n  onError?: (error: unknown, variables: unknown) => void | Promise<void>;\n};\n\nconst createMockUseMutation = (React: typeof import('react')) =>\n  (options: MockMutationOptions) => {\n    const [isPending, setIsPending] = React.useState(false);\n    const [error, setError] = React.useState<unknown>(null);\n\n    return {\n      isPending,\n      error,\n      mutate: async (variables: unknown) => {\n        setIsPending(true);\n        setError(null);\n        try {\n          const data = await options.mutationFn(variables);\n          await options.onSuccess?.(data, variables);\n        } catch (mutationError) {\n          setError(mutationError);\n          await options.onError?.(mutationError, variables);\n        } finally {\n          setIsPending(false);\n        }\n      },\n    };\n  };\n\nvi.mock('@hooks/useMutation', async () => {\n  const React = await import('react');\n  return {\n    useMutation: createMockUseMutation(React),\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The MSW handler request body typing and parsing ignores required fields like `enabled` (present in real requests). Tightening the expected shape (and optionally returning a 400 for missing/invalid fields) helps these handlers act as contract checks and prevents tests from accidentally passing with malformed requests.\n```suggestion\ntype FileIQAppliancesPatchBody = {\n  enabled: boolean;\n  file_iq_ids: string[];\n};\n\ntype FileIQEdgesPatchBody = {\n  enabled: boolean;\n  edge_ids: string[];\n};\n\nconst isStringArray = (value: unknown): value is string[] =>\n  Array.isArray(value) && value.every((item) => typeof item === 'string');\n\nconst isFileIQAppliancesPatchBody = (value: unknown): value is FileIQAppliancesPatchBody => {\n  if (typeof value !== 'object' || value === null) {\n    return false;\n  }\n\n  const body = value as Record<string, unknown>;\n  return typeof body.enabled === 'boolean' && isStringArray(body.file_iq_ids);\n};\n\nconst isFileIQEdgesPatchBody = (value: unknown): value is FileIQEdgesPatchBody => {\n  if (typeof value !== 'object' || value === null) {\n    return false;\n  }\n\n  const body = value as Record<string, unknown>;\n  return typeof body.enabled === 'boolean' && isStringArray(body.edge_ids);\n};\n\nexport const handlers = [\n  http.patch(BffRoute('/fiq_appliances'), async ({ request }) => {\n    const body = (await request.json()) as unknown;\n\n    if (!isFileIQAppliancesPatchBody(body)) {\n      return HttpResponse.json({ message: 'Invalid request body' }, { status: 400 });\n    }\n\n    return HttpResponse.json(getFileIQUpdateAppliancesResponseDto(body.file_iq_ids), { status: 200 });\n  }),\n\n  http.patch(BffRoute('/fiq_edges'), async ({ request }) => {\n    const body = (await request.json()) as unknown;\n\n    if (!isFileIQEdgesPatchBody(body)) {\n      return HttpResponse.json({ message: 'Invalid request body' }, { status: 400 });\n    }\n\n    return HttpResponse.json(getFileIQUpdateEdgesResponseDto(body.edge_ids), { status: 200 });\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This MSW-based contract test largely duplicates the MSW-based assertions in `frontend/tests/e2e/webbff/queries/file-iq.test.ts`. Consider keeping a single source of truth (unit or e2e) to avoid duplicated coverage and maintenance overhead.\n```suggestion\ndescribe('File IQ query smoke tests', () => {\n  it('Fetches File IQ appliances through MSW', async () => {\n    const appliances = await fetchFileIQAppliances();\n\n    expect(appliances.length).toBeGreaterThan(0);\n    expect(appliances[0]).toEqual(\n      expect.objectContaining({\n        fileIqName: expect.any(String),\n        fileIqId: expect.any(String),\n      }),\n    );\n  });\n\n  it('Fetches File IQ edges through MSW', async () => {\n    const edges = await fetchFileIQEdges();\n\n    expect(edges.length).toBeGreaterThan(0);\n    expect(edges[0]).toEqual(\n      expect.objectContaining({\n        edgeName: expect.any(String),\n        edgeId: expect.any(String),\n      }),\n    );\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This test\u2019s custom `useMutation` mock will treat exceptions in `onSuccess` as a mutation failure and route them through `onError`. In this file, the component\u2019s `onSuccess` calls `queryClient.invalidateQueries(...)`, but the shared unit-test mock for `useQueryClient()` only provides `refetchQueries`/`setQueryData`, so the success path currently throws and the mock converts it into an error path. Mock `useQueryClient` here to include `invalidateQueries` (and/or update the shared mock) so the test actually exercises the success behavior rather than silently falling back to error handling."
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Done"
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Done"
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Done"
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Done. Extract a shared test helper and reused it."
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Done. Extract a shared test helper and reused it."
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "Done. Extract a shared test helper and reused it."
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "reverted the changes, as mocking is not ideal in e2e test cases"
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "added the fix in sharedmock"
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "tightened the MSW handlers "
+  },
+  {
+    "author": "mpradhan-nasuni",
+    "body": "tightened the MSW handlers "
+  },
+  {
+    "author": "Copilot",
+    "body": "These assertions use `toBeGreaterThanOrEqual(initialCallCount)`, which can pass even if no re-query happens after changing the filter (i.e., call count stays the same). Since the test intent is to verify a requery, assert that the call count increases (or assert on the new call's arguments) so the test fails on regressions where the query is not re-fired."
+  },
+  {
+    "author": "Copilot",
+    "body": "This expectation uses `toBeGreaterThanOrEqual(initialCallCount)`, which allows the assertion to succeed even if the filter change does not trigger any additional query call. To keep this test meaningful, assert that the call count increases (or validate the parameters of the latest call) after interacting with the 'Initiated By' filter.\n```suggestion\n    expect(vi.mocked(activityLogsQuery.useFetchAuditRecords).mock.calls.length).toBeGreaterThan(initialCallCount);\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Using `toBeGreaterThanOrEqual(initialCallCount)` here can pass even if changing the 'Target' filter never triggers a requery. Since the test name says it should requery, strengthen the assertion to require an increased call count (or assert on the updated call args) after the interaction.\n```suggestion\n    expect(vi.mocked(activityLogsQuery.useFetchAuditRecords).mock.calls.length).toBeGreaterThan(initialCallCount);\n```"
+  },
+  {
+    "author": "viramjain99",
+    "body": "why do we need to add parsing in msw ?\nI think msw should only return data what BE is returning without doing any processing "
+  },
+  {
+    "author": "viramjain99",
+    "body": "why do we need this ?"
+  },
+  {
+    "author": "viramjain99",
+    "body": "I think we don't need to add this because in global test configuration this should be present ? could please check existing test cases once which is using msw "
+  },
+  {
+    "author": "viramjain99",
+    "body": "any specific reason for adding this ?"
+  },
+  {
+    "author": "viramjain99",
+    "body": "handler should only return one response it will either have a success scenario or error"
+  },
+  {
+    "author": "viramjain99",
+    "body": "please add no data scenario if possible "
+  },
+  {
+    "author": "viramjain99",
+    "body": "why do we need this ?"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The comment says this event is logged \u201cfor debugging only\u201d, but the code logs at INFO level. If this is an expected customer-configuration state, INFO may be too noisy in production logs; consider using DEBUG (or adjust the comment if INFO is intentional).\n```suggestion\n                self._logger.debug(\"Edge appliance not set up - returning empty S3 Edge statuses: %s\", err_msg)\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "_get_services reimplements the repo\u2019s standard concurrent-awaitable pattern (gather + exception propagation). Since the codebase already has gather_tasks_and_propagate_exceptions() (documented as the Sentry-safe approach) and it\u2019s used elsewhere in this repo, consider wrapping only the S3-edge call (catching the specific ResourceConflict and returning an empty status) and then using gather_tasks_and_propagate_exceptions for the actual concurrency. This avoids subtle behavioral drift (e.g., exception ordering/handling) and keeps the Sentry-related logic centralized."
+  },
+  {
+    "author": "dleyva-nasuni",
+    "body": "why not simply `try ... except ResourceConflict as err:` like in the `get_edges` method below?"
+  },
+  {
+    "author": "Copilot",
+    "body": "This test\u2019s docstring says it covers an alternate/plaintext NOC error message, but the mocked error string is the same as `NocClientErrorMessages.edge_appliance_needed.value` (just inlined). That makes this test largely redundant with the previous one and doesn\u2019t validate handling of a genuinely different message format. Consider either using a distinct message variant that should still be treated as \"no edge appliance\" (or parameterize both cases), or adjust the test name/docstring to reflect what\u2019s actually being tested."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Consolidated tests "
+  },
+  {
+    "author": "nick-falco",
+    "body": "Changed to use try...except "
+  },
+  {
+    "author": "Copilot",
+    "body": "`_get_s3_edge_statuses` now converts the `edge_appliance_needed` `ResourceConflict` into an empty `NocS3ScubeStatusResponse`. Given `noc.api.client.NocClient.get_edges_s3_edge_statuses()` is the only place that raises this specific error, the existing `ResourceConflict` handlers in `get_edges`/`get_edge` that special-case `edge_appliance_needed` look to be unreachable now and risk becoming misleading/dead code. Consider removing those branches (or updating them to reflect the new behavior) so the error-handling contract is defined in one place."
+  },
+  {
+    "author": "Copilot",
+    "body": "The test name/docstring says \"empty S3\" and mentions returning the \"filer list\", but the assertions validate `edge.services.s3_edge is None` (i.e., S3 Edge status unavailable) and the subject is edges. Renaming the test (and adjusting wording) to reflect `s3_edge=None` and \"edge list\" would make the intent clearer and avoid confusion about whether an explicit empty status object is expected."
+  },
+  {
+    "author": "jtolla-nasuni",
+    "body": "Won't fix."
+  },
+  {
+    "author": "jtolla-nasuni",
+    "body": "Won't fix."
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "We probably should just update the original function instead of create a duplicate if it's not used anywhere else"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "This changes the lower level behavior but not the higher level expectations in the get_edges call, which calls _get_services, which calls this. It expects the ResourceConflict and returns edges=[] so that behavior can probably be removed"
+  }
+]

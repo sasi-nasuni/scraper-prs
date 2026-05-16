@@ -1,0 +1,18 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The triple-quoted text below `SECURITY_HEADERS` is a standalone string literal, so it won\u2019t be attached as a docstring to either the module or the variable (it\u2019s effectively a no-op expression). If the intent is to document the constant, convert this to a `#` comment above the constant (or move the text into the module docstring).\n```suggestion\n# Security response headers applied to every HTTP response by the shared middleware.\n#\n# These headers mitigate common browser-level attack vectors:\n# - ``X-Content-Type-Options: nosniff`` \u2014 Prevents MIME-sniffing (CWE-693,\n#   OWASP A05:2021), ensuring browsers honour the declared ``Content-Type``\n#   and do not reinterpret response bodies as executable content.\n#\n# New security headers should be added here so all portal services inherit\n# them automatically via ``build_web_app``.\nSECURITY_HEADERS: dict[str, str] = {\n    \"X-Content-Type-Options\": \"nosniff\",\n}\n```"
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "This is actually a well-known Python pattern for documenting constants. Tools like Sphinx, PyCharm, and Pylance pick it up and show it as hover docs, which plain comments can't do. Switching to comments would mean future developers lose that discoverability when they come to add new headers here."
+  },
+  {
+    "author": "rashmi-rdas",
+    "body": "Can we use the same as used in https://github.com/nasuni/portal/pull/1559/changes#diff-cb043256b0a7436c429c88503462ef200934d695e2139c246917e56fc5381b2eR254\n\n`response.headers.setDefault` May be direct assignment could override any value set by inner handlers or routes"
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "Done."
+  }
+]

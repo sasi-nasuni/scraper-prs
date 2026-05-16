@@ -1,0 +1,106 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`refresh_access_token` defaults to copying `account_licenses` from the refresh token payload when the caller doesn\u2019t explicitly pass `account_licenses`. For MCP tokens, refresh tokens can be valid for a long time (currently 30 days), so a license downgrade/removal would not be enforced for the remaining refresh-token lifetime (refresh keeps re-minting tokens with the old license set). Consider requiring callers to supply current licenses at refresh time (and failing/omitting the claim if not supplied), or otherwise ensuring MCP refresh cannot perpetuate stale license entitlements."
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "BaseModel"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "Can just replace the above^^ no need for a passthrough here"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "This is the wrong token to change. It should be the AccessToken returned by token_validator_service.py"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "You can keep the changes in the token_validator_service.py and remove all the changes in web auth and it should still work as expected :)"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "In this funciton we probably want to make sure they have the MCP license as well or return an Unauthorized"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "The token that comes in this function is the web auth PortalTokenData token but it leaves as an MCP access token (this is where the transition happens)"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "Sorry ignore this, just realized there's no MCP license."
+  },
+  {
+    "author": "LeeStovall",
+    "body": "Leftover. Thanks!"
+  },
+  {
+    "author": "LeeStovall",
+    "body": "[One day](https://nasuni.atlassian.net/browse/PORTAL-1717) (maybe) \ud83d\ude04 "
+  },
+  {
+    "author": "Copilot",
+    "body": "`_enabled_account_licenses()` returns a `set`, and the token claim is then built by iterating that set. Set iteration order is not deterministic, so the `account_licenses` list embedded into the JWT can vary across requests for the same license state (making tokens harder to compare/debug and risking flaky assertions if more licenses are enabled). Build the list in a deterministic order (e.g., iterate `AccountLicenseKey` in enum order and filter, or sort the enabled keys before serializing).\n```suggestion\n            \"account_licenses\": [\n                license_key.value\n                for license_key in sorted(_enabled_account_licenses(account_license), key=lambda license_key: license_key.value)\n            ],\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`account_licenses` is preserved by copying it out of the *refresh token* and re-embedding it into newly minted tokens. Since MCP refresh tokens are configured for a long lifetime (30 days), this can keep premium entitlements active long after a license downgrade/revocation until the user fully re-authorizes. Consider re-resolving current account licenses during refresh (preferred) or shortening the refresh-token lifetime / forcing re-auth when license claims are missing or stale, so license changes take effect promptly."
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "I think rather than add the license into the refresh and auth token, we should do the lookup in the MCP server. That way we can control how long the license lasts for, by toggling the cache time"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "Also it helps to avoid having the access lookup in two places (permissions done in the mcp server and license done in the oauth routes)"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "I think here we can get the permissions and license, that way all the permissions lookup are in one place in the token_validator_service. We can also control the license cache time better and more independently, rather than tie it to the token lifetime (main benefit) so it can match the permission cache time"
+  },
+  {
+    "author": "dan-poustovalov",
+    "body": "The new unpack_token call swallows all exceptions silently. If claims_from_token succeeds but unpack_token fails, this will silently reject a token that passed the earlier check with no trace in logs. Maybe this could at least be a `logger.warning`."
+  },
+  {
+    "author": "LeeStovall",
+    "body": "Alrighty. Got that sucker in cache now. Having its life last as long as the session. We can adjust as we see fit."
+  },
+  {
+    "author": "Copilot",
+    "body": "`/account/license` does not enforce any permission check (unlike `/account`, which requires `can_view_account_info`). If license entitlements should not be visible to all authenticated users, add a `dependencies=[Depends(permissions([{PermissionKey.can_view_account_info}]))]` (or a dedicated permission) to this route instead of only `tenant_context`.\n\nIf the intent is to keep it broadly readable, please document why it is safe to expose these license bits to any authenticated user.\n```suggestion\n    },\n    dependencies=[Depends(permissions([{PermissionKey.can_view_account_info}]))],\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`verify_token` validates the access token via `mcp_refresh_tracking_service.validate_access_token(token)` but then immediately re-parses the same JWT via `client_factory.claims_from_token(token)`. Since `validate_access_token` already returns `PortalTokenClaimsBody`, consider using its return value as `claims` to avoid duplicate parsing and keep a single source of truth for the claims used later (e.g., `claims.exp`)."
+  },
+  {
+    "author": "Copilot",
+    "body": "MCP-side license caching can extend entitlement staleness beyond the upstream WebAPI license cache. Here `license_ttl = min(session_settings.license_cache_ttl_seconds, token_ttl)` (default 3600s) may keep `account_licenses` valid for up to an hour, even though WebAPI\u2019s `AccountRepo.get_account_license()` is already tenant-cached for 10 minutes (`cache_time_settings.ttl_medium`).\n\nConsider capping `license_ttl` to the upstream license TTL (or lowering the default `LICENSE_CACHE_TTL_SECONDS`) so revoked license bits stop authorizing tools sooner."
+  },
+  {
+    "author": "LeeStovall",
+    "body": "This is still protected at the authentication/tenant level. I think this is okay, but other folks let me know if this is a legitimate concern."
+  },
+  {
+    "author": "LeeStovall",
+    "body": "We can lower the ttl for the cached license to be less than an hour if we find that to be really important. But licenses are usually set and left alone for months/years, specifically around license bits, so I don't think an hour lifespan is a serious concern."
+  },
+  {
+    "author": "Copilot",
+    "body": "New `/account/license` endpoint is introduced here, but the WebAPI integration permission/entitlement matrix tests don\u2019t appear to cover it (e.g. `tests/integration/routes/test_route_permissions.py` parametrizes `/account` and many other routes, but not `/account/license`). Please add a case so we lock in the intended auth behavior for this route (even if it\u2019s intentionally tenant-context only)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The PR description says MCP-specific tokens will include `account_licenses` in JWT claims and that token creation/refresh flows propagate those claims, but the implementation and this README section describe licenses being resolved dynamically from Web API instead of embedded in JWT claims. Please reconcile (update PR description or add the missing claim propagation) so the PR matches the intended design."
+  },
+  {
+    "author": "Copilot",
+    "body": "`verify_token()` decodes JWT claims but never enforces `aud == \"mcp\"` when both permission and license caches hit. That means the intended \u201cMCP-only token\u201d restriction is bypassed on cache hit (and could also be bypassed via cache poisoning). Validate the audience immediately after `claims_from_token()` (or switch to `build_client_and_claims_from_token()` so audience is always checked) before returning an `AccessToken`."
+  },
+  {
+    "author": "Copilot",
+    "body": "The PR description states that `account_licenses` is added to MCP token/JWT claims and propagated through mint/refresh, but this README describes permissions/licenses being resolved dynamically in MCP rather than embedded in JWT claims. Please align the PR description and documentation (either update the description or adjust docs if JWT claim embedding is actually intended)."
+  }
+]

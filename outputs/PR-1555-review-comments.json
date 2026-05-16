@@ -1,0 +1,70 @@
+[
+  {
+    "author": "aikido-pr-checks[bot]",
+    "body": "**3rd party Github Actions should be pinned** - medium severity\nA third-party GitHub Action was imported, and is not pinned via a hash. This leaves your CI/CD at risk for potential supply chain attacks, if the affected GitHub Action is compromised.\n\n```suggestion\n        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4\n```\n\n<sub>Reply `@AikidoSec ignore: [REASON]` to ignore this issue.</sub>\n<sub>[More info](https://app.aikido.dev/repositories/1052156/pull_requests/1555/latest?groupId=41271)</sub>"
+  },
+  {
+    "author": "aikido-pr-checks[bot]",
+    "body": "**3rd party Github Actions should be pinned** - medium severity\nA third-party GitHub Action was imported, and is not pinned via a hash. This leaves your CI/CD at risk for potential supply chain attacks, if the affected GitHub Action is compromised.\n\n```suggestion\n        uses: rtCamp/action-slack-notify@e31e87e03dd19038e411e38ae27cbad084a90661 # v2\n```\n\n<sub>Reply `@AikidoSec ignore: [REASON]` to ignore this issue.</sub>\n<sub>[More info](https://app.aikido.dev/repositories/1052156/pull_requests/1555/latest?groupId=41271)</sub>"
+  },
+  {
+    "author": "aikido-pr-checks[bot]",
+    "body": "**2 Open source vulnerabilities detected** - medium severity\nAikido detected 2 vulnerabilities across 2 packages, it includes 2 medium vulnerabilities.\n\n<details><summary>Details</summary>\n\n**Remediation** Aikido suggests bumping the vulnerable packages to a safe version.\n\n<sub>Reply `@AikidoSec ignore: [REASON]` to ignore this issue.</sub>\n[More info](https://app.aikido.dev/repositories/1052156/pull_requests/1555/latest?groupId=41271)\n</details>"
+  },
+  {
+    "author": "Copilot",
+    "body": "Field(default_factory=...) must be a callable, but `list[RoleDto]` / `list[PermissionDto]` are type expressions (not callables). This will raise at model construction. Use `default_factory=list` (or `default_factory=lambda: []`).\n```suggestion\n    roles: list[RoleDto] = Field(default_factory=list)\n    permissions: list[PermissionDto] = Field(default_factory=list)\n\n\nclass PermissionsDto(BaseModel):\n    items: list[PermissionDto] = Field(default_factory=list)\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "At the max-depth cutoff, the function returns without scrubbing deeper nested content, leaving potentially sensitive fields unredacted in Sentry payloads. The previous behavior replaced deep values with placeholders to avoid leaking secrets. Consider preserving the cutoff while still sanitizing the current container (e.g., overwrite values with a placeholder) before returning."
+  },
+  {
+    "author": "Copilot",
+    "body": "Health checks are hard-coded to port 8000, but this script now supports the MCP tier, which (per portal-mcp defaults) runs on port 8003. This will cause MCP deployments to fail health checks even when the service is healthy. Set the health check URL per tier/service (e.g., derive from $app_service or use an explicit port env var).\n```suggestion\ncase \"$app_service\" in\n    mcp.service)\n        health_check_port=\"${HEALTH_CHECK_PORT:-8003}\"\n        ;;\n    *)\n        health_check_port=\"${HEALTH_CHECK_PORT:-8000}\"\n        ;;\nesac\nhealth_check_url=\"http://localhost:${health_check_port}/health\"\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This adds a static shared-secret value in source control, which can be harvested and used to bypass WAF allowlisting if relied upon for origin verification. Store the value in Secrets Manager/SSM (or another secret store) and inject it at deploy time instead of hardcoding it."
+  },
+  {
+    "author": "Copilot",
+    "body": "The encoded JWT includes `extra_claims`, but the returned `claims_body` does not. Callers that rely on the returned claims object (e.g., for `aud`) will see a mismatch vs what was actually signed into the token. Consider returning `PortalTokenClaimsBody.model_validate(claims)` (or explicitly setting known fields like `aud` onto `claims_body`) so the return value matches the token contents."
+  },
+  {
+    "author": "Copilot",
+    "body": "The encoded JWT includes `extra_claims`, but the returned `claims_body` does not. Callers that rely on the returned claims object (e.g., for `aud`) will see a mismatch vs what was actually signed into the token. Consider returning `PortalTokenClaimsBody.model_validate(claims)` (or explicitly setting known fields like `aud` onto `claims_body`) so the return value matches the token contents.\n```suggestion\n            claims.update(extra_claims)\n        claims_body = PortalTokenClaimsBody.model_validate(claims)\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Raising ToolError with `err.response.text` will surface upstream response bodies directly to MCP tool callers. That response text may include internal details or sensitive information. Prefer returning a generic message to the caller (keep full text in logs/Sentry only), or at least redact/truncate the body before including it in ToolError.\n```suggestion\n        raise ToolError(error_message) from err\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The migration inserts `PermissionKey` enum objects into a SQL String column (`role_permissions.key`) via `permission[\\\"key\\\"]`, which is likely to persist the enum's repr/name rather than the intended `.value`. Additionally, the downgrade deletes any `role_permissions` row matching that key across all roles/accounts (not just the default roles), which can remove permission assignments users intentionally added later. Store the string value consistently (`PermissionKey....value`) and scope downgrade deletes to the intended default roles (or make downgrade a no-op if your migration policy is forward-only)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The migration inserts `PermissionKey` enum objects into a SQL String column (`role_permissions.key`) via `permission[\\\"key\\\"]`, which is likely to persist the enum's repr/name rather than the intended `.value`. Additionally, the downgrade deletes any `role_permissions` row matching that key across all roles/accounts (not just the default roles), which can remove permission assignments users intentionally added later. Store the string value consistently (`PermissionKey....value`) and scope downgrade deletes to the intended default roles (or make downgrade a no-op if your migration policy is forward-only)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The migration inserts `PermissionKey` enum objects into a SQL String column (`role_permissions.key`) via `permission[\\\"key\\\"]`, which is likely to persist the enum's repr/name rather than the intended `.value`. Additionally, the downgrade deletes any `role_permissions` row matching that key across all roles/accounts (not just the default roles), which can remove permission assignments users intentionally added later. Store the string value consistently (`PermissionKey....value`) and scope downgrade deletes to the intended default roles (or make downgrade a no-op if your migration policy is forward-only)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The migration inserts `PermissionKey` enum objects into a SQL String column (`role_permissions.key`) via `permission[\\\"key\\\"]`, which is likely to persist the enum's repr/name rather than the intended `.value`. Additionally, the downgrade deletes any `role_permissions` row matching that key across all roles/accounts (not just the default roles), which can remove permission assignments users intentionally added later. Store the string value consistently (`PermissionKey....value`) and scope downgrade deletes to the intended default roles (or make downgrade a no-op if your migration policy is forward-only)."
+  },
+  {
+    "author": "Copilot",
+    "body": "hosted_zone_id is empty for `test` and `production`. If any stack references `infra.hosted_zone_id` in these tiers, synthesis/deploy will fail or create invalid Route53 references. Consider failing fast with a clear error when the ID is missing for non-dev tiers, or wiring these IDs from stack exports/SSM parameters."
+  },
+  {
+    "author": "Copilot",
+    "body": "The Unset serializer returns the Unset instance unchanged. If an Unset value ever ends up in a non-filtered model_dump (or nested structure), JSON serialization can fail or produce unexpected output. Consider serializing UNSET to a stable JSON-safe representation (e.g., `None` or the string `'UNSET'`), or ensuring Unset never serializes by making it always excluded.\n```suggestion\n            serialization=core_schema.plain_serializer_function_ser_schema(\n                lambda _v: None,\n                info_arg=False,\n                when_used=\"json\",\n            ),\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "PR description says this is only a merge of `main` into `feature/PORTAL-1223_message_encryption`, but the diff introduces a new `portal-mcp` service plus broad changes across portal-web, portal-core, portal-data, telemetry-api, cdk-extensions, workflows, and deploy scripts. Please update the PR description/title (or split into focused PRs) so reviewers and release notes correctly reflect the scope."
+  }
+]

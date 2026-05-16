@@ -1,0 +1,54 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "description": "GitHub MCP server for repository and PR operations"
+    },
+    "atlassian": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote@latest",
+        "https://mcp.atlassian.com/v1/mcp"
+      ],
+      "env": {
+        "ATLASSIAN_CLOUD_ID": "${ATLASSIAN_CLOUD_ID}",
+        "ATLASSIAN_EMAIL": "${JIRA_EMAIL}",
+        "ATLASSIAN_API_TOKEN": "${JIRA_API_TOKEN}"
+      },
+      "description": "Official Atlassian Rovo MCP Server (OAuth auth - authenticate once via browser)"
+    },
+    "figma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@figma/mcp-server-figma"
+      ],
+      "env": {
+        "FIGMA_API_TOKEN": "${FIGMA_API_TOKEN}"
+      },
+      "description": "Figma MCP server for design file access and metadata"
+    },
+    "custom-github": {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "src.mcp.custom_github_server"
+      ],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "description": "Custom GitHub tools with proper pagination (PR comments, reviews, files)"
+    }
+  },
+  "timeout": 30,
+  "retryAttempts": 3,
+  "retryDelay": 2
+}

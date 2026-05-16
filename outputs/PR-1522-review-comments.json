@@ -1,0 +1,66 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The inline rationale says using WARNING here would \u201ccreate a new Sentry event on every hit\u201d, but the repo\u2019s Sentry LoggingIntegration is configured with event_level=ERROR, so WARNING logs should be breadcrumbs (not new events). Please update the comment (and/or the log-level choice rationale) to match the actual Sentry configuration, or reference the specific configuration path where WARNING is promoted to events if that\u2019s the case in some environments.\n```suggestion\n        # Guard against pathologically deep structures. Log at DEBUG only to avoid high-volume\n        # noise; with the current Sentry LoggingIntegration configuration, WARNING logs would\n        # normally be captured as breadcrumbs rather than standalone Sentry events.\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The guard uses `if depth > self._MAX_SCRUB_DEPTH`, which means recursion will still proceed at `depth == _MAX_SCRUB_DEPTH` and only stops at `_MAX_SCRUB_DEPTH + 1`. If `_MAX_SCRUB_DEPTH` is meant to be a strict/inclusive maximum, consider switching to `>=` or clarifying the constant/comment to avoid off-by-one ambiguity."
+  },
+  {
+    "author": "Copilot",
+    "body": "This change alters the max-depth behavior of `_deep_scrub` (new limit constant, different log level, and no longer replacing deep values). There are existing unit tests for PortalScrubber, but none appear to cover the depth-guard behavior. Please add a focused test that builds a nested dict/list beyond `_MAX_SCRUB_DEPTH` and asserts (1) no RecursionError, (2) scrubbing still happens up to the limit, and (3) the deep portion is left unchanged (no placeholder replacement)."
+  },
+  {
+    "author": "gkrishna214",
+    "body": "Didn't added new test cases, as default test cases are not present already"
+  },
+  {
+    "author": "gkrishna214",
+    "body": "Updated comment as suggested, as it is ambiguous"
+  },
+  {
+    "author": "gkrishna214",
+    "body": "Updated comment as suggested"
+  },
+  {
+    "author": "Copilot",
+    "body": "There are unit tests for `PortalScrubber` (e.g., `backend/libs/portal-web/tests/unit/monitoring/test_portal_scrubber.py`), but none cover the max-depth cutoff behavior. Please add a focused test that constructs a nested dict/list deeper than `_MAX_SCRUB_DEPTH` and asserts the function (1) stops recursing without raising, and (2) still scrubs sensitive fields/strings up to the cutoff (and verifies whatever the intended behavior is for the beyond-cutoff subtree)."
+  },
+  {
+    "author": "gkrishna214",
+    "body": "Didn't added new test cases, as default test cases are not present already\r\n\r\n"
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "i think `[size = len(obj) if isinstance(obj, dict | list) else 0] `\u2014 here the else 0 is dead code. [obj](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) is always a dict or list here (only dicts/lists are recursed into, and the type-check sanity guard runs after this block). Simplify to [size = len(obj)](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)."
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "Minor nit: [_MAX_SCRUB_DEPTH] is placed between two methods. The rest of the class defines constants/attrs at the top of the class body. Moving it there would be more consistent with the existing pattern."
+  },
+  {
+    "author": "gkrishna214",
+    "body": "Ok. Moved to top of class body"
+  },
+  {
+    "author": "gkrishna214",
+    "body": "Removed else block"
+  },
+  {
+    "author": "Copilot",
+    "body": "The depth-guard path calls `len(obj)` before the type sanity-check below. If `_deep_scrub` is ever invoked with a non-sized / non-(dict|list) object, this will raise (TypeError) before the early return can protect it. Consider moving the `isinstance(obj, dict | list)` check above the depth guard, or computing `len` only for dict/list."
+  },
+  {
+    "author": "gkrishna214",
+    "body": "This is not valid, as that code is already removed"
+  },
+  {
+    "author": "Copilot",
+    "body": "PR description says the hardcoded limit was extracted to `_MAX_SCRUB_DEPTH = 20`, but the implementation sets `_MAX_SCRUB_DEPTH = 50`. Please update the PR description (or the constant) so the documented behavior matches the code."
+  },
+  {
+    "author": "gkrishna214",
+    "body": "This is already updated"
+  }
+]

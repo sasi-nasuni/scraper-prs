@@ -1,0 +1,70 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`EncryptionKeyCapability` sets `PORTAL_ENCRYPTION_NOC_ROLE_ARN` to an empty string for feature stacks (`stack_id` set). This module unconditionally constructs `AWSCloudCredentials`/`CloudKeyManager` at import time using `encryption_settings.noc_role_arn`; if that value is empty, the NBN keyserver auth/client may raise during import and prevent the app/Lambda from starting (notably `portal-eventhub` imports `portal.data.messages.instances` just to access `nbn_api_client`). Consider lazily constructing the CloudKeyManager and/or disabling outbound encryption when `noc_role_arn` is empty, so consumers that don\u2019t need outbound encryption can still start reliably.\n```suggestion\ndef _build_cloud_key_manager() -> CloudKeyManager:\n    if not encryption_settings.noc_role_arn:\n        raise RuntimeError(\n            \"Outbound encryption is not configured because \"\n            \"encryption_settings.noc_role_arn is empty.\"\n        )\n\n    cloud_credentials = AWSCloudCredentials(noc_role_arn=encryption_settings.noc_role_arn)\n\n    return CloudKeyManager(\n        credentials=cloud_credentials,  # type: ignore[arg-type]  # AWSCloudCredentials implements CloudCredentials protocol\n        environment=encryption_settings.noc_environment,\n        group=encryption_settings.group,\n        address=encryption_settings.address,\n    )\n\n\nclass _LazyCloudKeyManager:\n    def __init__(self) -> None:\n        self._key_manager: CloudKeyManager | None = None\n\n    def _get_key_manager(self) -> CloudKeyManager:\n        if self._key_manager is None:\n            self._key_manager = _build_cloud_key_manager()\n        return self._key_manager\n\n    def __getattr__(self, item: str):\n        return getattr(self._get_key_manager(), item)\n\n\noutbound_encryption_service: OutboundEncryptionService = OutboundEncryptionService(\n    key_manager=_LazyCloudKeyManager(),\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`should_rotate()` subtracts `now` (timezone-aware UTC) from `created` parsed via `datetime.fromisoformat(created_at)`. If `created_at` ever lacks a timezone offset (naive datetime from an older secret payload or manual edits), this will raise `TypeError` and break the rotation cron. Consider normalizing naive `created` values (e.g., assume UTC) or validating `created_at` to fail with a clearer error."
+  },
+  {
+    "author": "Copilot",
+    "body": "Initialization writes the new key to Secrets Manager before attempting the NOC upload. If the upload fails, the handler raises and leaves a non-empty active secret, so later deploy/cron runs will treat the environment as initialized and won\u2019t retry uploading that same key (only a forced rotation that generates a different key). This can strand an environment where filers encrypt for a key Portal never published. Consider persisting an explicit \u201cnoc_uploaded\u201d flag and retrying uploads when false, or adding an idempotent re-upload path that doesn\u2019t generate a new key."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Won't fix - encryption is mandatory. `AWSCloudCredentials.__init__` is lazy (just stores the ARN; STS isn't called until the first `get_auth_headers()`), so an empty ARN doesn't break import or Lambda cold-start. The failure only surfaces when `encrypt_for_filer()` actually tries to fetch a key, which is the correct behavior- feature stacks shouldn't silently skip encryption. Adding a disable path creates dead code we'd have to remove later."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Good fix. The key rotation Lambda runs on a daily cron. A single transient NOC failure shouldn't leave an environment in a permanently broken state that requires manual intervention. With this fix, the next cron run self-heals."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Will update to be tz aware."
+  },
+  {
+    "author": "Copilot",
+    "body": "`_unwrap_b64_transport()` base64-decodes any base64-looking body. After `sqs_lambda_handler`\u2019s SNS binary unwrapping, the normal NBN payload is already a zstd+base64 *string*; decoding it again will produce zstd bytes, which then get passed into `try_decrypt()` and can break the unencrypted path (UnicodeDecodeError) and/or decompression. Update the unwrap logic to only return decoded `bytes` when the decoded blob is actually a binary PGP message (e.g., `is_pgp_message(raw_bytes)`), otherwise return the original string (or decoded UTF-8 string) to avoid double-decoding the already-base64 payload."
+  },
+  {
+    "author": "Copilot",
+    "body": "`try_decrypt()` currently does `raw.decode('utf-8')` for non-PGP `bytes`. If a non-encrypted payload ever arrives as non-UTF8 bytes (e.g., decoded compressed bytes), this will raise `UnicodeDecodeError` and fail the whole message. Consider catching `UnicodeDecodeError` here and either (a) returning a base64-encoded string, or (b) raising a `DecryptionError` with a clear message indicating the payload is non-text and not PGP, so failures are actionable."
+  },
+  {
+    "author": "nick-falco",
+    "body": "The concern's premise that `event.body` is already the unwrapped zstd+base64 string is incorrect. `sqs_lambda_handler`doesn't touch NBN's base64 layer."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Dismissing. The `raw.decode(\"utf-8\")` UnicodeDecodeError would only fire for corrupt or completely unexpected data. It is not a real-world code path."
+  },
+  {
+    "author": "nick-falco",
+    "body": "These roles also appear as CloudFormation outputs in the NOC building-blocks stacks (`NocKeyServiceROAccessRoleARN` and `NocKeyServiceAllAccessRoleARN`).  The roles trust principals matching `arn:aws:iam::<portal-account>:role/portal-eventhub-{env}*-key-rotation-role`. \n\nFor now I propose leaving this as is and potentially creating a follow up story to change this to use the building blocks env vars at a future date. Right now this matches how we do this other places."
+  },
+  {
+    "author": "fiebiga",
+    "body": "We can remove ipworks, yes?"
+  },
+  {
+    "author": "nick-falco",
+    "body": "Removed. Good catch."
+  },
+  {
+    "author": "Copilot",
+    "body": "In the inline-payload path, `body = _unwrap_b64_transport(event.body)` can yield `bytes` for valid (but non-UTF8) decoded data; passing that into `try_decrypt()` will raise on the non-PGP path (`raw.decode('utf-8')`). After tightening `_unwrap_b64_transport` to only decode when the decoded data is PGP, `body` should remain a `str` for the normal zstd+base64 payload so `_decode_body()` can successfully decompress it."
+  },
+  {
+    "author": "nick-falco",
+    "body": "If somehow non-UTF-8 non-PGP bytes arrived, the `.decode(\"utf-8\")` would raise - but that's correct behavior (fail loudly on corrupted/unexpected data rather than silently passing garbage through)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The doc says outbound appliance public keys are cached \"in-memory with a 5-minute TTL\". In the implementation, OutboundEncryptionService uses TenantCacheService (Redis) when provided (and only falls back to an in-process dict when no cache service is supplied). Please update this section to reflect Redis-backed tenant-scoped caching (and mention the in-memory fallback only for non-runtime/test usage)."
+  },
+  {
+    "author": "nick-falco",
+    "body": "Will fix in a follow up PR. Wanna just get the feature merged. "
+  }
+]

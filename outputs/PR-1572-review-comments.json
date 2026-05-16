@@ -1,0 +1,10 @@
+[
+  {
+    "author": "Copilot",
+    "body": "Enabling `at_rest_encryption_enabled=True` on an existing ElastiCache replication group can trigger resource replacement (and therefore data loss/downtime). Please confirm the impact with `cdk diff` against an already-deployed environment and, if state must be preserved, plan snapshot/restore (or explicitly document that cache eviction is acceptable).\n"
+  },
+  {
+    "author": "mahendra646",
+    "body": "done"
+  }
+]

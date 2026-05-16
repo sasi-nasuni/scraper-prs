@@ -1,0 +1,122 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`--limit-ips` is parsed as a free-form string and then coerced via `lower() == \"true\"`, which silently treats any unexpected value (e.g., \"1\", \"yes\", typos) as `False` and could unintentionally disable the WAF allowlist. Consider using `argparse.BooleanOptionalAction` (preferred) or `type=` with explicit validation/choices so invalid values fail fast with a clear error.\n```suggestion\n    if isinstance(args.limit_ips, str):\n        normalized_limit_ips = args.limit_ips.strip().lower()\n        if normalized_limit_ips not in (\"true\", \"false\"):\n            parser.error(\"--limit-ips must be either 'true' or 'false'\")\n        args.limit_ips = normalized_limit_ips == \"true\"\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`deploy_stack()` only passes `-c ip_blocks=...` when `ip_blocks` is non-empty, which makes it impossible to explicitly override/clear an `IP_BLOCKS` environment variable (or a default context value) back to empty. This can lead to unexpected extra CIDRs being included in the allowlist. Consider always passing `ip_blocks` context (even if empty) or adding an explicit sentinel/flag to mean \u201cno supplemental blocks\u201d.\n```suggestion\n        if ip_blocks is not None:\n            cmd.extend([\"-c\", f\"ip_blocks={ip_blocks}\"])\n        cmd.extend([\"-c\", f\"lambda_scale={lambda_scale}\"])\n\n    if stack_type in (\"webbffsse\", \"frontend\"):\n        cmd.extend([\"-c\", f\"limit_ips={str(limit_ips).lower()}\"])\n        if ip_blocks is not None:\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This WAF implementation hard-codes `ip_address_version=\"IPV4\"`, but `ip_blocks` is described as generic \u201cCIDR blocks\u201d and is appended without validation/filtering. If an IPv6 CIDR is provided (contains `:`), the deployment will fail. Either (a) validate and raise a clear error when non-IPv4 CIDRs are present, or (b) split into separate IPv4/IPv6 IP sets like the CloudFront WAF stacks do, and update the docstring/arg description accordingly."
+  },
+  {
+    "author": "Copilot",
+    "body": "This WAF implementation hard-codes `ip_address_version=\"IPV4\"`, but `ip_blocks` is described as generic \u201cCIDR blocks\u201d and is appended without validation/filtering. If an IPv6 CIDR is provided (contains `:`), the deployment will fail. Either (a) validate and raise a clear error when non-IPv4 CIDRs are present, or (b) split into separate IPv4/IPv6 IP sets like the CloudFront WAF stacks do, and update the docstring/arg description accordingly."
+  },
+  {
+    "author": "Copilot",
+    "body": "`deploy.py` now defaults `--limit-ips` to true while the default `--region` is still `us-east-2`. The portal-pvt frontend stack raises if `limit_ips` is enabled outside `us-east-1` (CloudFront-scope WAF requirement), so the default `deploy.py` invocation will fail when it reaches the frontend phase unless users remember to also set `--region us-east-1` or disable `--limit-ips`. Consider adjusting defaults or making frontend\u2019s WAF behavior/region handling explicit in the deploy script (e.g., force `limit_ips=false` for frontend unless region is us-east-1, or fail fast with a clearer preflight error).\n```suggestion\n    parser.add_argument(\n        \"--limit-ips\",\n        default=\"false\",\n        help=\"Enable VPN IP allowlist via WAF (requires --region us-east-1; default: false)\",\n    )\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "For `stack_type == \"frontend\"`, `deploy_stack()` passes `-c ip_blocks=...`, but the frontend CDK app/stack reads supplemental CIDRs from `additional_ips` / `ADDITIONAL_IPS` (not `ip_blocks`). As-is, `--ip-blocks` will have no effect on the frontend allowlist behavior. Either rename frontend\u2019s parameter to `ip_blocks` for consistency, or update `deploy.py` to pass `additional_ips` when deploying the frontend stack.\n```suggestion\n    if stack_type == \"webbffsse\":\n        cmd.extend([\"-c\", f\"limit_ips={str(limit_ips).lower()}\"])\n        if ip_blocks:\n            cmd.extend([\"-c\", f\"ip_blocks={ip_blocks}\"])\n\n    if stack_type == \"frontend\":\n        cmd.extend([\"-c\", f\"limit_ips={str(limit_ips).lower()}\"])\n        if ip_blocks:\n            cmd.extend([\"-c\", f\"additional_ips={ip_blocks}\"])\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`ip_blocks_raw` uses `try_get_context(\"ip_blocks\") or os.environ.get(...)`, so an explicitly-provided empty context value (e.g., `-c ip_blocks=` from Makefile) will fall back to `IP_BLOCKS` from the environment instead of meaning \u201cno supplemental blocks\u201d. Use an explicit `is None` check so empty strings remain authoritative, and coerce non-None context values to `str` before calling `.upper()`.\n```suggestion\nip_blocks_context = app.node.try_get_context(\"ip_blocks\")\nif ip_blocks_context is None:\n    ip_blocks_raw = os.environ.get(\"IP_BLOCKS\", \"\")\nelse:\n    ip_blocks_raw = str(ip_blocks_context)\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`ip_blocks_raw` uses `try_get_context(\"ip_blocks\") or os.environ.get(...)`, so an explicitly-provided empty context value (e.g., `-c ip_blocks=`) will fall back to `IP_BLOCKS` from the environment instead of meaning \u201cno supplemental blocks\u201d. Use an explicit `is None` check so empty strings remain authoritative, and coerce non-None context values to `str` before calling `.upper()`.\n```suggestion\nip_blocks_ctx = app.node.try_get_context(\"ip_blocks\")\nif ip_blocks_ctx is None:\n    ip_blocks_raw = os.environ.get(\"IP_BLOCKS\", \"\")\nelse:\n    ip_blocks_raw = str(ip_blocks_ctx)\nip_blocks = \"\" if str(ip_blocks_raw).upper() == \"NONE\" else ip_blocks_raw\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`ip_blocks_raw` uses `try_get_context(\"ip_blocks\") or os.environ.get(...)`, so an explicitly-provided empty context value (e.g., `-c ip_blocks=`) will fall back to `IP_BLOCKS` from the environment instead of meaning \u201cno supplemental blocks\u201d. Use an explicit `is None` check so empty strings remain authoritative, and coerce non-None context values to `str` before calling `.upper()`.\n```suggestion\nip_blocks_context = app.node.try_get_context(\"ip_blocks\")\nif ip_blocks_context is None:\n    ip_blocks_raw = os.environ.get(\"IP_BLOCKS\", \"\")\nelse:\n    ip_blocks_raw = str(ip_blocks_context)\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This WAF implementation hard-codes `ip_address_version=\"IPV4\"`, but `ip_blocks` is described as generic \u201cCIDR blocks\u201d and is appended without validation/filtering. If an IPv6 CIDR is provided (contains `:`), the deployment will fail. Either (a) validate and raise a clear error when non-IPv4 CIDRs are present, or (b) split into separate IPv4/IPv6 IP sets like the CloudFront WAF stacks do, and update the docstring/arg description accordingly."
+  },
+  {
+    "author": "Copilot",
+    "body": "This table entry lists `PortalPvtInfraResources` twice. If `PortalInfraResources` was removed, this should likely list only `PortalPvtInfraResources` once (or document any other remaining class that lives in this module).\n```suggestion\n| `cdk_extensions.infra.portal` | `PortalPvtInfraResources` |\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`CLOUDFRONT_ORIGIN_VERIFY_VALUE` is being used as a security control (WAF allow rule) but is hard-coded in the repo. Anyone who can read the code can bypass the origin restriction by adding this header, and rotation is difficult. Please source the value from a secret store (e.g., Secrets Manager/SSM) or CDK context that is injected per environment, and avoid committing the secret value to version control."
+  },
+  {
+    "author": "Copilot",
+    "body": "The CloudFront \u2192 SSE origin path is configured as HTTP-only while also relying on a shared \u201corigin-verify\u201d header for WAF allowlisting. Since the header value is effectively an authentication token, sending it over plain HTTP to an internet-facing ALB makes it easier to observe/replay. Consider switching the ALB listener/origin policy to HTTPS (or otherwise avoid treating a header as a secret on an unencrypted hop).\n```suggestion\n            protocol_policy=cloudfront.OriginProtocolPolicy.HTTPS_ONLY,\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The documentation appears internally inconsistent: the \u201cPortal (legacy)\u201d mode points at the `nsi-portal-inf-{env}-{id}` exports, but the referenced class is now `PortalPvtInfraResources`, which sources from `portal-pvt-infra-{env}-{id}` (see cdk_extensions.infra.portal.PortalPvtInfraResources). Please update this row to reflect the actual supported legacy class/source (or remove the legacy row if legacy portal infra is no longer supported).\n```suggestion\n| **Portal-pvt** | Feature branches (CDK-managed) | `PortalPvtInfraResources` | `portal-pvt-infra-{env}-{id}` stack exports |\n\nLegacy portal infra stacks (`nsi-portal-inf-*`) are no longer supported; use NOC or Portal-pvt modes instead.\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`get_infra_resources()` no longer has a `use_pvt` parameter, but this section still documents selection based on `use_pvt=False/True`. Please update the bullet list to match the current factory signature/behavior (stack_id omitted \u2192 NocInfraResources; stack_id provided \u2192 PortalPvtInfraResources)."
+  },
+  {
+    "author": "Copilot",
+    "body": "`CLOUDFRONT_ORIGIN_VERIFY_VALUE` is a hard-coded shared secret in the repo. Because the backend WAF rule allows any request with this header, anyone who knows the value can bypass the VPN IP allowlist by sending the header directly to API Gateway/ALB. Store the value in Secrets Manager/SSM (per-env) and inject it at deploy/synth time instead of committing it in code, or replace this approach with a non-spoofable allow condition (e.g., CloudFront IP ranges / signed requests)."
+  },
+  {
+    "author": "Copilot",
+    "body": "In the WAF byte match statement, `singleHeader` uses `{\"Name\": ...}`. For CDK/JSII struct coercion this should be `{\"name\": ...}` (lowercase) to match `SingleHeaderProperty.name`; using `Name` will cause synth/type validation errors or produce an invalid template.\n```suggestion\n                                \"singleHeader\": {\"name\": CLOUDFRONT_ORIGIN_VERIFY_HEADER},\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "In the WAF byte match statement, `singleHeader` uses `{\"Name\": ...}`. For CDK/JSII struct coercion this should be `{\"name\": ...}` (lowercase) to match `SingleHeaderProperty.name`; using `Name` will cause synth/type validation errors or produce an invalid template.\n```suggestion\n                                \"singleHeader\": {\"name\": CLOUDFRONT_ORIGIN_VERIFY_HEADER},\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "In the WAF byte match statement, `singleHeader` uses `{\"Name\": ...}`. For CDK/JSII struct coercion this should be `{\"name\": ...}` (lowercase) to match `SingleHeaderProperty.name`; using `Name` will cause synth/type validation errors or produce an invalid template.\n```suggestion\n                                \"singleHeader\": {\"name\": CLOUDFRONT_ORIGIN_VERIFY_HEADER},\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The `get_infra_resources()` factory described here doesn't match the current implementation: there is no `use_pvt` parameter, and `stack_id` always selects `PortalPvtInfraResources` (see `backend/libs/cdk-extensions/cdk_extensions/infra/factory.py`). Please update this section to match the real factory API/behavior to avoid misleading deploy docs.\n```suggestion\n- Any `stack_id` \u2192 `PortalPvtInfraResources`\n\nThere is no `use_pvt` parameter in the current factory API. When `stack_id` is set, the factory always returns\n`PortalPvtInfraResources`; the specific export source then depends on the stack/export naming in use (legacy portal\nvs. `portal-pvt`).\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This output exports `nat_gateway_1_eip.ref`. For `AWS::EC2::EIP` in a VPC, `Ref` resolves to the AllocationId (e.g., `eipalloc-...`), not the public IPv4 address. Downstream WAF allowlisting code expects an IP that can be suffixed with `/32`. Export the EIP public IP instead (e.g., the resource attribute that yields the public IP)."
+  },
+  {
+    "author": "Copilot",
+    "body": "This output exports `nat_gateway_2_eip.ref`, which for `AWS::EC2::EIP` in a VPC is the AllocationId, not the public IPv4 address. Since this value is used for WAF CIDR allowlisting, export the EIP public IP attribute instead so downstream `/32` construction produces a valid CIDR."
+  },
+  {
+    "author": "Copilot",
+    "body": "`nat_gateway_ips` assumes the imported exports are literal IPv4 addresses and appends `/32`. With the current network stack outputs exporting the EIP `Ref` (allocation id), this produces invalid CIDRs (e.g., `eipalloc-.../32`) and will break WAF allowlisting. After fixing the network stack to export public IPs, consider adding a small validation/guard here (or in stack code) to fail fast if the exported value doesn\u2019t look like an IP."
+  },
+  {
+    "author": "Copilot",
+    "body": "This README\u2019s \u201cOptional Parameters\u201d table and WAF instructions are now out of sync with the stack behavior: the frontend stack/app is pinned to us-east-1, the Makefile default REGION is us-east-1, and custom domain inputs (HOSTED_ZONE_NAME/ID) were added. Update the documentation here to reflect the fixed region behavior, the correct defaults, and the newly supported parameters."
+  },
+  {
+    "author": "Copilot",
+    "body": "The Makefile still passes `--context region=$(REGION)`, but the frontend `app.py` no longer reads region context (it always deploys to us-east-1). Keeping an unused REGION knob is confusing and can give a false impression that changing it does something. Either remove the region context/variable from this Makefile (and README), or reintroduce consumption with a hard guard if you want to keep it explicit."
+  },
+  {
+    "author": "Copilot",
+    "body": "`limit_ips` is correctly threaded through the main deploy paths here, but the later \u201cPost-frontend MCP reconcile\u201d deploy still calls `deploy_stack()` without passing `limit_ips` (and without hosted_zone_*). That means reconcile may run with default `limit_ips=True` even when the user/workflow disabled it, causing inconsistent WAF behavior. Thread the same arguments through the reconcile call as well."
+  },
+  {
+    "author": "Copilot",
+    "body": "`nat_gateway_1_eip.ref`/`nat_gateway_2_eip.ref` for `AWS::EC2::EIP` in a VPC resolves to the *allocation id* (e.g., `eipalloc-...`), not the public IP address. Exporting that value will make downstream WAF IP allowlisting (which expects IPv4 CIDRs) invalid and can fail deployment or silently not allow inter-service traffic. Export the EIP public IP instead (e.g., `attr_public_ip`) so consumers can append `/32` reliably."
+  },
+  {
+    "author": "Copilot",
+    "body": "`CLOUDFRONT_ORIGIN_VERIFY_VALUE` is effectively a shared secret that bypasses the VPN IP allowlist (WAF Rule 0 allows any request that includes this header). Because it's hard-coded in the repo, it isn't secret\u2014an attacker can add the header and reach API Gateway/ALB directly from anywhere. Store this value in a secure runtime source (e.g., SSM/Secrets Manager injected at deploy time), and/or additionally constrain the allow rule (e.g., require CloudFront edge IP ranges in addition to the header) so the header alone cannot bypass the IP restriction."
+  },
+  {
+    "author": "Copilot",
+    "body": "This change alters `ContentBucket.bucket_name`, which forces CloudFormation to replace the S3 bucket on update. With `RemovalPolicy.DESTROY` + `auto_delete_objects=True`, that replacement will delete any existing deployed assets and can briefly break the site during updates. If the intent is only uniqueness, consider keeping the previous naming or using a suffix that doesn't require replacement for existing stacks (or omit `bucket_name` and let CDK generate one).\n```suggestion\n\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The documented default for `LIMIT_IPS` is `false`, but the deployment workflows and `deploy.py` now default `--limit-ips` to true, and `portal-pvt-frontend/cdk/app.py` also defaults `LIMIT_IPS` env var to `true`. This mismatch will confuse operators and can lead to unexpectedly locked-down or unexpectedly open deployments depending on entrypoint. Align the docs (and/or defaults) with the actual intended default behavior."
+  }
+]

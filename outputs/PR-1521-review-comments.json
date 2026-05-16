@@ -1,0 +1,26 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`window.addEventListener('blur', ...)` fires when the browser window loses focus (e.g., tab/app switch), not when focus moves to an element inside the page. If the goal is to detect user interaction with the Doc360 iframe, this listener may never fire on iframe clicks and/or may fire for unrelated window blurs. Consider switching to a document-level `focusin`/`focus` handler (or tracking `document.activeElement` transitions) to reliably detect when an iframe becomes the focused element."
+  },
+  {
+    "author": "Copilot",
+    "body": "The blur handler captures whenever the window blurs and `document.activeElement` happens to be a Doc360 iframe. This can produce false positives (e.g., user previously focused the iframe, then later alt-tabs away). To better match \u201cfocus moved into the iframe\u201d, track the previously-focused element and only capture on a transition into the iframe (or capture directly on `focusin` targeting the iframe)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The iframe selector is defined as `DOC360_WIDGET_IFRAME_SELECTOR`, but teardown uses a duplicated inline selector string. This duplication risks the selector drifting over time (handler vs teardown). Reuse the shared constant in teardown to keep behavior consistent."
+  },
+  {
+    "author": "Copilot",
+    "body": "`handleDoc360WidgetWindowBlur` schedules a `setTimeout(..., 0)` but the timeout isn\u2019t tracked/cancelled during cleanup. If the hook is disabled/unmounted immediately after a blur, the callback can still run and potentially capture an event after teardown. Store the timeout id and `clearTimeout` it during cleanup/teardown to avoid post-unmount work."
+  },
+  {
+    "author": "Copilot",
+    "body": "The new analytics tests only assert `captureMock` call count. Since the PR changes the event name, these tests should also assert the exact event string (and any required properties) so future refactors can\u2019t silently change what gets sent to PostHog."
+  },
+  {
+    "author": "Copilot",
+    "body": "This test appends a non-Doc360 element to document.body but never removes it. Since this file\u2019s afterEach only clears document.head, this can leak DOM state into subsequent test files. Consider removing the element at the end of the test or also resetting document.body in afterEach for this file."
+  }
+]

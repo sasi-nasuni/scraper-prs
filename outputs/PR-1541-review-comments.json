@@ -1,0 +1,6 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`stateless_http=True` changes core request/session semantics, but there\u2019s no regression test asserting the new stateless behavior. Consider adding a test that enters the MCP app lifespan more than once (e.g., constructing two TestClient instances sequentially) to prove session managers are no longer single-use and prevent future regressions."
+  }
+]

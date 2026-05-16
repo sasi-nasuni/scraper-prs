@@ -1,0 +1,195 @@
+# Agent Configuration
+
+# LLM Settings
+llm:
+  provider: openai  # openai or anthropic
+  model: gpt-4.1  # Specify the model to use (e.g., gpt-4, gpt-3.5-turbo, claude-2)
+  temperature: 0.7  # Controls randomness: 0.0 = deterministic/focused, 1.0 = creative/varied
+  max_tokens: 8000                # Max output tokens (Copilot Enterprise: 8K out for Low-tier models)
+  max_context_tokens: 7500        # Max input tokens for user prompt. Model limit is 8K in; leave ~500 safety margin.
+  streaming: false
+  base_url: https://models.inference.ai.azure.com  # Uncomment for GitHub Models or custom endpoints
+  # API keys (optional - will use OPENAI_API_KEY or ANTHROPIC_API_KEY from .env if not specified)
+  # openai_api_key: your-key-here
+  # anthropic_api_key: your-key-here
+
+# Processing Settings
+processing:
+  max_prs: 5
+  enable_parallel: true
+  parallel_workers: 3
+  timeout_per_pr: 300  # Maximum time allowed to process one PR before giving up (prevents hanging)
+
+# Template Settings
+templates:
+  main_template: pr_summary_template.md
+  fallback_template: pr_summary_fallback.md
+  use_fallback_when_missing: true
+
+# Extraction Settings
+# These patterns are actively used by the extraction code and can be customized
+extraction:
+  jira:
+    # Regex pattern for Jira ticket IDs (actively used for extraction)
+    # Default: '[A-Z]{2,10}-\d+' matches PROJ-123, PLATFORM-999, ABC-1, etc.
+    # Customize if your Jira uses a different format
+    pattern: '[A-Z]{2,10}-\d+'
+    # Custom field ID for Acceptance Criteria (varies by Jira instance).
+    # Find yours via: Jira Admin → Custom Fields → Acceptance Criteria → context → field ID
+    # Common values: customfield_10014, customfield_10035
+    # acceptance_criteria_field: customfield_10014
+    search_in:
+      - pr_title
+      - pr_body
+      - commit_messages
+  
+  figma:
+    # Patterns for Figma URLs (actively used for extraction)
+    # You can customize these to match only specific Figma URL types
+    patterns:
+      - 'https://www\.figma\.com/file/[^/]+/[^?\s]+'
+      - 'https://www\.figma\.com/design/[^/]+/[^?\s]+'
+      - 'https://www\.figma\.com/proto/[^/]+/[^?\s]+'
+    search_in:
+      - pr_title
+      - pr_body
+  
+  confluence:
+    # Search strategy for finding related Confluence pages
+    strategies:
+      - jira_ticket_id  # Search by Jira ticket ID
+      - pr_title_keywords  # Search using PR title keywords
+      - explicit_urls  # Extract Confluence URLs from PR description
+    max_pages_per_pr: 3
+    # Token threshold: pages with bodies larger than this are LLM-summarized
+    # before being included in the final PR summary prompt.
+    # Smaller pages are passed verbatim (richer context, fewer tokens wasted).
+    max_body_tokens: 3000
+
+# File Categorization
+# ⚠️  Order matters!  Each file is placed into the FIRST matching category.
+#     Keep "tests" before "backend"/"frontend" so test files (which share
+#     the same extensions) are classified correctly.
+file_categories:
+  tests:
+    - '**/*.test.*'
+    - '**/*.spec.*'
+    - '**/*_test.*'
+    - '**/test_*'
+    - '**/tests/**'
+    - '**/__tests__/**'
+    - '**/test/**'
+    - '**/testing/**'
+    - '**/*.stories.*'
+    - '**/conftest.py'
+    - '**/pytest.ini'
+    - '**/jest.config.*'
+    - '**/vitest.config.*'
+    - '**/.storybook/**'
+    - '**/cypress/**'
+    - '**/e2e/**'
+    - '**/fixtures/**'
+
+  backend:
+    - '**/*.py'
+    - '**/*.java'
+    - '**/*.go'
+    - '**/*.rb'
+    - '**/*.php'
+    - '**/*.cs'
+    - 'src/server/**'
+    - 'backend/**'
+    - 'api/**'
+  
+  frontend:
+    - '**/*.js'
+    - '**/*.jsx'
+    - '**/*.ts'
+    - '**/*.tsx'
+    - '**/*.vue'
+    - '**/*.html'
+    - '**/*.css'
+    - '**/*.scss'
+    - 'src/client/**'
+    - 'frontend/**'
+    - 'ui/**'
+  
+  config:
+    - '**/*.json'
+    - '**/*.yaml'
+    - '**/*.yml'
+    - '**/*.toml'
+    - '**/*.ini'
+    - '**/*.conf'
+    - '.github/**'
+    - 'config/**'
+    - 'Dockerfile'
+    - 'docker-compose.*'
+  
+  docs:
+    - '**/*.md'
+    - '**/*.rst'
+    - '**/*.txt'
+    - 'docs/**'
+    - 'README*'
+    - 'CHANGELOG*'
+
+# Diff Analysis Settings
+# Controls how file patches (diffs) are summarised before the main LLM summary
+diff_analysis:
+  enabled: true                       # Set false to skip diff summarization entirely
+  max_tokens_per_batch: 6000          # Token budget for diff text per batch (8K input limit minus ~2K prompt/system overhead)
+  skip_patterns:                      # Files whose diffs are noted but not analysed
+    - '*.lock'
+    - '*.snap'
+    - '*.generated.*'
+    - '*.min.js'
+    - '*.min.css'
+
+# Retry Settings
+# These settings control exponential backoff retry logic for failed API calls to MCP servers
+# All tool methods (GitHub, Jira, Confluence, Figma) use these retry parameters
+retry:
+  max_attempts: 1  # Number of retry attempts before giving up (1 = no retries)
+  initial_delay: 2  # seconds - Initial delay before first retry
+  max_delay: 30  # seconds - Maximum delay between retries (exponential backoff caps here)
+  exponential_base: 2  # Multiplier for exponential backoff (delay = base^attempt * initial_delay)
+
+# Error Handling
+# These settings control how the agent handles errors during processing
+error_handling:
+  continue_on_error: true  # If true, continue processing next PRs even if one fails; if false, stop on first error
+  generate_partial_summaries: true  # If true, generate summaries even without Jira/Figma/Confluence context; if false, skip PRs with no rich context
+  log_errors: true  # If true, log errors to console/file; if false, errors are tracked silently
+  include_errors_in_summary: false  # If true, append error details to generated summary markdown files
+
+# Output Settings
+output:
+  directory: outputs
+  filename_pattern: 'PR-{number}-{repo_name}-summary.md'
+  overwrite_existing: true
+  include_metadata: true
+
+# Logging
+logging:
+  level: INFO
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  console: true
+  file: true
+  file_path: scraper-prs.log
+  max_bytes: 10485760  # 10 MB
+  backup_count: 5
+
+# Rate Limiting
+rate_limits:
+  github:
+    requests_per_hour: 4500  # Leave some buffer from 5000 limit
+    min_delay_between_requests: 0.1  # seconds
+  
+  jira:
+    requests_per_minute: 100
+    min_delay_between_requests: 0.6  # seconds
+  
+  confluence:
+    requests_per_minute: 100
+    min_delay_between_requests: 0.6  # seconds

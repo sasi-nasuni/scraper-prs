@@ -1,0 +1,26 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The PR description is currently empty (placeholders for Summary/Description/Testing). Please document what error signature this is intended to suppress (e.g., exact message/stack), and how it was validated (local repro steps and/or Sentry event search) so reviewers can confirm the filter is correct and not over-broad."
+  },
+  {
+    "author": "gkrishna214",
+    "body": "Added already"
+  },
+  {
+    "author": "viramjain99",
+    "body": "after adding this how do we know if it stops working in prod ?"
+  },
+  {
+    "author": "gkrishna214",
+    "body": "In the bug reported, it is mentioned like this : \r\nResolution Summary :\r\nAdded a denyUrls entry to the Sentry config to drop any error event where a stack frame originates from /doc360/widget.js."
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "are we silently denying this error from getting reported in sentry ? if yes is this the only fix that we can do ?"
+  },
+  {
+    "author": "gkrishna214",
+    "body": "Actually yes. We will lose visibility into any new Doc360 bugs. \r\nBut the trade off here is :\r\nSince it's third-party code we can't fix, that might be fine.\r\n\r\nAnother solution :\r\nWe can filter out url_mapping from from doc360. So it preserves reporting for other Doc360 bugs.\r\nBut we might need updates if Doc360 throws new stale-interval errors with different messages.\r\n\r\nSo sticked for solution - 1."
+  }
+]

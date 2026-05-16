@@ -1,0 +1,122 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`setQueryData()` stores `{ status: 'downloaded' }`, but the DTO schema for export status only allows `'pending' | 'completed'`. Caching an out-of-schema value can break components that read this query and undermines type safety. Prefer tracking \u201cdownload started\u201d in local component state, or extend the DTO/schema to include this state under a different key."
+  },
+  {
+    "author": "Copilot",
+    "body": "Test description still refers to the \"audit.view\" permission even though the feature/flag was renamed to Activity Logs. Update the docstring to reference the activity logs permission/flag to keep the test documentation accurate."
+  },
+  {
+    "author": "Copilot",
+    "body": "Comment still says \"mock audit records\" even though the helper was renamed to generate activity logs. Update this comment to match the new terminology to avoid confusion when reading the test."
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "Renaming this enum member from can_view_audit_records to can_view_activity_logs changes the output of str() on this member. Since build_deterministic_uuid() hashes that string, this rename silently changes the permission's UUID. All existing role_permissions.id values in the DB still store the old UUID. This will cause a KeyError in PERMISSIONS_ID_INDEX lookups and a 500 error for every user with this permission."
+  },
+  {
+    "author": "saikalyanapu",
+    "body": "Looks like this is a no-op assignment , it assigns the class to itself. If this was intended as a backward compatibility alias from ContextAwareAuditService, it should be , IMO : \n\nContextAwareAuditService = ContextAwareActivityLogsService\n\nOr if backward compatibility is not needed (since this is a clean rename), remove the alias entirely."
+  },
+  {
+    "author": "saikalyanapu",
+    "body": "Across the DTOs, there's an inconsistency:\n\n`ActivityLogsUserDto`, `ActivityLogsKeyDto`, `ActivityLogsRoleDto` \u2014 pluralized prefix\n\n`ActivityLogAction`, `ActivityLogTarget`, `ActivityLogDto`, `ActivityLogDetailBaseDto` \u2014 singular prefix\n\nThe singular `ActivityLog` prefix is more conventional (each DTO represents a single entity).  Is there any reason ?"
+  },
+  {
+    "author": "saikalyanapu",
+    "body": "the enum value changed from  \"audit\" to \"activity_logs\" , If any existing exports in S3 need to be accessible post-deploy this ?? does it as is ? - may not be a blocker but worth to note "
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "The naming follows two distinct source patterns from the old code:\r\n\r\nAudit* (service/concept-level names) \u2192 ActivityLogs* \u2014 e.g., AuditUserDto \u2192 [ActivityLogsUserDto](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html), AuditKeyDto \u2192 [ActivityLogsKeyDto](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html), AuditRoleDto \u2192 ActivityLogsRoleDto\r\nAuditRecord* (entity-level names) \u2192 ActivityLog* \u2014 e.g., AuditRecordDto \u2192 ActivityLogDto, AuditRecordAction \u2192 [ActivityLogAction](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html), AuditRecordTarget \u2192 [ActivityLogTarget](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html)\r\nSo the apparent inconsistency is intentional \u2014 it preserves the 1:1 rename mapping from the original naming."
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "This is a known trade-off. Existing exports were written under [{tenant_id}/exports/audit/{file_name}](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) (old value \"audit\") and the new value [\"activity_logs\"](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) means new exports go to a different prefix. Old files are not deleted \u2014 they just won't show up in new list_exports calls. Since exports are short-lived (downloaded then expired), there's no data loss risk."
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "Changed"
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "Changed"
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "This is pre-existing behavior that predates this PR. The [setQueryData](vscode-file://vscode-app/Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/code/electron-browser/workbench/workbench.html) call was already present before this rename and is unrelated to the audit \u2192 activity logs rename"
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "Removed"
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "Added migration to replace new UUID "
+  },
+  {
+    "author": "Copilot",
+    "body": "The PR description lists two migrations and says `tasks.audit_record_id` \u2192 `tasks.activity_log_id` happens in a separate revision (`b1e9f4a2d3c5`), but this migration already renames that column. Please update the PR description (or split the migration as described) so the documented deployment plan matches what will actually run."
+  },
+  {
+    "author": "Copilot",
+    "body": "Test name still references \"audit records\" even though the queries and schemas were renamed to activity logs. Rename the test case to match the activity-logs terminology to keep test intent clear."
+  },
+  {
+    "author": "Copilot",
+    "body": "Test name still references \"audit actions\" even though the query was renamed to activity log actions. Rename the test case to match activity-logs terminology."
+  },
+  {
+    "author": "Copilot",
+    "body": "Test name still references \"audit targets\" even though the query was renamed to activity log targets. Rename the test case to match activity-logs terminology."
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "Changed"
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "Fixed"
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "Fixed"
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "Fixed"
+  },
+  {
+    "author": "Copilot",
+    "body": "The negative-case test title/docstring still refer to the old \"audit.view\" permission. Since the implementation and mock flag are now `canViewActivityLogs`, update the test name/@TITLE/@DESCRIPTION text to match the activity logs permission terminology for consistency."
+  },
+  {
+    "author": "Copilot",
+    "body": "This comment still says \"Audit Actions\" even though the exported key factory is now `activityLogActionsKeys`. Update the comment to \"Activity Log Actions\" to match the renamed API/keys."
+  },
+  {
+    "author": "Copilot",
+    "body": "This comment still says \"Audit Targets\" even though the exported key factory is now `activityLogTargetsKeys`. Update the comment to \"Activity Log Targets\" to match the renamed API/keys."
+  },
+  {
+    "author": "Copilot",
+    "body": "Changing the export file type value from the previous `audit` prefix to `activity_logs` changes the S3 key prefix (`{tenant}/exports/<type>/...`). During a rolling deploy, exports created by an older version (stored under the old prefix) may become undiscoverable for download. Consider a compatibility approach (e.g., keep the value as the old prefix for one release, or make `list/get` check both prefixes)."
+  },
+  {
+    "author": "Copilot",
+    "body": "Changing the export file type value from the previous `audit` prefix to `activity_logs` changes the S3 key prefix (`{tenant}/exports/<type>/...`). During a rolling deploy, exports created by an older version (stored under the old prefix) may become undiscoverable for download. Consider a compatibility approach (e.g., keep the value as the old prefix for one release, or make `list/get` check both prefixes)."
+  },
+  {
+    "author": "Copilot",
+    "body": "In `downgrade()`, the comment says it restores the original permission key and UUID, but the SQL sets `key = 'View Activity Logs'` (same as upgrade). If the key is meant to be reverted, update the SQL accordingly; if the key never changes, consider adjusting the comment/removing the key update to avoid confusion.\n```suggestion\n                key = 'View Audit Records'\n```"
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "Removed Key Updation"
+  },
+  {
+    "author": "avinash-b-nasuni",
+    "body": "This is a known trade-off. Existing exports were written under {tenant_id}/exports/audit/{file_name} (old value \"audit\") and the new value \"activity_logs\" means new exports go to a different prefix. Old files are not deleted \u2014 they just won't show up in new list_exports calls. Since exports are short-lived (downloaded then expired), there's no data loss risk."
+  }
+]

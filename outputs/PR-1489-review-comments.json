@@ -1,0 +1,38 @@
+[
+  {
+    "author": "aikido-pr-checks[bot]",
+    "body": "**3rd party Github Actions should be pinned** - medium severity\nA third-party GitHub Action was imported, and is not pinned via a hash. This leaves your CI/CD at risk for potential supply chain attacks, if the affected GitHub Action is compromised.\n\n```suggestion\n        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4\n```\n\n<sub>Reply `@AikidoSec ignore: [REASON]` to ignore this issue.</sub>\n<sub>[More info](https://app.aikido.dev/repositories/1052156/pull_requests/1489/latest?groupId=41271)</sub>"
+  },
+  {
+    "author": "Copilot",
+    "body": "The StackStatusFilter is too narrow for a \u201cbrute-force\u201d cleanup: stacks in common failure states (e.g. CREATE_FAILED / ROLLBACK_FAILED / UPDATE_ROLLBACK_FAILED / IMPORT_ROLLBACK_FAILED) won\u2019t be listed, so they\u2019ll never be deleted. Consider expanding the status list to include all non-deleted statuses you want to clean, or omit StackStatusFilter and filter names client-side (then handle non-deletable/in-progress statuses in the delete loop).\n```suggestion\nMAX_PASSES = 5\nPOLL_INTERVAL_SECONDS = 15\nMAX_WAIT_PER_STACK_SECONDS = 1800  # 30 minutes\n\n\ndef _list_matching_stacks(cf: boto3.client, suffix: str) -> list[str]:\n    \"\"\"Return names of all CF stacks ending with *suffix*.\"\"\"\n    paginator = cf.get_paginator(\"list_stacks\")\n    names: list[str] = []\n    for page in paginator.paginate():\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The parameter annotation `cf: boto3.client` is not a valid type (boto3.client is a factory function). This makes the hints misleading and can confuse tooling/readers. Use a `botocore.client.BaseClient`, `Any`, or (optionally) a generated type like `mypy_boto3_cloudformation.CloudFormationClient` if you want a precise client type."
+  },
+  {
+    "author": "Copilot",
+    "body": "`delete_stack` can raise ValidationError for benign cases like \u201cstack does not exist\u201d or \u201cDELETE_IN_PROGRESS\u201d. Currently those are treated as hard failures and will be retried unnecessarily. Consider checking `e.response['Error']['Code']`/message and treating not-found / already-deleting as success (and/or fall through to the wait loop).\n```suggestion\n        error = e.response.get(\"Error\", {}) if hasattr(e, \"response\") else {}\n        code = error.get(\"Code\")\n        message = (error.get(\"Message\") or str(e)).lower()\n\n        # Benign cases:\n        # - Stack already deleted / does not exist => treat as success.\n        if code == \"ValidationError\" and \"does not exist\" in message:\n            print(\"    delete_stack: stack does not exist; treating as deleted\")\n            return True\n\n        # - Stack already in DELETE_IN_PROGRESS => let the wait loop handle it.\n        if code == \"ValidationError\" and (\n            \"delete_in_progress\" in message or \"delete in progress\" in message\n        ):\n            print(\"    delete_stack: already in DELETE_IN_PROGRESS; waiting for completion\")\n        else:\n            print(f\"    delete_stack failed: {e}\")\n            return False\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The not-found handling in the poll loop relies on substring matching (`\"does not exist\" in str(e)`), which is brittle across botocore versions/locales. Prefer checking `e.response['Error']['Code'] == 'ValidationError'` (and possibly `Stack with id ... does not exist` in the message) to reliably treat missing stacks as already deleted.\n```suggestion\n            error = e.response.get(\"Error\", {}) if hasattr(e, \"response\") and isinstance(getattr(e, \"response\", None), dict) else {}\n            error_code = error.get(\"Code\")\n            error_message = error.get(\"Message\", \"\")\n            if error_code == \"ValidationError\" and \"does not exist\" in error_message:\n```"
+  },
+  {
+    "author": "fiebiga",
+    "body": "No thanks"
+  },
+  {
+    "author": "Copilot",
+    "body": "The destroy job always installs pnpm + frontend dependencies, but this workflow is only doing destroys (and the shared _cdk_deploy workflow skips frontend setup on destroy). This adds significant time and an extra failure point to the cleanup job; consider removing these steps or gating them behind a condition only when a frontend synth/build is actually required for destroy.\n```suggestion\n\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "With MAX_WAIT_PER_STACK_SECONDS=1800 and MAX_PASSES=5, a single stack that repeatedly ends in DELETE_FAILED could block the job for a very long time (potentially hours per stack, sequentially). Consider adding a global timeout per deployment, making these values configurable via CLI args, and/or short-circuiting retries for non-transient failures (e.g., dependency/export-in-use) to avoid runner-time exhaustion."
+  },
+  {
+    "author": "Copilot",
+    "body": "The failure branch of `SLACK_COLOR` changed from red (`#FF0000`) to amber (`#FFC107`). If `needs.destroy.result` is `failure` (or `cancelled`), this will make real cleanup failures look like warnings in Slack and may reduce visibility/alerting. Consider keeping failures red, or explicitly mapping `skipped`/`cancelled` to amber while leaving `failure` as red.\n```suggestion\n              || needs.destroy.result == 'success' && '#43850A'\n              || needs.destroy.result == 'failure' && '#FF0000'\n              || needs.destroy.result == 'cancelled' && '#FFC107'\n```"
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`get_user_notification_metadata` now catches all exceptions from `user_metadata_service.get_last_visited` and returns `None`, which will also swallow unexpected programming/config errors (not just Redis/cache failures) and make them harder to detect. Since `UserMetadataService.get_last_visited` already logs and raises a `CoreException` on Redis read failure, this also creates duplicate warning logs for the same failure.\n\nConsider narrowing the `except` to the expected exception type(s) (e.g. `CoreException` from the cache layer) and avoid double-logging (either rely on the service log or log here, but not both)."
+  },
+  {
+    "author": "Copilot",
+    "body": "The new `role=\"button\"` on this error icon span adds interactive button semantics, but the element does not define any explicit activation behavior (no click/keyboard handling) and sits inside another `<Button>`, which can confuse assistive tech. Consider removing the `role=\"button\"` (keeping it as a tooltip trigger target) or refactoring so the tooltip target is a proper, standalone button element with correct semantics.\n```suggestion\n            {/* Focusable wrapper makes the error icon reachable via keyboard navigation\n                so it can act as the tooltip trigger target without adding nested button semantics\n                inside the outer Button. */}\n            <Focusable>\n              <span\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The new `role=\"button\"` on this error icon span adds interactive button semantics, but the element does not define any explicit activation behavior (no click/keyboard handling) and sits inside another `<Button>`, which can confuse assistive tech. Consider removing the `role=\"button\"` (keeping it as a tooltip trigger target) or refactoring so the tooltip target is a proper, standalone button element with correct semantics.\n```suggestion\n            {/* Focusable wrapper makes the error icon reachable via keyboard navigation\n                so it can act as the tooltip trigger target without adding nested button semantics. */}\n            <Focusable>\n              <span\n```"
+  },
+  {
+    "author": "sasi-nasuni",
+    "body": "Removing the log here"
+  },
+  {
+    "author": "saikalyanapu",
+    "body": "The test file contains two test('supports pagination with \"Load More\" button',) blocks (lines 214\u2013250 and lines 759\u2013795) with identical test names and nearly identical bodies. This appears to be a pre-existing issue, not introduced by this PR, but worth cleaning up in a follow-up or please create a follow - task \n\n"
+  },
+  {
+    "author": "saikalyanapu",
+    "body": "The test file contains two test('supports pagination with \"Load More\" button', ...) blocks (lines 214\u2013250 and lines 759\u2013795) with identical test names and nearly identical bodies. This appears to be a pre-existing issue, not introduced by this PR, but worth cleaning up in a follow-up task , please create specific task upon validation \n\n"
+  },
+  {
+    "author": "sasi-nasuni",
+    "body": "True, this might have come up during merging changes while development. Have removed it now."
+  },
+  {
+    "author": "Copilot",
+    "body": "`get_user_notification_metadata` catches `Exception` and returns `None` without logging. This means unexpected errors (e.g., parsing errors from corrupted cache values, misconfiguration, or programming bugs) will be silently swallowed and won\u2019t surface via normal error reporting/monitoring. If the intent is to gracefully degrade only on cache-layer failures, catch the expected exception types (e.g., `CoreException` from the cache service) and either let unexpected exceptions propagate or log them once with context before returning `None`.\n\nAlso note the docstring says \u201ccache failures\u201d but the current handler degrades on any exception, which is a broader contract than documented."
+  },
+  {
+    "author": "Copilot",
+    "body": "The tooltip trigger is implemented as a focusable `<span role=\"button\">` nested inside the Select trigger `<Button>`. This creates nested interactive semantics inside a button (disallowed by the HTML content model and can be confusing for assistive tech/keyboard users). Consider making the tooltip trigger the outer Select `<Button>` (single focus target) and rendering the error icon as non-interactive/decorative, or otherwise restructure so there isn\u2019t a separate focusable/\"button\" role element inside the button.\n\nAlso, the inline note about not offering screen reader support is likely to become stale/misleading; prefer documenting the actual accessibility behavior/limitations or tracking it as a TODO/issue instead of stating users don\u2019t use screen readers."
+  },
+  {
+    "author": "Copilot",
+    "body": "The error tooltip trigger is a focusable `<span role=\"button\">` placed inside the Select trigger `<Button>`, which results in nested interactive semantics inside a button and may create confusing focus/announcement behavior. Prefer attaching the `TooltipTrigger` to the outer Select `<Button>` (one focus target) and render the error icon as non-interactive/decorative, or otherwise refactor so there isn\u2019t a separate focusable/\"button\" role descendant inside the button.\n\nThe inline comment stating screen reader support is not offered is risky/misleading over time; it would be better to describe the current behavior neutrally or reference a tracked accessibility limitation."
+  },
+  {
+    "author": "sasi-nasuni",
+    "body": "Focusable is required so that the hovering events are not consumed by the button html element when hovered on the i icon. Focusable cannot be used without a role as `<Focusable> child must have an interactive ARIA role.`. Hence added a role of button for it to take into account hovering events. \r\n\r\nFor keyboard users, it wont be confusing because they use tabs/navigation keys to reach elements on the screen and as soon as the user lands on this icon, tooltip opens up giving the user immediate feedback.\r\n\r\nFor screen readers, they announce the aria label, followed by the tooltip and aria role. However as our PM confirmed, currently screen reader support is not provided. So this should be fine"
+  },
+  {
+    "author": "sasi-nasuni",
+    "body": "https://github.com/nasuni/portal/pull/1524#discussion_r3051838192"
+  },
+  {
+    "author": "rashmi-rdas",
+    "body": "I guess this should be v10.3 instead of v10.4"
+  },
+  {
+    "author": "Copilot",
+    "body": "PR description says the Notifications page badge should read \"Requires appliance v10.4 or later\", but the UI is hard-coded to \"v10.3\" (and tests assert v10.3). Please confirm the correct minimum appliance version and update either the implementation/tests or the PR description so they match."
+  }
+]

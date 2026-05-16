@@ -1,0 +1,6 @@
+[
+  {
+    "author": "Copilot",
+    "body": "`GET /account/license` is missing the permission gate used by the other account endpoints (e.g. `/account` uses `Depends(permissions([{PermissionKey.can_view_account_info}]))`). As written, any authenticated principal that can obtain a valid bearer token can fetch account license entitlements, even if they lack account-view permissions. Add an explicit permissions dependency (or document why this route should be exempt) so authorization is consistent with the rest of the account routes.\n"
+  }
+]

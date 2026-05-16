@@ -1,0 +1,10 @@
+[
+  {
+    "author": "og-snarf-snarf",
+    "body": "I think this one (unlike the heartbeat and the notification which has a tooon of events), can have it's data typed as a BaseModel since we know what to expect. There might be a caveat though in having it typed, I assumed that the others aren't typed because they have a ton of key value pairs or are inconsistent (notification type). It might be worth trying to have the data typed though so we can access the values more easily,  at least unless something else points to otherwise"
+  },
+  {
+    "author": "dtrinchet-nasuni",
+    "body": "Good idea @og-snarf-snarf Ticket created https://nasuni.atlassian.net/browse/PORTAL-1885"
+  }
+]

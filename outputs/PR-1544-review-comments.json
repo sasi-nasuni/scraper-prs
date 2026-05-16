@@ -1,0 +1,6 @@
+[
+  {
+    "author": "Copilot",
+    "body": "Now that this stack sets the WebBFF database name to `portal_bff`, there are still several in-repo comments/docstrings that claim the WebBFF DB name is `portal_webbff` (e.g. `backend/libs/cdk-extensions/cdk_extensions/infra/portal.py` and `backend/stacks/portal-db-forge/src/portal_db_forge_stack/run_migrate_webbff.py`). Please update those references (or centralize the DB name as a shared constant) so future deploy/debug work isn\u2019t misled by outdated docs."
+  }
+]

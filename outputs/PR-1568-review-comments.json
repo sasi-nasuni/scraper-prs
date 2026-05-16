@@ -1,0 +1,10 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The build environment no longer sets VITE_PUBLIC_POSTHOG_KEY / VITE_PUBLIC_POSTHOG_HOST. Operationally, this means the deployed frontend will default to PostHog disabled unless those values are supplied via the build environment (or another build-time config mechanism). Please confirm that\u2019s intended for all environments, since Vite env vars can\u2019t be injected at runtime after assets are built."
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "Not Required"
+  }
+]

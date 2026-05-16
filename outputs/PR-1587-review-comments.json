@@ -1,0 +1,18 @@
+[
+  {
+    "author": "Copilot",
+    "body": "The `stack_environment` input description still says it expects an environment *pair* (primary/standby), but the allowed values are now human-readable labels (TEST/DEV/PRODUCTION ...). This is misleading for users triggering the workflow; please update the description to reflect that the input is a label that maps to a stack pair.\n```suggestion\n        description: 'Environment label to deploy (maps to a primary/standby stack pair)'\n```"
+  },
+  {
+    "author": "dtrinchet-nasuni",
+    "body": "Good catch, solved!"
+  },
+  {
+    "author": "og-snarf-snarf",
+    "body": "Technically I think this can be America but this works too :)"
+  },
+  {
+    "author": "dan-poustovalov",
+    "body": "\ud83c\uddfa\ud83c\uddf8 "
+  }
+]

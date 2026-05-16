@@ -1,0 +1,50 @@
+[
+  {
+    "author": "viramjain99",
+    "body": "reason for removing this ?"
+  },
+  {
+    "author": "Copilot",
+    "body": "`/account/contact` no longer enforces any permission check (and it now uses `tenant_context` directly). This is a behavioral/security change: users without the intended permission can call the endpoint, and API-key tokens are no longer blocked (that restriction currently lives in `require_permission`). Consider reintroducing an authorization dependency (or a dedicated dependency that at least denies API keys) to prevent abuse/spam of the Slack notification path."
+  },
+  {
+    "author": "Copilot",
+    "body": "`service_name` is stripped in a `@field_validator`, but the `Field(..., min_length=1, max_length=100)` constraints are applied before that validator by default in Pydantic v2. That means leading/trailing whitespace counts toward the length checks (e.g., a value that is >100 chars only due to surrounding spaces will be rejected). If you want constraints to apply to the trimmed value, strip in a `mode='before'` validator or use `StringConstraints(strip_whitespace=True, ...)`/equivalent so trimming happens prior to length validation."
+  },
+  {
+    "author": "Copilot",
+    "body": "The docstring says this returns a \"locale-formatted\" TB string, but the implementation hard-codes `'en-US'`. Either update the comment to reflect the fixed locale, or use the runtime locale (e.g., `toLocaleString()` without specifying `'en-US'`) if the intent is truly locale-aware formatting.\n```suggestion\n/** Formats a numeric value as an en-US-formatted TB string (e.g. 1,234 TB). */\n```"
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "the same api is called from two places in frontend. On button is gated behind permissions and one is not.\r\nSo in the place where we don't have permissions gate in frontend , a request from there would raise 403. \r\n"
+  },
+  {
+    "author": "viramjain99",
+    "body": "This behaviour should be consistent can you please check with PM team to have consistency "
+  },
+  {
+    "author": "Nishit-Bhagwagar",
+    "body": "there is a scenario where the users without permission has the access to this endpoint"
+  },
+  {
+    "author": "Copilot",
+    "body": "Doc comment says \"enUS-formatted\" but the locale used is \"en-US\". Update the wording to \"en-US\" for accuracy/clarity.\n```suggestion\n/** Formats a numeric value as an en-US-formatted TB string (e.g. 1,234 TB). */\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`getAllServicesLicensedDto` relies on non-null assertions (`!`) for category/service lookups. This makes the MSW data generator brittle: if the catalog seed data changes, this will throw at runtime with a non-obvious error. Prefer explicit guards with a clear error message (or reuse `patchService`-style optional chaining) so failures are easier to diagnose.\n```suggestion\nfunction requireCategory(\n  data: BffServiceCatalogResponseDto,\n  categoryName: BffServiceCatalogResponseDto['categories'][number]['category_name'],\n): BffServiceCatalogResponseDto['categories'][number] {\n  const category = data.categories.find((c) => c.category_name === categoryName);\n\n  if (!category) {\n    throw new Error(`Missing account status category: ${categoryName}`);\n  }\n\n  return category;\n}\n\nfunction requireService(\n  category: BffServiceCatalogResponseDto['categories'][number],\n  serviceId: BffServiceCatalogResponseDto['categories'][number]['services'][number]['id'],\n): BffServiceCatalogResponseDto['categories'][number]['services'][number] {\n  const service = category.services.find((s) => s.id === serviceId);\n\n  if (!service) {\n    throw new Error(`Missing service \"${serviceId}\" in category \"${category.category_name}\"`);\n  }\n\n  return service;\n}\n\nexport function getAllServicesLicensedDto(): BffServiceCatalogResponseDto {\n  const data = getAccountStatusDto();\n\n  const addOnCategory = requireCategory(data, 'Add-on Services');\n  requireService(addOnCategory, 'multi_site_collaboration').licensed = true;\n  requireService(addOnCategory, 'advanced_web_access').licensed = true;\n  const fileIq = requireService(addOnCategory, 'file_iq');\n  fileIq.licensed = true;\n  fileIq.badge = ServiceBadge.Premium;\n  addOnCategory.services.push(accessAnywhereService);\n\n  const additionalCategory = requireCategory(data, 'Additional Features');\n  requireService(additionalCategory, 's3_edge').licensed = true;\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Same brittleness here: non-null assertions on the \"Additional Features\" category and the `s3_edge` service will throw if IDs/names change. Consider guarding these lookups (or using a helper) to keep the mock data resilient.\n```suggestion\nfunction findCategory(\n  data: BffServiceCatalogResponseDto,\n  categoryName: string,\n): BffServiceCatalogResponseDto['categories'][number] | undefined {\n  return data.categories.find((category) => category.category_name === categoryName);\n}\n\nfunction findService(\n  category: BffServiceCatalogResponseDto['categories'][number] | undefined,\n  serviceId: string,\n): BffServiceCatalogResponseDto['categories'][number]['services'][number] | undefined {\n  return category?.services.find((service) => service.id === serviceId);\n}\n\nexport function getAllServicesLicensedDto(): BffServiceCatalogResponseDto {\n  const data = getAccountStatusDto();\n\n  const addOnCategory = findCategory(data, 'Add-on Services');\n  const multiSiteCollaboration = findService(addOnCategory, 'multi_site_collaboration');\n  if (multiSiteCollaboration) {\n    multiSiteCollaboration.licensed = true;\n  }\n\n  const advancedWebAccess = findService(addOnCategory, 'advanced_web_access');\n  if (advancedWebAccess) {\n    advancedWebAccess.licensed = true;\n  }\n\n  const fileIq = findService(addOnCategory, 'file_iq');\n  if (fileIq) {\n    fileIq.licensed = true;\n    fileIq.badge = ServiceBadge.Premium;\n  }\n\n  if (addOnCategory) {\n    addOnCategory.services.push(accessAnywhereService);\n  }\n\n  const additionalCategory = findCategory(data, 'Additional Features');\n  const s3Edge = findService(additionalCategory, 's3_edge');\n  if (s3Edge) {\n    s3Edge.licensed = true;\n  }\n\n  if (additionalCategory) {\n    additionalCategory.services.push(snapshotRetentionService);\n  }\n```"
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "not needed"
+  },
+  {
+    "author": "dmunagavalasa",
+    "body": "not needed"
+  }
+]

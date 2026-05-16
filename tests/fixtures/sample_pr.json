@@ -1,0 +1,68 @@
+{
+  "number": 123,
+  "title": "feat: PROJ-456 Add new feature",
+  "body": "This PR implements the new feature requested in PROJ-456.\n\n## Changes\n- Added new API endpoint\n- Updated database schema\n- Added tests\n\n## Figma\nhttps://www.figma.com/file/abc123xyz/Feature-Design\n\n## Confluence\nSee https://company.atlassian.net/wiki/spaces/PROJ/pages/123456 for documentation.",
+  "user": {
+    "login": "testuser"
+  },
+  "merged_at": "2026-04-01T12:00:00Z",
+  "head": {
+    "ref": "feature/new-feature"
+  },
+  "base": {
+    "ref": "main"
+  },
+  "html_url": "https://github.com/owner/repo/pull/123",
+  "files": [
+    {
+      "filename": "src/api/endpoints.py",
+      "additions": 50,
+      "deletions": 10,
+      "status": "modified"
+    },
+    {
+      "filename": "tests/test_endpoints.py",
+      "additions": 30,
+      "deletions": 0,
+      "status": "added"
+    },
+    {
+      "filename": "migrations/001_add_table.sql",
+      "additions": 20,
+      "deletions": 0,
+      "status": "added"
+    }
+  ],
+  "commits": [
+    {
+      "sha": "abc123def456",
+      "commit": {
+        "message": "feat: PROJ-456 Add new API endpoint",
+        "author": {
+          "name": "Test User",
+          "date": "2026-04-01T10:00:00Z"
+        }
+      }
+    },
+    {
+      "sha": "def456ghi789",
+      "commit": {
+        "message": "test: Add tests for new endpoint",
+        "author": {
+          "name": "Test User",
+          "date": "2026-04-01T11:00:00Z"
+        }
+      }
+    }
+  ],
+  "reviews": [
+    {
+      "user": {
+        "login": "reviewer1"
+      },
+      "state": "APPROVED",
+      "body": "LGTM! Great work.",
+      "submitted_at": "2026-04-01T11:30:00Z"
+    }
+  ]
+}

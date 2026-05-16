@@ -1,0 +1,30 @@
+[
+  {
+    "author": "aikido-pr-checks[bot]",
+    "body": "**3rd party Github Actions should be pinned** - medium severity\nA third-party GitHub Action was imported, and is not pinned via a hash. This leaves your CI/CD at risk for potential supply chain attacks, if the affected GitHub Action is compromised.\n\n```suggestion\n        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4\n```\n\n<sub>Reply `@AikidoSec ignore: [REASON]` to ignore this issue.</sub>\n<sub>[More info](https://app.aikido.dev/repositories/1052156/pull_requests/1549/latest?groupId=41271)</sub>"
+  },
+  {
+    "author": "Copilot",
+    "body": "The debounce config is imported with two different module specifiers (`@routes/-utils/debounce` vs `@routes/-utils/debounce.ts`). If the bundler/test runner treats these as distinct modules, `searchDebounceConfig.ms` mutated in integration test setup may not affect the component\u2019s import, defeating the purpose of the shared mutable object. Standardize on a single import path (preferably without the `.ts` extension, consistent with the setup file) everywhere this config is imported."
+  },
+  {
+    "author": "Copilot",
+    "body": "This setup file imports `searchDebounceConfig` using a different specifier than the component (`@routes/-utils/debounce` here vs `@routes/-utils/debounce.ts` elsewhere). If these resolve to different module instances, the runtime mutation of `searchDebounceConfig.ms` in tests won\u2019t be observed by the component under test. Align the import specifier across the codebase to guarantee a single shared module instance."
+  },
+  {
+    "author": "Copilot",
+    "body": "The JSDoc comment is currently malformed/incomplete (extra blank line and a fragment starting with \u201ccross-test interference\u2026\u201d). Please complete the sentence (e.g., explain the parallel-test interference risk of mutating a shared object) and remove the stray blank line so the intent is clear to future readers."
+  },
+  {
+    "author": "Copilot",
+    "body": "When the scrubber reaches the max recursion depth, it now returns without modifying the deeply nested object. This can leave sensitive values (tokens, passwords, etc.) unsanitized in deep structures, which is a security regression vs the previous behavior that replaced deep values with placeholders. Consider preserving the safety cutoff but still scrubbing/blanking the current object (e.g., replace values with \"[SCRUBBED]\" or a placeholder) before returning."
+  },
+  {
+    "author": "Copilot",
+    "body": "`ToolError` currently includes the full upstream `err.response.text` in the message returned to the MCP client. Upstream error bodies can contain sensitive details (internal stack traces, identifiers, or echoed secrets), so this can leak data to callers. Prefer returning a generic message (optionally with a short, sanitized snippet or a request id) while keeping the full details only in logs/Sentry."
+  },
+  {
+    "author": "Copilot",
+    "body": "The manifest advertises the streamable HTTP URL as `/mcp`, but tests and the mounted FastMCP app appear to use `/mcp/` (trailing slash). If `/mcp` redirects or 404s for some clients, discovery metadata will be wrong. Make the manifest URL match the actual served endpoint (or ensure both `/mcp` and `/mcp/` are handled without redirect)."
+  }
+]

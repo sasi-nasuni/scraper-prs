@@ -1,0 +1,122 @@
+[
+  {
+    "author": "Copilot",
+    "body": "When include_count is false, total_items is set to -1 as a sentinel, but total_pages is still computed later using that value. This yields misleading pagination metadata (e.g., total_pages becomes 0 for most limits). Consider setting total_pages=None (or another sentinel) whenever include_count is false, and guard the total_pages calculation to only run when total_items >= 0.\n```suggestion\n            # When include_count is False, leave total_items as None to indicate that\n            # the total number of items is unknown and avoid misleading pagination metadata.\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The JSON export path is documented/handled as NDJSON (one JSON object per line), but the zero-row case writes \"[]\" (a JSON array). This makes the file format inconsistent between empty vs non-empty exports and can break line-based NDJSON consumers. Prefer returning an empty string (or a trailing newline) for empty NDJSON exports, or switch all JSON exports to a single JSON array consistently.\n```suggestion\n                    content = \"\"\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "_EXPORT_MAX_SIZE_BYTES is expressed in bytes, but the truncation check uses StringIO.tell(), which counts characters (not UTF-8 bytes). With non-ASCII content, the actual byte size can exceed the intended ~100MB cap, undermining the OOM protection. Consider tracking size in bytes (e.g., encode each written chunk and count bytes, or use BytesIO and write UTF-8 bytes)."
+  },
+  {
+    "author": "Copilot",
+    "body": "get_notification_export_file uses AsyncClient.get(), which eagerly reads the full response body; iter_bytes() will then iterate over an in-memory buffer rather than truly streaming. For large exports (even capped at ~100MB), this can cause unnecessary memory pressure in the BFF. Consider switching to httpx streaming (client.stream('GET', ...) / Response.aiter_bytes()) so the file is proxied chunk-by-chunk."
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "The ~100 MB export size cap now tracks actual UTF-8 byte size instead of character count, preventing oversized files when non-ASCII content is present"
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "When count is skipped, pagination metadata now correctly reports \"unknown\" instead of computing page totals from a -1 sentinel"
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "Empty NDJSON exports return an empty file instead of [], keeping the format consistent with non-empty exports so line-based consumers don't break"
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "Export file downloads are now streamed chunk-by-chunk through the BFF instead of buffering the entire file in memory, reducing memory pressure for large exports"
+  },
+  {
+    "author": "Copilot",
+    "body": "NotificationRecordExportParamsSchema currently allows dateRange values (P7D/P14D/P30D) that the BFF export endpoint rejects (it only allows up to P1D). This weakens client-side contract validation and can lead to requests that pass Zod parsing but fail at runtime. Consider splitting filter date-range vs export date-range schemas, or restricting this export params enum to the exportable presets only and handling the longer ranges exclusively in the UI filter schema.\n```suggestion\n    dateRange: z.enum(['PT15M', 'PT1H', 'PT6H', 'P1D']).optional(),\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The export truncation cap is enforced using UTF-8 byte counts, but the content is still accumulated in an io.StringIO (Python str). If any non-ASCII characters appear (e.g., in message/appliance_name), the in-memory representation can be 2\u20134 bytes/char, so peak memory usage can significantly exceed the intended ~100MB cap. To make the OOM protection reliable, consider switching to an io.BytesIO (write UTF-8 bytes) or streaming directly to S3 in chunks/multipart rather than building a large in-memory string."
+  },
+  {
+    "author": "Copilot",
+    "body": "The unit tests for NotificationsExportButton don't cover the new 24-hour export guard (NON_EXPORTABLE_RANGES). Add a test that sets dateRange to P7D/P14D/P30D, clicks Export CSV, and asserts mutate is not called and the expected toast.error is shown."
+  },
+  {
+    "author": "Copilot",
+    "body": "The test name/docstring says the zero-row JSON export returns an \"empty JSON array\", but the implementation/assertion expects an empty file (\"\"), consistent with NDJSON semantics. Please update the test name/@DESCRIPTION/@PROCEDURE wording to match the actual expected output to avoid confusion for future readers."
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "@copilot apply changes based on [this feedback](https://github.com/nasuni/portal/pull/1476#discussion_r3014808249)"
+  },
+  {
+    "author": "Copilot",
+    "body": "Updated in ea85ae4. Renamed the test method from `test_zero_row_json_export_returns_completed_with_empty_array` to `test_zero_row_json_export_returns_completed_with_empty_file`, and updated the `@DESCRIPTION` and `@PROCEDURE` wording to say \"empty file\" / \"zero bytes\" instead of \"empty JSON array\", consistent with NDJSON semantics."
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "The actual restriction is enforced by both the UI guard and the backend validator those are two independent layers, making the system safe without tightening the Zod schema."
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "the 24-hour date range cap + ASCII-dominant data model + paginated fetching means the [StringIO] vs BytesIO memory difference is negligible in practice."
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "Updated the test case."
+  },
+  {
+    "author": "Copilot",
+    "body": "`NotificationExportHandler` is intended to handle errors via toasts, but `useQuery` will still *throw* `HTTPPermissionError` by default (see `useQuery` wrapper), which can bubble to an error boundary and take down the authed layout when `/notifications/exports/:id` returns 403 (e.g., permission change/session state). Pass `throwPermissionError: false` and handle permission errors in the existing toast/cleanup flow (similar to `NotificationsPage`/`NotificationBell`).\n```suggestion\n    throwOnError: false,\n    throwPermissionError: false,\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "`downloadingRef` is a single global guard, but `exportId` is cleared before `downloadNotificationRecords()` finishes. This allows the user to start a second export while the first download is still in progress; if the second export reaches `completed` during that time, the handler will skip it (because `downloadingRef.current` is true) and it may never re-trigger once the first download completes (refs don\u2019t cause rerenders). Consider either keeping `exportId` set until the download promise settles (so the button remains disabled), or tracking download-in-progress/queued export IDs in state so completed exports aren\u2019t dropped."
+  },
+  {
+    "author": "Copilot",
+    "body": "Exports don\u2019t use pagination totals, but `get_notifications()` defaults `include_count=True`, which triggers an extra COUNT(*) query. Since this path can read many pages, it\u2019s worth explicitly setting `include_count=False` for export queries to reduce DB load and latency.\n```suggestion\n            kwargs[\"limit\"] = 1000\n            # Exports don't need pagination totals; avoid extra COUNT(*) queries by default.\n            kwargs.setdefault(\"include_count\", False)\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The size cap check happens after writing the line to the buffer, so the export can exceed the intended ~100MB limit by up to the size of the last row (which may be large if fields like `arguments` are sizable). To enforce the cap more reliably, compute the UTF-8 byte size of the next line and stop before writing when it would cross the limit.\n```suggestion\n                line_bytes = len(line.encode(\"utf-8\"))\n                if byte_count + line_bytes > _EXPORT_MAX_SIZE_BYTES:\n                    truncated = True\n                    break\n                buffer.write(line)\n                byte_count += line_bytes\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The CSV column list is duplicated here and again in the zero-row export branch below. Consider factoring the column list/header construction into a shared constant/helper so schema changes don\u2019t accidentally diverge between the empty vs non-empty export paths."
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "The theoretical race described cannot occur in practice given the timing characteristics of our export pipeline, and the current design correctly optimizes for immediate cleanup of polling infrastructure once the backend work is done."
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "The count executes at most once per export. Using setdefault would also be fragile. The suggested kwargs.setdefault(\"include_count\", False) silently injects a kwarg that the caller may or may not expect."
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "The current write-then-check behavior is intentional, the ~100 MB cap is an approximate soft limit, not a hard boundary."
+  },
+  {
+    "author": "rnimje-nasuni",
+    "body": "The column schema is stable and changes are infrequent. This is at least not expected for this MVP or scope."
+  },
+  {
+    "author": "Copilot",
+    "body": "`get_notification_export_file` is being called without `await` inside an async function, which will typically pass a coroutine object into `StreamingResponse` (breaking streaming at runtime). Revert to awaiting the client call (or, if the client method was intentionally changed to return an async byte iterator, rename/adjust the client API so it is not an async function returning a coroutine).\n```suggestion\n        stream = await self.portal_api_client.get_notification_export_file(file_id=export_id)\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "Defaulting `include_count` to `True` can introduce an unconditional COUNT query (or equivalent) for every notifications request from any direct WebAPI consumer, which is a potential performance regression. Consider defaulting this to `False` and having the clients explicitly opt-in when they need counts (or document why `True` is safe/cheap in your implementation).\n```suggestion\n    include_count: bool = False\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "The `if` statement is missing braces, so only `console.log(...)` is conditional and `pm.environment.set(...)` will run even when `user_id` is `undefined`. Wrap the logging + environment assignment in braces (and consider guarding `responseJson.items?.[0]?.id` to avoid script errors when the list is empty).\n```suggestion\n      const user_id = responseJson.items?.[0]?.id;\n\n      if (user_id != undefined) {\n          console.log(\"Setting user id:\", user_id);\n          pm.environment.set(\"user_id\", user_id);\n      }\n```"
+  },
+  {
+    "author": "Copilot",
+    "body": "This script logs secrets (`service_key_secret`) to the Postman console, which can leak credentials via shared logs/screenshots/CI artifacts. Keep setting the environment variable if needed, but remove secret logging (or redact it) and consider storing secrets only in local (non-synced) environments.\n```suggestion\n        console.log(\"Setting service_key_secret: [redacted]\");\n```"
+  }
+]
