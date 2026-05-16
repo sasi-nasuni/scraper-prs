@@ -153,7 +153,7 @@ export function GenerateForm({ onSubmit, isSubmitting }: GenerateFormProps) {
                 type="number"
                 min={1}
                 max={50}
-                {...register("max_prs")}
+                {...register("max_prs", { valueAsNumber: true })}
                 error={errors.max_prs?.message}
               />
             </div>

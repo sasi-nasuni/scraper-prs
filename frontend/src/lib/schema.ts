@@ -10,18 +10,19 @@ export const formSchema = z
         "Must be a valid GitHub URL (https://github.com/owner/repo)"
       ),
     mode: z.enum(["latest", "label", "pr_number"] as const),
-    pr_number: z.union([z.coerce.number().int().positive(), z.literal("")]).optional(),
+    pr_number: z.string().optional(),
     label: z.string().optional(),
-    max_prs: z.coerce.number().int().min(1).max(50),
+    max_prs: z.number().int().min(1).max(50),
     output_dir: z.string().optional(),
     verbose: z.boolean(),
   })
   .superRefine((data, ctx) => {
     if (data.mode === "pr_number") {
-      if (!data.pr_number) {
+      const num = Number(data.pr_number);
+      if (!data.pr_number || !Number.isInteger(num) || num < 1) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "PR number is required when mode is 'Specific PR'",
+          message: "A valid PR number is required when mode is 'Specific PR'",
           path: ["pr_number"],
         });
       }
