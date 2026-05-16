@@ -130,13 +130,44 @@ info "Configuring nginx for ${DOMAIN} ..."
 # Back up existing default config
 [[ -f /etc/nginx/conf.d/default.conf ]] && mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.bak 2>/dev/null || true
 
-# Disable the default server block in nginx.conf (listens on :80 which conflicts with httpd)
+# Replace nginx.conf with a minimal version that has no default server block
+# (the stock RHEL nginx.conf ships with a server{} on port 80 that conflicts with httpd)
 if grep -q 'listen.*80' /etc/nginx/nginx.conf 2>/dev/null; then
-    info "Disabling default port-80 server block in nginx.conf ..."
+    info "Replacing nginx.conf with minimal config (no port-80 server block) ..."
     cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
-    # Comment out the entire default server { ... } block inside http { }
-    sed -i '/^[[:space:]]*server[[:space:]]*{/,/^[[:space:]]*}/s/^/#/' /etc/nginx/nginx.conf
-    info "Default server block commented out (backup at nginx.conf.bak)"
+    cat > /etc/nginx/nginx.conf <<'NGINXCONF'
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /run/nginx.pid;
+
+include /usr/share/nginx/modules/*.conf;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;
+    types_hash_max_size 4096;
+
+    include             /etc/nginx/mime.types;
+    default_type        application/octet-stream;
+
+    # Load modular configuration files from /etc/nginx/conf.d/
+    include /etc/nginx/conf.d/*.conf;
+}
+NGINXCONF
+    info "nginx.conf replaced (backup at nginx.conf.bak)"
 fi
 
 cat > /etc/nginx/conf.d/${SERVICE_NAME}.conf <<EOF
