@@ -25,7 +25,7 @@ set -euo pipefail
 
 DOMAIN="agentic-pr"
 BACKEND_PORT=7000
-LISTEN_PORT=80
+LISTEN_PORT=7001
 REPO_DIR="/root/documents/projects/git-scraper-prs/scraper-prs"
 FRONTEND_DIST="$REPO_DIR/frontend/dist"
 VENV_PYTHON="$REPO_DIR/.venv/bin/python"
@@ -184,9 +184,9 @@ fi
 # ── 6. Firewall (open port 80 if firewalld is active) ──────────────────────
 
 if systemctl is-active --quiet firewalld 2>/dev/null; then
-    firewall-cmd --permanent --add-service=http 2>/dev/null && \
+    firewall-cmd --permanent --add-port=${LISTEN_PORT}/tcp 2>/dev/null && \
     firewall-cmd --reload 2>/dev/null && \
-    info "Firewall: opened port 80" || \
+    info "Firewall: opened port ${LISTEN_PORT}" || \
     warn "Could not update firewall rules — you may need to open port ${LISTEN_PORT} manually"
 else
     info "Firewall not active — no changes needed"
