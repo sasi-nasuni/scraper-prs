@@ -18,7 +18,7 @@ export const formSchema = z
   })
   .superRefine((data, ctx) => {
     if (data.mode === "pr_number") {
-      if (!data.pr_number || data.pr_number === "") {
+      if (!data.pr_number) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "PR number is required when mode is 'Specific PR'",
