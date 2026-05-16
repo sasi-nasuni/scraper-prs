@@ -11,7 +11,8 @@
 #
 # Usage (run as root on the remote machine):
 #   chmod +x scripts/setup-nginx.sh
-#   ./scripts/setup-nginx.sh
+#   ./scripts/setup-nginx.sh              # full setup including frontend build
+#   ./scripts/setup-nginx.sh --no-build   # skip frontend build
 #
 # After running, on each CLIENT machine add to /etc/hosts:
 #   10.84.12.9  agentic-pr
@@ -20,6 +21,13 @@
 # ──────────────────────────────────────────────────────────────────────────────
 
 set -euo pipefail
+
+SKIP_BUILD=false
+for arg in "$@"; do
+    case "$arg" in
+        --no-build) SKIP_BUILD=true ;;
+    esac
+done
 
 # ── Config ──────────────────────────────────────────────────────────────────
 
@@ -60,7 +68,9 @@ fi
 
 # ── 2. Build frontend (if not already built) ───────────────────────────────
 
-if [[ ! -d "$FRONTEND_DIST" ]]; then
+if [[ "$SKIP_BUILD" == "true" ]]; then
+    info "Skipping frontend build (--no-build)"
+elif [[ ! -d "$FRONTEND_DIST" ]]; then
     if command -v npm &>/dev/null; then
         info "Building frontend ..."
         cd "$REPO_DIR/frontend"
