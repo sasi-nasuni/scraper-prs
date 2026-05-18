@@ -195,7 +195,9 @@ Condensed Review Threads:"""
 
 
 # Prompt for identifying coding standards and patterns from reviews
-CODING_STANDARDS_PROMPT = """Analyze the review comments and code changes to identify coding standards and patterns enforced in this repository.
+CODING_STANDARDS_PROMPT = """Analyze the review comments and code changes to extract **general, reusable coding standards** that apply to any future work in this repository — not just this PR.
+
+IMPORTANT: Do NOT describe what this PR does or what was changed in it. Instead, derive universal rules and guidelines that a new developer should follow when writing code in this codebase. Write each guideline as a timeless directive (e.g. "Always ...", "Never ...", "Prefer ...", "Use ... when ...").
 
 **PR Title:** {{ pr_title }}
 
@@ -226,35 +228,37 @@ CODING_STANDARDS_PROMPT = """Analyze the review comments and code changes to ide
 {% endfor %}
 {% endif %}
 
-Based on the review conversations and changes, identify coding standards and patterns. For each standard identified:
+Extract coding standards as **generic, reusable rules** for this repository. For each standard:
 1. **Category**: Classify by area (Frontend, Backend, Testing, ESLint/Linting Rules, Database, Infrastructure, Documentation, General)
-2. **Pattern/Guideline**: What specific standard or pattern is being enforced
-3. **Reviewer**: Who suggested or enforced this (mention the reviewer's name)
-4. **Context**: Brief explanation or example
+2. **Guideline**: A clear, imperative directive that applies broadly (not just to this PR)
+3. **Enforced by**: Who raised this standard
+4. **Rationale**: Why this matters (one sentence)
 
 Organize your response by category:
 
 **Frontend Coding Guidelines:**
-- [Pattern] - suggested by [Reviewer]: [Brief explanation]
+- [Imperative guideline] — enforced by [Reviewer]: [Rationale]
 
 **Backend Coding Guidelines:**
-- [Pattern] - suggested by [Reviewer]: [Brief explanation]
+- [Imperative guideline] — enforced by [Reviewer]: [Rationale]
 
 **Testing Standards:**
-- [Pattern] - suggested by [Reviewer]: [Brief explanation]
+- [Imperative guideline] — enforced by [Reviewer]: [Rationale]
 
 **ESLint/Linting Rules:**
-- [Pattern] - suggested by [Reviewer]: [Brief explanation]
+- [Imperative guideline] — enforced by [Reviewer]: [Rationale]
 
 **General Best Practices:**
-- [Pattern] - suggested by [Reviewer]: [Brief explanation]
+- [Imperative guideline] — enforced by [Reviewer]: [Rationale]
 
-Only include categories where standards were actually discussed. Be specific about:
-- File types or components affected (e.g., "React components", "API endpoints", "unit tests")
-- The exact guideline being enforced
-- Which reviewer emphasized this point
+Rules for writing guidelines:
+- Write each as a generic, reusable rule ("Always use ...", "Never commit ...", "Prefer X over Y")
+- Do NOT mention specific PR files, variable names, or implementation details from this PR
+- Do NOT summarize what was done in this PR — only extract the underlying standard
+- If a reviewer says "rename this to X", the guideline is the naming convention, not the specific rename
+- Only include categories where standards were actually discussed
 
-If no specific standards are evident, respond with "No explicit coding standards discussed in review."
+If no generalizable standards are evident, respond with "No explicit coding standards discussed in review."
 
 Coding Standards:"""
 
@@ -286,7 +290,9 @@ Breaking Changes:"""
 
 
 # Prompt for identifying architectural patterns
-ARCHITECTURAL_PATTERNS_PROMPT = """Identify the architectural patterns and design principles evident in this pull request.
+ARCHITECTURAL_PATTERNS_PROMPT = """From this pull request's code and review discussions, extract **general architectural guidelines and design principles** that apply to the entire repository — not just this PR.
+
+IMPORTANT: Do NOT describe what this specific PR implements. Instead, derive reusable architectural rules that any developer should follow when building features in this codebase. Write each as a prescriptive guideline (e.g. "Use the Repository pattern for ...", "Separate concerns by ...", "New services should ...").
 
 **PR Title:** {{ pr_title }}
 
@@ -332,40 +338,40 @@ ARCHITECTURAL_PATTERNS_PROMPT = """Identify the architectural patterns and desig
 {% endfor %}
 {% endif %}
 
-Analyze and identify architectural patterns, organizing by layer/area:
+Extract architectural guidelines as **generic, reusable principles** for this repository, organized by layer:
 
-**Frontend Architecture:**
-- Patterns, component organization, state management approaches
+**Frontend Architecture Guidelines:**
+- Component structure, state management, routing conventions to follow
 
-**Backend Architecture:**
-- API design, service layer patterns, data access patterns
+**Backend Architecture Guidelines:**
+- API design conventions, service layer patterns, error handling approaches
 
-**Testing Architecture:**
-- Test organization, mocking strategies, test data management
+**Testing Architecture Guidelines:**
+- Test organization rules, mocking strategies, coverage expectations
 
-**Infrastructure/DevOps:**
-- Deployment patterns, configuration management, CI/CD approaches
+**Infrastructure/DevOps Guidelines:**
+- Deployment conventions, configuration management rules
 
-**Data Layer:**
-- Database patterns, data modeling, migration strategies
+**Data Layer Guidelines:**
+- Database access patterns, migration conventions, data modeling rules
 
-**Integration Patterns:**
-- How services/modules communicate (REST, GraphQL, events, queues)
+**Integration Guidelines:**
+- Service communication patterns (REST, events, queues), contract conventions
 
-For each pattern identified, mention:
-- The specific pattern or approach used
-- Which files/components demonstrate this pattern
-- Any reviewer comments about the architectural approach
-- Technology choices (frameworks, libraries)
+For each guideline:
+- Write as a prescriptive rule for future development ("Always ...", "Use ... for ...", "New X should ...")
+- Note the design pattern if applicable (Repository, Factory, Observer, Strategy, MVC, etc.)
+- Attribute to the reviewer who enforced it, if applicable
 
-Provide a structured analysis with only the relevant categories. Be specific about:
-- Architectural layers affected (UI, API, business logic, data access, infrastructure)
-- Design patterns used (Repository, Factory, Observer, Strategy, MVC, etc.)
-- Separation of concerns and dependency management
+Rules for writing guidelines:
+- Write each as a generic, reusable directive — not a description of this PR
+- Do NOT mention specific features, tickets, or implementations from this PR
+- Focus on the underlying principle, not the specific instance
+- Only include categories where clear architectural conventions are evident
 
-If no clear architectural patterns are evident, respond with "Standard implementation - no distinctive architectural patterns observed."
+If no clear architectural guidelines are evident, respond with "No distinctive architectural guidelines observed."
 
-Architectural Patterns:"""
+Architectural Guidelines:"""
 
 
 # Prompt for summarizing review comments with focus on standards and patterns
