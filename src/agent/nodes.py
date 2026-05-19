@@ -644,15 +644,18 @@ class PRSummaryNodes:
         template_str: str,
         template_vars: dict,
         node_name: str,
+        precomputed_condensed: str | None = None,
     ) -> str:
         """Render *template_str* with *template_vars*, condense or trim
         review_threads if needed, and call the LLM.
 
         When the prompt exceeds the token budget and ``review_threads``
         is present:
-          1. **LLM condensation** — batch-summarize threads into compact text
-             (preserves semantic meaning of code + comments).
-          2. **Mechanical trimming** — fallback if condensation fails; truncates
+          1. **Pre-computed condensation** — reuse the cached condensed text
+             produced once by ``build_review_threads`` (avoids redundant LLM calls).
+          2. **LLM condensation** — batch-summarize threads into compact text
+             (only if no pre-computed version is available).
+          3. **Mechanical trimming** — fallback if condensation fails; truncates
              diff_hunks progressively, then drops threads.
         """
         template = Template(template_str)
@@ -667,13 +670,25 @@ class PRSummaryNodes:
 
             logger.info(
                 f"  [{node_name}] prompt ~{prompt_tokens} tokens exceeds "
-                f"budget ~{budget}. Condensing review threads via LLM."
+                f"budget ~{budget}. Condensing review threads."
             )
 
-            # Stage 1: LLM condensation (best quality)
-            condensed = await self._summarize_review_threads(
-                threads, thread_budget,
-            )
+            # Stage 1: Use pre-computed condensed summary if available
+            condensed = precomputed_condensed
+            if condensed is not None:
+                logger.info(
+                    f"  [{node_name}] Reusing pre-computed condensed review threads"
+                )
+            else:
+                # Stage 2: LLM condensation (only if no cached version)
+                logger.info(
+                    f"  [{node_name}] No pre-computed condensation available, "
+                    f"summarizing via LLM."
+                )
+                condensed = await self._summarize_review_threads(
+                    threads, thread_budget,
+                )
+
             if condensed is not None:
                 # Use condensed text instead of raw thread objects
                 template_vars["review_threads"] = []
@@ -681,7 +696,7 @@ class PRSummaryNodes:
                 prompt = template.render(**template_vars)
                 prompt_tokens = count_tokens(prompt)
 
-            # Stage 2: Mechanical trimming fallback
+            # Stage 3: Mechanical trimming fallback
             if prompt_tokens > budget:
                 logger.info(
                     f"  [{node_name}] Still over budget after condensation "
@@ -1137,7 +1152,44 @@ class PRSummaryNodes:
             f"{len(current_pr.review_comments)} comments → {rc_path}"
         )
 
-        return {"review_threads": threads}
+        # Pre-compute condensed review threads once so downstream nodes
+        # (coding_standards, architectural_patterns, review_summary) can
+        # reuse it instead of re-summarizing each time.
+        condensed = None
+        budget = self._get_token_budget()
+        thread_budget = int(budget * 0.6)
+        # Only condense if the raw threads are large enough to exceed budget
+        from src.utils.tokens import count_tokens as _count_tokens
+
+        def _estimate_raw_tokens(threads_list) -> int:
+            total = 0
+            for t in threads_list:
+                text = f"{t.file_path or ''} {t.line_range or ''}\n"
+                if t.diff_hunk:
+                    text += t.diff_hunk + "\n"
+                for c in t.comments:
+                    text += f"{c.author} {c.body}\n"
+                total += _count_tokens(text)
+            return total
+
+        raw_tokens = _estimate_raw_tokens(threads)
+        if raw_tokens > thread_budget:
+            logger.info(
+                f"  Pre-condensing review threads (~{raw_tokens} tokens > "
+                f"budget ~{thread_budget}) for downstream reuse"
+            )
+            condensed = await self._summarize_review_threads(
+                threads, thread_budget,
+            )
+            if condensed is not None:
+                logger.info(
+                    f"  Pre-condensed review threads: "
+                    f"~{_count_tokens(condensed)} tokens (reusable)"
+                )
+            else:
+                logger.info("  Pre-condensation failed; downstream nodes will trim mechanically")
+
+        return {"review_threads": threads, "review_threads_condensed": condensed}
 
     async def identify_coding_standards(self, state: AgentState) -> Dict[str, Any]:
         """Identify coding standards and patterns from reviews."""
@@ -1167,6 +1219,7 @@ class PRSummaryNodes:
                     "file_changes": file_changes,
                 },
                 "identify_coding_standards",
+                precomputed_condensed=state.get("review_threads_condensed"),
             )
             
             # Only set if actual standards are identified
@@ -1214,6 +1267,7 @@ class PRSummaryNodes:
                     "jira_context": state.get("jira_tickets", []),
                 },
                 "identify_architectural_patterns",
+                precomputed_condensed=state.get("review_threads_condensed"),
             )
             
             # Only set if actual patterns are identified
@@ -1254,6 +1308,7 @@ class PRSummaryNodes:
                 REVIEW_SUMMARY_PROMPT,
                 {"review_threads": review_threads},
                 "generate_review_summary",
+                precomputed_condensed=state.get("review_threads_condensed"),
             )
             
             logger.info("Generated review summary")

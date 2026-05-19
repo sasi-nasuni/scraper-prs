@@ -176,6 +176,7 @@ class AgentState(TypedDict, total=False):
     
     # Review threading
     review_threads: List[ReviewThread]
+    review_threads_condensed: Optional[str]  # pre-computed LLM condensation (reused by downstream nodes)
     
     # Generated content
     ai_summary: Optional[str]
@@ -218,6 +219,7 @@ def create_initial_state(repo_url: str) -> AgentState:
         grouped_files={},
         diff_summaries={},
         review_threads=[],
+        review_threads_condensed=None,
         ai_summary=None,
         coding_standards=None,
         architectural_patterns=None,
@@ -245,6 +247,7 @@ def reset_pr_context(state: AgentState) -> AgentState:
     state["grouped_files"] = {}
     state["diff_summaries"] = {}
     state["review_threads"] = []
+    state["review_threads_condensed"] = None
     state["ai_summary"] = None
     state["coding_standards"] = None
     state["architectural_patterns"] = None
