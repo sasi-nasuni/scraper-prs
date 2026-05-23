@@ -112,6 +112,7 @@ async def create_job(request: GenerateRequest):
         mode=request.mode,
         pr_number=request.pr_number,
         label=request.label,
+        pr_urls=request.pr_urls,
         max_prs=request.max_prs,
         output_dir=request.output_dir,
         verbose=request.verbose,

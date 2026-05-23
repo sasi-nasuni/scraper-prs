@@ -54,6 +54,7 @@ class Job:
         mode: PRSelectionMode,
         pr_number: Optional[int] = None,
         label: Optional[str] = None,
+        pr_urls: Optional[list] = None,
         max_prs: int = 5,
         output_dir: Optional[str] = None,
         verbose: bool = False,
@@ -63,6 +64,7 @@ class Job:
         self.mode = mode
         self.pr_number = pr_number
         self.label = label
+        self.pr_urls = pr_urls
         self.max_prs = max_prs
         self.output_dir = output_dir
         self.verbose = verbose
@@ -115,6 +117,7 @@ class JobManager:
         mode: PRSelectionMode,
         pr_number: Optional[int] = None,
         label: Optional[str] = None,
+        pr_urls: Optional[list] = None,
         max_prs: int = 5,
         output_dir: Optional[str] = None,
         verbose: bool = False,
@@ -127,6 +130,7 @@ class JobManager:
             mode=mode,
             pr_number=pr_number,
             label=label,
+            pr_urls=pr_urls,
             max_prs=max_prs,
             output_dir=output_dir,
             verbose=verbose,
@@ -206,6 +210,8 @@ class JobManager:
                 agent_config["processing"]["max_prs"] = 1
             if job.label:
                 agent_config["processing"]["label"] = job.label
+            if job.pr_urls:
+                agent_config["processing"]["pr_urls"] = job.pr_urls
 
             import os
             agent_config["jira_url"] = os.getenv("JIRA_URL", "https://nasuni.atlassian.net")

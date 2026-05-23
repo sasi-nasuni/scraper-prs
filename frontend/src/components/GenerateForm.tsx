@@ -7,8 +7,10 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
+  Link,
+  Upload,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -38,10 +40,16 @@ const modeOptions = [
     label: "Specific PR number",
     description: "Process a single pull request by its number",
   },
+  {
+    value: "pr_urls" as const,
+    label: "PR URLs list",
+    description: "Provide a list of GitHub PR URLs to process",
+  },
 ];
 
 export function GenerateForm({ onSubmit, isSubmitting }: GenerateFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -57,10 +65,29 @@ export function GenerateForm({ onSubmit, isSubmitting }: GenerateFormProps) {
   const mode = watch("mode");
 
   function handleFormSubmit(values: FormValues) {
+    // Parse PR URLs from textarea (one per line)
+    const parsedPrUrls =
+      values.mode === "pr_urls" && values.pr_urls
+        ? values.pr_urls
+            .split("\n")
+            .map((u) => u.trim())
+            .filter((u) => u.length > 0)
+        : null;
+
     const payload: GenerateRequest = {
-      repo_url: values.repo_url.replace(/\/$/, ""),
+      repo_url:
+        values.mode === "pr_urls"
+          ? parsedPrUrls && parsedPrUrls.length > 0
+            ? parsedPrUrls[0].replace(/\/pull\/\d+$/, "")
+            : ""
+          : values.repo_url.replace(/\/$/, ""),
       mode: values.mode as PRSelectionMode,
-      max_prs: values.mode === "pr_number" ? 1 : values.max_prs,
+      max_prs:
+        values.mode === "pr_number"
+          ? 1
+          : values.mode === "pr_urls" && parsedPrUrls
+            ? parsedPrUrls.length
+            : values.max_prs,
       verbose: values.verbose,
       pr_number:
         values.mode === "pr_number" && values.pr_number
@@ -68,6 +95,7 @@ export function GenerateForm({ onSubmit, isSubmitting }: GenerateFormProps) {
           : null,
       label:
         values.mode === "label" && values.label ? values.label : null,
+      pr_urls: parsedPrUrls,
       output_dir: values.output_dir || null,
     };
     onSubmit(payload);
@@ -85,17 +113,19 @@ export function GenerateForm({ onSubmit, isSubmitting }: GenerateFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-          {/* Repository URL */}
-          <div>
-            <label className="mb-1.5 block text-sm font-medium">
-              Repository URL <span className="text-destructive">*</span>
-            </label>
-            <Input
-              placeholder="https://github.com/owner/repo"
-              {...register("repo_url")}
-              error={errors.repo_url?.message}
-            />
-          </div>
+          {/* Repository URL (hidden for pr_urls mode) */}
+          {mode !== "pr_urls" && (
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">
+                Repository URL <span className="text-destructive">*</span>
+              </label>
+              <Input
+                placeholder="https://github.com/owner/repo"
+                {...register("repo_url")}
+                error={errors.repo_url?.message}
+              />
+            </div>
+          )}
 
           {/* PR Selection Mode */}
           <div>
@@ -142,8 +172,63 @@ export function GenerateForm({ onSubmit, isSubmitting }: GenerateFormProps) {
             </div>
           )}
 
-          {/* Max PRs (hidden for specific PR mode) */}
-          {mode !== "pr_number" && (
+          {/* Conditional: PR URLs */}
+          {mode === "pr_urls" && (
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">
+                <Link className="mr-1 inline h-4 w-4" />
+                PR URLs <span className="text-destructive">*</span>
+              </label>
+              <textarea
+                className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder={"https://github.com/owner/repo/pull/123\nhttps://github.com/owner/repo/pull/456\nhttps://github.com/other-owner/other-repo/pull/789"}
+                {...register("pr_urls")}
+              />
+              {errors.pr_urls?.message && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.pr_urls.message}
+                </p>
+              )}
+              <div className="mt-2 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  Upload file
+                </button>
+                <span className="text-xs text-muted-foreground">
+                  or enter URLs manually above (one per line)
+                </span>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".txt,.csv,.text"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (evt) => {
+                    const text = evt.target?.result as string;
+                    const currentVal = watch("pr_urls") || "";
+                    const newVal = currentVal
+                      ? currentVal.trimEnd() + "\n" + text.trim()
+                      : text.trim();
+                    setValue("pr_urls", newVal, { shouldValidate: true });
+                  };
+                  reader.readAsText(file);
+                  // Reset input so the same file can be re-uploaded
+                  e.target.value = "";
+                }}
+              />
+            </div>
+          )}
+
+          {/* Max PRs (hidden for specific PR mode and pr_urls mode) */}
+          {mode !== "pr_number" && mode !== "pr_urls" && (
             <div>
               <label className="mb-1.5 block text-sm font-medium">
                 <Clock className="mr-1 inline h-4 w-4" />

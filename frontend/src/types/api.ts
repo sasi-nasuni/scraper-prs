@@ -1,7 +1,7 @@
 // ── API Types ────────────────────────────────────────────────────────────────
 // These mirror the FastAPI Pydantic models in src/api/models.py
 
-export type PRSelectionMode = "latest" | "label" | "pr_number";
+export type PRSelectionMode = "latest" | "label" | "pr_number" | "pr_urls";
 
 export type JobStatus =
   | "pending"
@@ -15,6 +15,7 @@ export interface GenerateRequest {
   mode: PRSelectionMode;
   pr_number?: number | null;
   label?: string | null;
+  pr_urls?: string[] | null;
   max_prs: number;
   output_dir?: string | null;
   verbose: boolean;

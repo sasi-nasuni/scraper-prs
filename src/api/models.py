@@ -5,7 +5,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class PRSelectionMode(str, Enum):
@@ -13,6 +13,7 @@ class PRSelectionMode(str, Enum):
     LATEST = "latest"
     LABEL = "label"
     PR_NUMBER = "pr_number"
+    PR_URLS = "pr_urls"
 
 
 class JobStatus(str, Enum):
@@ -30,8 +31,8 @@ class JobStatus(str, Enum):
 class GenerateRequest(BaseModel):
     """Request to generate PR summaries."""
     repo_url: str = Field(
-        ...,
-        description="GitHub repository URL (e.g., https://github.com/owner/repo)",
+        default="",
+        description="GitHub repository URL (e.g., https://github.com/owner/repo). Not required for pr_urls mode.",
         examples=["https://github.com/nasuni/portal"],
     )
     mode: PRSelectionMode = Field(
@@ -57,40 +58,52 @@ class GenerateRequest(BaseModel):
         default=None,
         description="Output directory for summaries (defaults to 'outputs')",
     )
+    pr_urls: Optional[List[str]] = Field(
+        default=None,
+        description="List of GitHub PR URLs (required when mode=pr_urls)",
+    )
     verbose: bool = Field(
         default=False,
         description="Enable verbose/debug logging",
     )
 
-    @field_validator("repo_url")
-    @classmethod
-    def validate_repo_url(cls, v: str) -> str:
-        """Validate GitHub repository URL format."""
+    @model_validator(mode="after")
+    def validate_mode_fields(self):
+        """Validate fields based on the selected mode."""
         import re
-        pattern = r"^https://github\.com/[\w.\-]+/[\w.\-]+$"
-        if not re.match(pattern, v.rstrip("/")):
-            raise ValueError(
-                "Invalid GitHub URL. Expected format: https://github.com/owner/repo"
-            )
-        return v.rstrip("/")
 
-    @field_validator("pr_number")
-    @classmethod
-    def validate_pr_number_with_mode(cls, v: Optional[int], info) -> Optional[int]:
-        """pr_number is required when mode is pr_number."""
-        mode = info.data.get("mode")
-        if mode == PRSelectionMode.PR_NUMBER and v is None:
+        # repo_url validation (not required for pr_urls mode)
+        if self.mode != PRSelectionMode.PR_URLS:
+            pattern = r"^https://github\.com/[\w.\-]+/[\w.\-]+$"
+            if not re.match(pattern, self.repo_url.rstrip("/")):
+                raise ValueError(
+                    "Invalid GitHub URL. Expected format: https://github.com/owner/repo"
+                )
+            self.repo_url = self.repo_url.rstrip("/")
+        else:
+            self.repo_url = self.repo_url.rstrip("/") if self.repo_url else ""
+
+        # pr_number validation
+        if self.mode == PRSelectionMode.PR_NUMBER and self.pr_number is None:
             raise ValueError("pr_number is required when mode is 'pr_number'")
-        return v
 
-    @field_validator("label")
-    @classmethod
-    def validate_label_with_mode(cls, v: Optional[str], info) -> Optional[str]:
-        """label is required when mode is label."""
-        mode = info.data.get("mode")
-        if mode == PRSelectionMode.LABEL and (v is None or v.strip() == ""):
+        # label validation
+        if self.mode == PRSelectionMode.LABEL and (self.label is None or self.label.strip() == ""):
             raise ValueError("label is required when mode is 'label'")
-        return v
+
+        # pr_urls validation
+        if self.mode == PRSelectionMode.PR_URLS:
+            if not self.pr_urls or len(self.pr_urls) == 0:
+                raise ValueError("At least one PR URL is required when mode is 'pr_urls'")
+            pr_url_pattern = r"^https://github\.com/[\w.\-]+/[\w.\-]+/pull/\d+$"
+            for url in self.pr_urls:
+                clean_url = url.strip().rstrip("/")
+                if not re.match(pr_url_pattern, clean_url):
+                    raise ValueError(
+                        f"Invalid PR URL: {url}. Expected format: https://github.com/owner/repo/pull/123"
+                    )
+
+        return self
 
 
 # ── Response Models ─────────────────────────────────────────────────────────

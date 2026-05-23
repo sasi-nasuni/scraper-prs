@@ -163,12 +163,15 @@ async def run_pr_summary_agent(
     # Run the graph
     try:
         if on_state_change:
-            # Stream state changes for progress tracking
-            final_state = initial_state
-            async for state_update in graph.astream(initial_state):
-                # astream yields {node_name: state_delta} dicts
-                for node_name, node_state in state_update.items():
-                    final_state = node_state
+            # Use stream_mode="updates" to get node names for progress,
+            # but track full state by merging updates into initial_state.
+            final_state = dict(initial_state)
+            async for state_update in graph.astream(initial_state, stream_mode="updates"):
+                # stream_mode="updates" yields {node_name: state_delta} dicts
+                for node_name, node_output in state_update.items():
+                    # Merge node output into our running full state
+                    if isinstance(node_output, dict):
+                        final_state.update(node_output)
                     try:
                         await on_state_change(node_name, final_state)
                     except Exception as cb_err:

@@ -5,7 +5,7 @@ import asyncio
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import typer
 from rich.console import Console
@@ -30,8 +30,8 @@ console = Console()
 @app.command()
 def generate(
     repo_url: str = typer.Argument(
-        ...,
-        help="GitHub repository URL (e.g., https://github.com/owner/repo)",
+        "",
+        help="GitHub repository URL (e.g., https://github.com/owner/repo). Not required when using --pr-url.",
     ),
     config_dir: str = typer.Option(
         "config",
@@ -63,6 +63,12 @@ def generate(
         "-l",
         help="Filter PRs by label (e.g., 'bug', 'feature')",
     ),
+    pr_urls: Optional[List[str]] = typer.Option(
+        None,
+        "--pr-url",
+        "-u",
+        help="GitHub PR URLs to process (can be specified multiple times)",
+    ),
     verbose: bool = typer.Option(
         False,
         "--verbose",
@@ -77,8 +83,16 @@ def generate(
         scraper-prs generate https://github.com/microsoft/vscode --max-prs 3
         scraper-prs generate https://github.com/owner/repo --pr-number 1449
         scraper-prs generate https://github.com/owner/repo --label bug --max-prs 5
+        scraper-prs generate --pr-url https://github.com/owner/repo/pull/123 --pr-url https://github.com/owner/repo/pull/456
     """
     try:
+        # Derive repo_url from pr_urls if not provided directly
+        if not repo_url and pr_urls:
+            import re
+            first_url = pr_urls[0].strip().rstrip("/")
+            match = re.search(r'(https://github\.com/[^/]+/[^/]+)/pull/\d+', first_url)
+            repo_url = match.group(1) if match else "multiple repositories"
+
         console.print(
             Panel.fit(
                 "[bold blue]PR Summary Agent[/bold blue]\n"
@@ -133,6 +147,9 @@ def generate(
 
         if label:
             agent_config["processing"]["label"] = label
+        
+        if pr_urls:
+            agent_config["processing"]["pr_urls"] = list(pr_urls)
         
         # Add Jira URL and Atlassian cloud ID to config for tools (from environment variable)
         import os

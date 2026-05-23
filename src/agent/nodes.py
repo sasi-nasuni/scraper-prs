@@ -104,6 +104,18 @@ class PRSummaryNodes:
         """Parse repository URL to extract owner and name."""
         logger.info("Parsing repository URL")
         
+        # If pr_urls mode is active, we don't need to parse a single repo_url
+        # The fetch_prs node will handle individual URL parsing
+        pr_urls = self.config.get("processing", {}).get("pr_urls")
+        if pr_urls:
+            logger.info("PR URLs mode active — skipping single repo URL parsing")
+            # Extract owner/name from the first URL for metadata purposes
+            first_url = pr_urls[0].strip().rstrip("/")
+            match = re.search(r'github\.com/([^/]+)/([^/]+)/pull/\d+', first_url)
+            if match:
+                return {"repo_owner": match.group(1), "repo_name": match.group(2)}
+            return {"repo_owner": "", "repo_name": ""}
+        
         repo_url = state["repo_url"]
         
         # Parse GitHub URL
@@ -137,15 +149,43 @@ class PRSummaryNodes:
         max_prs = self.config.get("processing", {}).get("max_prs", 5)
         pr_number = self.config.get("processing", {}).get("pr_number")
         label = self.config.get("processing", {}).get("label")
-        
-        if not owner or not repo:
-            add_error(state, "Repository owner/name not set", "fetch_prs")
-            return {"pr_list": []}
+        pr_urls = self.config.get("processing", {}).get("pr_urls")
         
         prs = []
         try:
+            # If PR URLs list is provided, parse each URL and fetch details
+            if pr_urls:
+                logger.info(f"Processing {len(pr_urls)} PR URLs directly")
+                for url in pr_urls:
+                    url = url.strip().rstrip("/")
+                    match = re.search(r'github\.com/([^/]+)/([^/]+)/pull/(\d+)', url)
+                    if match:
+                        url_owner = match.group(1)
+                        url_repo = match.group(2)
+                        url_pr_number = int(match.group(3))
+                        logger.info(f"Fetching PR #{url_pr_number} from {url_owner}/{url_repo}")
+                        pr = await self.github_tools.get_pr_details(url_owner, url_repo, url_pr_number)
+                        if pr:
+                            prs.append(pr)
+                        else:
+                            add_warning(
+                                state,
+                                f"PR #{url_pr_number} not found in {url_owner}/{url_repo}"
+                            )
+                    else:
+                        add_warning(state, f"Could not parse PR URL: {url}")
+                
+                if not prs:
+                    add_warning(state, "No PRs could be fetched from the provided URLs")
+                else:
+                    logger.info(f"Fetched {len(prs)} PRs from URLs")
+
+            elif not owner or not repo:
+                add_error(state, "Repository owner/name not set", "fetch_prs")
+                return {"pr_list": []}
+
             # If specific PR number is requested, fetch only that PR
-            if pr_number:
+            elif pr_number:
                 logger.info(f"Fetching specific PR #{pr_number}")
                 pr = await self.github_tools.get_pr_details(owner, repo, pr_number)
                 prs = [pr] if pr else []
