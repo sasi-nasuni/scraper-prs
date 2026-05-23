@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const formSchema = z
   .object({
-    repo_url: z.string().optional().default(""),
+    repo_url: z.string().default(""),
     mode: z.enum(["latest", "label", "pr_number", "pr_urls"] as const),
     pr_number: z.string().optional(),
     label: z.string().optional(),
