@@ -1,0 +1,295 @@
+[
+  {
+    "file_path": "frontend/component-docs/routes/-components/navigation/NotificationBell.stories.tsx",
+    "line_range": null,
+    "is_resolved": true,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "we don't need this ",
+        "created_at": "2026-02-03 17:56:13+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "Done",
+        "created_at": "2026-02-06 12:20:18+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/component-docs/routes/-components/navigation/NotificationBell.stories.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "```suggestion\n  title: 'Routes/Navigation/Buttons/NotificationBellIcon',\n```",
+        "created_at": "2026-02-05 15:24:03+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/component-docs/routes/-components/navigation/NotificationBell.stories.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "add figma link for 99+ if we have ",
+        "created_at": "2026-02-05 15:34:12+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "No We do not have for 99+",
+        "created_at": "2026-02-06 12:11:22+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/component-docs/routes/-components/navigation/NotificationBell.stories.tsx",
+    "line_range": "24",
+    "is_resolved": true,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "add figma link ",
+        "created_at": "2026-02-05 15:33:53+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "Done.",
+        "created_at": "2026-02-06 14:28:19+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/component-docs/routes/-components/navigation/NotificationBell.stories.tsx",
+    "line_range": "49",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "avoid unnecessary stories I think Single and Multiple,Double Digit is same ryt ?",
+        "created_at": "2026-02-05 11:43:05+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "Taken care",
+        "created_at": "2026-02-06 12:20:06+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/-components/navigation/HelpDropdown.tsx",
+    "line_range": "27",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "instead of changing the margin here. Can we change the margin/padding whatever on the bell icon component ? I mean this is okay but I wont want to change existing component classes.\r\n\r\nIs that possible ? or this change is required here ?",
+        "created_at": "2026-02-03 09:49:55+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "No, The QuestionMarkCircleIcon is not aligned properly to the center. You can check it inspecting the element. Its more aligned towards left as it is having right margin.\r\n",
+        "created_at": "2026-02-03 13:48:05+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/-components/navigation/NotificationBell.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "The `prevCountRef` is only updated in the non-increase path. When `notificationCount` increases, the effect returns early and leaves `prevCountRef.current` stale, which can incorrectly trigger the shake on later decreases (e.g., 5\u21924 still compares against 3). Update `prevCountRef.current` on every change (including the increase path) before returning/cleaning up the timer.\n```suggestion\n    const prevCount = prevCountRef.current;\n    prevCountRef.current = notificationCount;\n\n    // Trigger shake animation when notification count increases\n    if (notificationCount > prevCount) {\n      setIsShaking(true);\n      const timer = setTimeout(() => setIsShaking(false), 500);\n      return () => clearTimeout(timer);\n    }\n```",
+        "created_at": "2026-02-03 07:19:46+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "Taken care.",
+        "created_at": "2026-02-05 10:32:51+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/-components/navigation/NotificationBell.tsx",
+    "line_range": null,
+    "is_resolved": true,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "This component currently ships with a hard-coded `notificationCount` of `3`, which will show a badge for all users even when there are no real notifications. If the real data source isn\u2019t ready yet, default this to `0` (no badge) or accept the count as a prop/query result so the UI reflects actual state.\n```suggestion\n  const [notificationCount, setNotificationCount] = useState(0);\n```",
+        "created_at": "2026-02-03 07:19:47+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "Done",
+        "created_at": "2026-02-03 09:51:57+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/-components/navigation/NotificationBell.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "New behavior added here (badge formatting like `99+`, screen reader text, and shake-on-increase animation) is untested. Add unit/integration tests that cover the count formatting and that the shake class toggles only when the count increases.",
+        "created_at": "2026-02-03 07:19:47+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/-components/navigation/NotificationBell.tsx",
+    "line_range": "8",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "create a storybook story for this",
+        "created_at": "2026-02-03 09:56:48+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "Added.",
+        "created_at": "2026-02-03 16:39:52+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/-components/navigation/NotificationBell.tsx",
+    "line_range": "42",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "The button removes the default outline (`outline-hidden`) but does not add an equivalent focus-visible style. This makes keyboard focus hard to see in the header. Add a `data-focus-visible:*` (or `focus-visible:*`) ring/outline consistent with the other header controls (e.g., `ProfileDropdown`).\n```suggestion\n        'hover:bg-gray-100',\n        // focus-visible\n        'data-[focus-visible]:ring-2 data-[focus-visible]:ring-blue-500 data-[focus-visible]:ring-offset-2 data-[focus-visible]:ring-offset-white'\n```",
+        "created_at": "2026-02-03 07:19:47+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/-components/navigation/NotificationBell.tsx",
+    "line_range": "57",
+    "is_resolved": true,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "In figma, there is more gap inside the bell icon (specifically between the icon and the number) as compared to the component UI. Can we adjust that ? ",
+        "created_at": "2026-02-03 10:00:53+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "Can you now check the updated screenshots and let me know.",
+        "created_at": "2026-02-03 16:38:59+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/-components/navigation/NotificationBell.test.tsx",
+    "line_range": null,
+    "is_resolved": true,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "remove this ",
+        "created_at": "2026-02-06 13:58:34+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "Done",
+        "created_at": "2026-02-06 14:05:48+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/-components/navigation/NotificationBell.test.tsx",
+    "line_range": null,
+    "is_resolved": true,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "remove this",
+        "created_at": "2026-02-06 13:58:46+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "Done",
+        "created_at": "2026-02-06 14:06:12+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/-components/navigation/NotificationBell.test.tsx",
+    "line_range": null,
+    "is_resolved": true,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "no notification and zero is same ryt then only add one of them remove this or merge this with above",
+        "created_at": "2026-02-06 14:00:49+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "Done.",
+        "created_at": "2026-02-06 14:10:14+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/-components/navigation/NotificationBell.test.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "merge with above",
+        "created_at": "2026-02-06 14:01:01+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/-components/navigation/NotificationBell.test.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "no need to add this ",
+        "created_at": "2026-02-06 14:01:11+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/-components/navigation/NotificationBell.test.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "merge with above ",
+        "created_at": "2026-02-06 14:01:23+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/-components/navigation/NotificationBell.test.tsx",
+    "line_range": "151",
+    "is_resolved": true,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "how you are testing hide notification you are still in / route ?",
+        "created_at": "2026-02-06 13:59:40+00:00"
+      },
+      {
+        "author": "ashok-nasuni",
+        "body": "Done",
+        "created_at": "2026-02-06 14:28:08+00:00"
+      }
+    ]
+  }
+]

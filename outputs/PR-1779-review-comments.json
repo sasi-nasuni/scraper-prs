@@ -1,0 +1,94 @@
+[
+  {
+    "file_path": "frontend/msw-portal/browser/scenarios.ts",
+    "line_range": "167",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "`FreeTrialLicenseScenario` and `ExpiredLicenseScenario` affect the home route ('/') as well (IndexPage shows the free-trial banner / expired subscription message), but they're only registered under `/contact`. Because the MSW devtools scenario picker is route-scoped, you currently can't activate these license scenarios while on `/` to test the IndexPage UI. Consider adding the license scenarios to the `'/'` route\u2019s scenario list (and keep `NoAccountOwnerScenario` under `/contact` only).\n",
+        "created_at": "2026-05-21 07:35:42+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/msw-portal/webbff/scenarios/contact.ts",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "`FreeTrialLicenseScenario.description` says it returns a `free_trial` status, but the DTO values (and `accountSubscriptionStatus.freeTrial`) use the literal string `free trial` (with a space). This description shows up in the MSW scenario picker, so it should match the actual enum value to avoid confusion.\n",
+        "created_at": "2026-05-21 07:17:44+00:00"
+      },
+      {
+        "author": "dmunagavalasa",
+        "body": "Fixed. Updated the description to `'Returns a free trial subscription status with an expiration date.'` to match the actual enum value.",
+        "created_at": "2026-05-21 07:29:06+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/-components/ProfileDropdown.test.tsx",
+    "line_range": "23-28",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "For absence assertions in vitest-browser, doing an immediate `expect(locator.query()).toBeNull()` can be racey right after interactions (React state updates). Prefer `await expect.poll(() => locator.query()).toBe(null)` (pattern used elsewhere in int tests) so the test waits for the DOM to settle before asserting absence.\n\nThis issue also appears on line 103 of the same file.",
+        "created_at": "2026-05-21 07:17:44+00:00"
+      },
+      {
+        "author": "dmunagavalasa",
+        "body": "Fixed. Replaced both occurrences (`/Dashboard/` on L27 and `/Activity Logs/` on L107) with `await expect.poll(() => locator.query()).toBe(null)`.",
+        "created_at": "2026-05-21 07:29:14+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/_authed.contact.test.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "The Sales panel absence check uses an immediate `expect(page.getByText('Email Sales').query()).toBeNull()`. Prefer `await expect.poll(() => ...query()).toBe(null)` after navigation to avoid timing-related flakes.\n",
+        "created_at": "2026-05-21 07:17:45+00:00"
+      },
+      {
+        "author": "dmunagavalasa",
+        "body": "Fixed. Replaced with `await expect.poll(() => page.getByText('Email Sales').query()).toBe(null)`.",
+        "created_at": "2026-05-21 07:29:28+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/_authed.index.test.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "The free-trial banner absence check uses an immediate `expect(page.getByText(...).query()).toBeNull()`. Prefer `await expect.poll(() => ...query()).toBe(null)` to avoid races during initial route render / query resolution.\n",
+        "created_at": "2026-05-21 07:17:44+00:00"
+      },
+      {
+        "author": "dmunagavalasa",
+        "body": "Fixed. Replaced with `await expect.poll(() => page.getByText('Free Trial Account').query()).toBe(null)`.",
+        "created_at": "2026-05-21 07:29:21+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/_authed.index.test.tsx",
+    "line_range": "7-23",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "The previous unit tests included coverage to ensure `usePosthogUserProperties` stays enabled even when certain permissions (e.g. notifications) are missing. That behavior is no longer covered after the move to integration tests. Please consider adding an equivalent integration test (or a focused unit test) to prevent regressions in analytics/advisory fetching behavior on the IndexPage.",
+        "created_at": "2026-05-21 07:35:43+00:00"
+      }
+    ]
+  }
+]

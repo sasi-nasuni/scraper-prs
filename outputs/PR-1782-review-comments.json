@@ -1,0 +1,161 @@
+[
+  {
+    "file_path": "backend/portal-webbff/portal/webbff/data/volumes/converters.py",
+    "line_range": "11",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "LeeStovall",
+        "body": "A volume must have a master filer. When could we expect scenarios where the detail isn't going to have a list of filers?",
+        "created_at": "2026-05-22 18:49:40+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "backend/portal-webbff/portal/webbff/data/volumes/repo.py",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "In get_expanded_volumes(), master_build is derived via edges_by_id.get(...).build without guarding for a missing edge. If the owning edge ID isn\u2019t present in the /edges response, this will raise an AttributeError and fail the entire endpoint. Handle the missing lookup (e.g., read .build only if edges_by_id.get(...) returned an edge).\n",
+        "created_at": "2026-05-22 17:51:43+00:00"
+      },
+      {
+        "author": "dtrinchet-nasuni",
+        "body": "Solved",
+        "created_at": "2026-05-22 18:19:16+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "backend/portal-webbff/portal/webbff/data/volumes/repo.py",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "get_expanded_volumes() fetches edges once, but then calls get_volume() for each volume; get_volume() currently calls portal_api_client.get_edges() again per volume. This adds an avoidable 1+N upstream calls and can become a bottleneck for large accounts. Consider refactoring get_volume() (or adding a private helper) to accept/reuse a pre-fetched edge index when building expanded volumes.",
+        "created_at": "2026-05-22 17:51:43+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "backend/portal-webbff/portal/webbff/data/volumes/repo.py",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "zip(volumes.items, details, strict=False) can silently drop volumes or details if lengths diverge, hiding upstream/data issues. Since details are derived from volumes.items, make this strict (or assert equal lengths) so partial/misaligned results don\u2019t get returned.\n",
+        "created_at": "2026-05-22 17:51:43+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "backend/portal-webbff/portal/webbff/data/volumes/repo.py",
+    "line_range": "61-67",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "`_get_master_build()` returns the literal string \"N/A\" when the master edge/build can\u2019t be resolved. This value is not a real build version and ends up being sent to the frontend as `master.build`, which can both display confusing labels (e.g., \"\u2026 N/A\") and force version-compare code paths to throw/catch on invalid semver. Prefer returning `None` (or omitting the field) when build is unknown, and adjust the helper\u2019s return type accordingly.\n",
+        "created_at": "2026-05-22 18:51:36+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "backend/portal-webbff/portal/webbff/data/volumes/repo.py",
+    "line_range": "71-73",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "`get_expanded_volumes()` issues one upstream `get_volume()` call per volume (`/volumes/{id}`) in addition to the list call, which is an O(N) fan-out. For accounts with many volumes this can significantly increase latency and load on the upstream API (even when awaited concurrently). Consider adding pagination/filtering to this endpoint, reducing the number of detail calls (if an upstream bulk endpoint exists), and/or applying a concurrency limit/batching to the fan-out to avoid bursts.",
+        "created_at": "2026-05-22 18:51:36+00:00"
+      },
+      {
+        "author": "dtrinchet-nasuni",
+        "body": "Yes, we are aware of.",
+        "created_at": "2026-05-22 18:54:24+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed.cloud-services/uaas/$stackId/-components/SelectVolumeButton.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "The rendered menuitem label always includes a comma between provider and owner edge, even when provider or owner edge data is missing (provider can be null and master can be null). This can lead to confusing labels like \"<desc> - , \" or a trailing comma. Build the label from conditional parts (e.g., only include punctuation when the corresponding value exists) so unsupported/malformed volumes still render cleanly.",
+        "created_at": "2026-05-22 17:51:43+00:00"
+      },
+      {
+        "author": "dtrinchet-nasuni",
+        "body": "Solved",
+        "created_at": "2026-05-22 18:19:09+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/dtos/volumes.ts",
+    "line_range": "62",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "LeeStovall",
+        "body": "Filers must have descriptions. I don't think this should be nullable. ",
+        "created_at": "2026-05-22 19:00:47+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/dtos/volumes.ts",
+    "line_range": "70",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "LeeStovall",
+        "body": "Similar concern here: Volumes must have a description.",
+        "created_at": "2026-05-22 19:15:19+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/e2e-test-account/webbff/queries/volumes.test.ts",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "This e2e assertion expects volumes.items[0].master to be truthy, but the ExpandedVolumesResponse schema explicitly allows master to be null. If the first returned volume lacks edge data, this test can fail even though the schema validation passed. Consider asserting only that parsing succeeded (no throw), or that at least one item has a non-null master instead of requiring the first item to.\n",
+        "created_at": "2026-05-22 17:51:44+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/_authed.cloud-services/uaas/$stackId/_layout.nasuni-data-service.test.tsx",
+    "line_range": "369",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "Copilot",
+        "body": "Test name mentions verifying enabled items are shown first, but the assertions don\u2019t check ordering (only visibility and disabled state). Either assert menuitem order (e.g., via getAllByRole('menuitem') and comparing text order) or rename the test to match what it validates.",
+        "created_at": "2026-05-22 17:51:44+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/int/routes/_authed.cloud-services/uaas/$stackId/_layout.nasuni-data-service.test.tsx",
+    "line_range": "411",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "LeeStovall",
+        "body": "!!!!",
+        "created_at": "2026-05-22 19:16:41+00:00"
+      }
+    ]
+  }
+]

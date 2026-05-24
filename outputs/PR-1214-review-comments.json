@@ -1,0 +1,745 @@
+[
+  {
+    "file_path": "frontend/component-docs/routes/-components/navigation/NotificationBell.stories.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "move all the msw handlers  to msw folder and then import and use",
+        "created_at": "2026-02-11 10:58:13+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/component-docs/routes/-components/navigation/NotificationBell.stories.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "why we are not using BffRoute ?",
+        "created_at": "2026-02-11 11:05:40+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "BffRoute internally uses, ApiRoute which is typed by ApiRoutePath and realized from api.gen.ts file which is autogenrated from FastAPI routes. Since backend routes are unavailable, ts gives you warning or error because of this, so used hardcoded routes",
+        "created_at": "2026-02-13 15:46:08+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationFiltersSection.tsx",
+    "line_range": null,
+    "is_resolved": true,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "Icon on All severities doesn't look good in the UI. Please check with PM/UX regarding this.",
+        "created_at": "2026-02-11 10:23:19+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Icon was provided by Deepali, I have posted a message in pm group for final approaval",
+        "created_at": "2026-02-11 10:29:09+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Removing the icon for now, marking this as resolved",
+        "created_at": "2026-02-13 15:43:51+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationFiltersSection.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "I believe as per discussions in PM epic channel, the filter values was:\n1. Last 24 Hours (P1D)\n2. Last 7 Days (P7D)\n3. Last 14 Days (P14D)\n4. Last 30 Days (P30D)\n\nLast Month seems ambiguous as it can be 31 or 30 or 28 or 29 (if leap year), specific day count will be more clear and specific in my opinion. If required please confirm with PM once",
+        "created_at": "2026-02-17 06:53:38+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Modified",
+        "created_at": "2026-02-17 08:43:13+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationFiltersSection.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "if we are clear to show error in component level inline, then we can remove this comment",
+        "created_at": "2026-02-17 06:57:37+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Added this comment to check with Dairon and see if we have to update rule to identify this as a positive scenario",
+        "created_at": "2026-02-17 08:43:57+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationFiltersSection.tsx",
+    "line_range": "90",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "If the user selects \"All\" for any of the filters, then the URL would become like this: \n`?severity=All&category=All&appliance=All&volume=All`\n\nIn this case, can we add a filteration to not append that filter if user selects all, because by default its ALL",
+        "created_at": "2026-02-17 07:35:36+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "It will not be this way. Tanstack strips the default query parameters from the URL. This is already handled here https://github.com/nasuni/portal/pull/1214/changes#diff-c24f34f9dee87fe9230b04f41a7b11d1381283c9cef541c2f7e140623b8e2885R11",
+        "created_at": "2026-02-17 08:49:03+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationFiltersSection.tsx",
+    "line_range": "127",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "Here also, in case search is empty the url becomes `?search=`. we can add a check to remove this if search is empty",
+        "created_at": "2026-02-17 07:43:49+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "This is already handled with stripSearchParams from tanstack router(ref https://github.com/nasuni/portal/pull/1214#discussion_r2815676120)",
+        "created_at": "2026-02-17 09:05:00+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationRow.tsx",
+    "line_range": "16",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "add a TODO comment when integrate with api handle the timezone changes",
+        "created_at": "2026-02-03 17:54:13+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Can you please elaborate ?",
+        "created_at": "2026-02-04 16:03:05+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationRow.tsx",
+    "line_range": "24",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "CSS animations can handle the fade-out automatically without state management or timers, improving performance and reducing re-renders.\n\nWe can try to use CSS animation classes to produce the same behaviour, added suggested change below.",
+        "created_at": "2026-02-17 07:40:38+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "With CSS based animation, the new badge appears every time the component re renders since we check for only isNew flag (ref https://github.com/nasuni/portal/pull/1214#discussion_r2815435594). Hence used, time based state management",
+        "created_at": "2026-02-17 09:03:57+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationRow.tsx",
+    "line_range": "37-43",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "```suggestion\n          <span\n            className={clsx('inline-flex items-center rounded-full bg-blue-600 px-2 py-0.5 text-xs font-medium text-white', isNew ? 'animate-badge-fade-out' : 'opacity-0'\n  )}\n          >\n            New\n          </span>\n```\n\nAdd to CSS:\n```\n@keyframes badge-fade-out {\n  0%, 90% { opacity: 1; }\n  100% { opacity: 0; }\n}\n\n.animate-badge-fade-out {\n  animation: badge-fade-out 10s ease-in-out forwards;\n}\n```",
+        "created_at": "2026-02-17 07:41:34+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Please ref https://github.com/nasuni/portal/pull/1214#discussion_r2815735091",
+        "created_at": "2026-02-17 09:04:10+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationTable.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "the table is sortable by all columns except message, please add other column names also",
+        "created_at": "2026-02-11 09:48:55+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationTable.tsx",
+    "line_range": "10",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "Fixed percentage widths total 100% but do not account for browser scrollbar, padding, or borders, causing horizontal overflow on smaller viewports.\n\nCan we Use use proportional fr units or let columns flex naturally with min-widths ?\nFor e.g.: `className: 'min-w-[200px]'`",
+        "created_at": "2026-02-17 07:37:45+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "1. I believe 100% indicates the width of the table content removing padding or borders. \r\n2. Also, I think browser scroll bar is like overlay and it may not reduce the size of the element on screen. \r\nFor point 1, attaching ss indicating the widths of the components on screen\r\nWidth of the table along with padding: 1465\r\nWidth of table without padding: 1465 - 64 = 1401\r\nWidth of column dateRange: 237.83 ~ 17%*1401\r\n<img width=\"1723\" height=\"934\" alt=\"Screenshot 2026-02-17 at 2 58 49\u202fPM\" src=\"https://github.com/user-attachments/assets/da3267d0-1b89-4b59-9759-e5c6eaeeb9b4\" />\r\n<img width=\"1723\" height=\"934\" alt=\"Screenshot 2026-02-17 at 2 58 05\u202fPM\" src=\"https://github.com/user-attachments/assets/9dc7f44c-494b-43bc-9a1f-025c84fd0d0b\" />\r\n",
+        "created_at": "2026-02-17 09:32:31+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "For second question, I think fr units can be used with grid layouts only. Even if we use min width for columns it will still be overflowing content. \r\nI believe we should add a min-width class for the Table lib component. So that content does not get overflown. Added the min-w-[1200] to the table lib component",
+        "created_at": "2026-02-17 09:42:56+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationsPage.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "we should not send the error to console in prod as a good practice. Can we remove this ?\n",
+        "created_at": "2026-02-11 09:45:16+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationsPage.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "```suggestion\n    { enabled: true } \n```",
+        "created_at": "2026-02-13 10:55:41+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationsPage.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "Upon clicking \u201cLoad More\u201d in the notification table, should the view reset to the top, or should it append the next set of records and maintain the current scroll position? Please check what should be the ideal behaviour with PM team",
+        "created_at": "2026-02-16 12:04:39+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "It should append the next set of records on the UI. This is the expectation also confirmed by UX/figma mockup given",
+        "created_at": "2026-02-16 14:59:27+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationsPage.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "you need to pass this by default it will be true ",
+        "created_at": "2026-02-16 12:11:38+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Removed them, since default for enabled option is true in both useQuery and useInfiniteQuery",
+        "created_at": "2026-02-16 15:07:55+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationsPage.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "I think you can remove this enabled: isFirstPage and what if user directly hit the url with has cursor id of second page ?",
+        "created_at": "2026-02-16 12:17:04+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "True, thinking about this I removed the cursor itself from query params. Reason being infinite pagination is handled by tanstack useInfiniteQuery itself. So there is no need to have separate query param for cursor which is accessible to user. \r\nNow since cursor is not a search parameter, logic for identifying when to fetch lastVisited should be changed. It should ideally be fetched when component is first mounted and when there is a change in search params(change in search params indicates first page is being loaded). Modified it accordingly",
+        "created_at": "2026-02-16 16:49:32+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationsPage.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "I think when ever user opens this page we need to update last visited no need to add this isFirstPage",
+        "created_at": "2026-02-16 12:20:04+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "True, makes sense, given the mutation logic of query's isSuccess, `isFirstPage` will be a redundant one to check for, removed it",
+        "created_at": "2026-02-16 17:01:17+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-components/NotificationsPage.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "we should add all sortable columns here as well, category, appliance_name and volume_name",
+        "created_at": "2026-02-17 07:27:47+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed-notifications/-utils/search-params.ts",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "```suggestion\n  dateRange: z.string().optional().prefault('P7D'),\n```",
+        "created_at": "2026-02-17 07:32:32+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed.notifications/-components/NotificationTable.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "I would suggest  create an array of obj and loop over the array instead of repeating SortableColumn",
+        "created_at": "2026-02-03 17:44:00+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Is this for readability and maintenance or any specific reason ?",
+        "created_at": "2026-02-04 06:43:16+00:00"
+      },
+      {
+        "author": "viramjain99",
+        "body": "it will be easy to add an obj and move obj within an array and Let's say tmrw if we want to change SortableCol comp we need to change only in one place",
+        "created_at": "2026-02-04 06:46:30+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "True, this will be a maintainability concern, will change it, However my view: It will be easier to read and understand code if it was this way rather than iterating over object. Also, moving to separate component from SortableColumn would be a find and replace change and if it is a rename change, it will be refactor change that will be automatically done with vscode and both of them will be very changes. ",
+        "created_at": "2026-02-04 07:21:12+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed.notifications/-components/NotificationTable.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "check the wording and design with PM",
+        "created_at": "2026-02-04 13:29:05+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Yup",
+        "created_at": "2026-02-04 15:48:48+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed.notifications/-components/NotificationsPage.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "keep mock data in seperate file or use msw ",
+        "created_at": "2026-02-03 17:48:51+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "My Bad, this should have a TODO indicating it to be removed once backend is done. ",
+        "created_at": "2026-02-04 06:43:50+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed.notifications/-components/NotificationsPage.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "I think pagination should also be a part of table",
+        "created_at": "2026-02-03 17:50:34+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Yes, semantically it should be inside table component given it is tightly coupled with table. But added it to the main NotificationsPage because we want to make it stick to the bottom of the viewport. Felt it will be more easier to understand if it is placed in main page.",
+        "created_at": "2026-02-04 07:25:42+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/routes/_authed.notifications/-components/NotificationsPage.tsx",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "avinash-b-nasuni",
+        "body": "The pagination component\u2019s width should match the table\u2019s width. Currently, it spans the entire viewport",
+        "created_at": "2026-02-04 07:11:40+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Table width is entire viewport width currently, and pagination also matches that",
+        "created_at": "2026-02-04 07:31:16+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/utils/date.ts",
+    "line_range": "40",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "will Timezone epic have any impact on this ? May be we need to show the user based on their selected timezone. Please add a TODO comment in case we need to integrate timezone here",
+        "created_at": "2026-02-17 07:45:30+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Added a TODO ",
+        "created_at": "2026-02-17 09:06:42+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/keys/notifications.ts",
+    "line_range": null,
+    "is_resolved": true,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "why this is optional ?\n```suggestion\n  lists: (params: NotificationQueryParams) =>\n```",
+        "created_at": "2026-02-04 13:22:37+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Done",
+        "created_at": "2026-02-04 15:34:17+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/keys/notifications.ts",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "```suggestion\n   (['notifications-list', ...params] as const)),\n```",
+        "created_at": "2026-02-04 13:22:49+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "NotificationQueryParams is not an array, it is an object, cannot spread an object inside an array",
+        "created_at": "2026-02-04 15:41:31+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/keys/notifications.ts",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "```suggestion\n  lastVisited: () => ['notifications-page-lastvisited'] as const,\n```",
+        "created_at": "2026-02-04 13:23:33+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Please refer https://github.com/nasuni/portal/pull/1214#discussion_r2764687323",
+        "created_at": "2026-02-04 15:49:52+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/keys/notifications.ts",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "```suggestion\n  count: () => ['notifications-count'] as const,\n```",
+        "created_at": "2026-02-04 13:23:47+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Please refer https://github.com/nasuni/portal/pull/1214#discussion_r2764687323",
+        "created_at": "2026-02-04 15:49:45+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/keys/notifications.ts",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "```suggestion\n  filters: () => ['notifications-filters'] as const,\n```",
+        "created_at": "2026-02-04 13:24:08+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Please refer https://github.com/nasuni/portal/pull/1214#discussion_r2764687323",
+        "created_at": "2026-02-04 15:49:39+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/keys/notifications.ts",
+    "line_range": "16",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "why do we need all key if we have list ?",
+        "created_at": "2026-02-04 13:24:36+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "I believe there is a hierarchy way of invalidating queries in tanstack router. So, when we say invalidateQueries by providing a key, tanstack invalidates all the keys that have the passed key as prefix. This will be useful when we invalidate all notification queries and hence the keys were named that way. It also indicates/groups all these keys under the notifications component bracket and I think it is good practice to have ",
+        "created_at": "2026-02-04 15:47:27+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/mutations/notifications.ts",
+    "line_range": "12",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "convert this to UTC then send ",
+        "created_at": "2026-02-04 12:59:08+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "I believe toISOString() converts it into UTC only also, in postgres db we wish to use timestampz as the field type. So when inserting this timestamp we pass timezone info also to the DB and DB takes care of converting it to UTC.",
+        "created_at": "2026-02-04 15:29:06+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/mutations/notifications.ts",
+    "line_range": "21",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "you can move this mutation inside notification page I don't think so we need this anywhere else no need create a custom hook",
+        "created_at": "2026-02-04 13:00:26+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "I think it is better to have it in separate file as it will be readable with its respective tsx file focusing on elements and components while this ts file takes care of the mutation",
+        "created_at": "2026-02-04 15:33:36+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/queries/notifications.ts",
+    "line_range": null,
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "only create a custom hook if we need to call it in multiple component else directly add a useQuery inside a comp ",
+        "created_at": "2026-02-04 13:04:38+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Same here",
+        "created_at": "2026-02-04 15:34:05+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/queries/notifications.ts",
+    "line_range": null,
+    "is_resolved": true,
+    "comments": [
+      {
+        "author": "rashmi-rdas",
+        "body": "Manual query string construction is error-prone. Consider using URLSearchParams for more robust query string building. For e.g.\n\n```\nconst searchParams = new URLSearchParams();\n  \n  Object.entries(params).forEach(([key, value]) => {\n    if (value === undefined || value === null) return;\n\n    if (Array.isArray(value)) {\n      value.forEach((v: string) => searchParams.append(toSnake(key), v));\n    } else {\n      searchParams.append(toSnake(key), String(value));\n    }\n  });\n\n  const queryString = searchParams.toString();\n  const url = `/webbff/notifications${queryString ? `?${queryString}` : ''}`;\n```",
+        "created_at": "2026-02-11 10:25:51+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Thanks for pointing out, updated it",
+        "created_at": "2026-02-11 10:35:21+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/queries/notifications.ts",
+    "line_range": "57",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "make sure service should always accept valid params on that note I think we don't need to add any filter or validation logic inside service it should only build search params to query api",
+        "created_at": "2026-02-13 14:22:51+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "On a second thought, I think this `if (value === undefined || value === null) return;` should still be there. We do not want to pass undefined/null values as query parameters. If we remove this check, this will add stringified values of undefined/null to query/url search params. The caller would not be responsible for this because we expect the caller to pass params object typed as `NotificationQueryParams` which includes all the attributes",
+        "created_at": "2026-02-16 14:57:38+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/queries/notifications.ts",
+    "line_range": "76",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "```suggestion\n    queryFn: ({ pageParam,signal }) => {\n```",
+        "created_at": "2026-02-13 11:08:07+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "I think we need not use signal here, for fetching unread count, it might make sense since a new notification can come immediately and we would want to invalidate/cancel the prev value or query. But for other apis, I think it is not required to us signal, since they may not become stale that fast",
+        "created_at": "2026-02-13 15:49:25+00:00"
+      },
+      {
+        "author": "viramjain99",
+        "body": "If search and all filters are disabled while the API is in a loading state, it\u2019s acceptable not to pass the signal, since the user cannot trigger additional requests.\r\n\r\nHowever, if users are allowed to change filters, search terms, or pagination while a request is in progress, then we should pass the signal to properly cancel the previous request and prevent race conditions or stale data issues.\r\n",
+        "created_at": "2026-02-16 11:52:12+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "We can add the signal and cancel the queries, while it improves user experience, backend will still be receiving requests even though client says disconnect from the request. \r\nI believe this is a UX problem and we should have an apply/ reset button for the filters which will indicate to the user also that this filtering is done in backend and not UI filtering.",
+        "created_at": "2026-02-17 11:27:04+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/queries/notifications.ts",
+    "line_range": "78",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "```suggestion\n      return fetchNotifications(queryParams,signal);\n```",
+        "created_at": "2026-02-13 11:08:24+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Same as here https://github.com/nasuni/portal/pull/1214#discussion_r2804876168",
+        "created_at": "2026-02-13 15:49:56+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/queries/notifications.ts",
+    "line_range": "100",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "```suggestion\n    queryFn: ({signal})=>fetchNotificationCount(signal),\n```",
+        "created_at": "2026-02-13 11:08:52+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/queries/notifications.ts",
+    "line_range": "120",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "```suggestion\n    queryFn: ({signal})=>fetchNotificationSeverityCategoryFilters(signal),\n```",
+        "created_at": "2026-02-13 11:09:37+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Same as here https://github.com/nasuni/portal/pull/1214#discussion_r2804876168",
+        "created_at": "2026-02-13 15:50:03+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/src/webbff/queries/notifications.ts",
+    "line_range": "131",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "I think it's better we implement a single endpoint that will return all the filters instead of separate api for each one",
+        "created_at": "2026-02-13 11:10:41+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "As Dairon suggested, using a single api might be anti pattern coz consolidating all other api calls at bff layer would need the response in bff to indicate success objects of successful api and error calls of errored apis. For example, \r\n```\r\n{\r\nsuccess: {api-call-1: {}, api-calls-2: {}},\r\nerror: {api-call-3: {}, api-calls-4: {}}\r\n}\r\n```\r\nThen bff would say 200 response and code would still be checking for error in the response body. On the other hand, we can also strongly discuss saying why we can do this. But I felt it would be a lot more easier to handle error scenarios if we have separate calls and it will be only 3 api calls. So followed the separate api approach. ",
+        "created_at": "2026-02-13 15:56:14+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/unit/routes/_authed-notifications/-components/NotificationsPage.test.tsx",
+    "line_range": "182",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "you can merge this with above test case",
+        "created_at": "2026-02-13 14:29:55+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "I think unit tests should be singular and focused on single responsibility. Given that filters is a separate component imported into notifications page, i think it is better to have a test for it separately. Also, if we have a single test and lets say the test fails before filters due to an issue in a component before it. Then we do not know what is the status of other components imported because those assertions would not have executed",
+        "created_at": "2026-02-16 05:03:19+00:00"
+      }
+    ]
+  },
+  {
+    "file_path": "frontend/tests/unit/routes/_authed-notifications/-components/NotificationsPage.test.tsx",
+    "line_range": "260",
+    "is_resolved": false,
+    "comments": [
+      {
+        "author": "viramjain99",
+        "body": "instead of adding too many small small test case it's better we add only these\r\nsuccess, error , what all permutation will be possible adding too many small small test case will increase CI time (you can have one big test case that validate everything what all should be present when we have success scenario)",
+        "created_at": "2026-02-13 14:31:37+00:00"
+      },
+      {
+        "author": "sasi-nasuni",
+        "body": "Have removed some of the redundant test cases",
+        "created_at": "2026-02-16 05:07:32+00:00"
+      }
+    ]
+  }
+]

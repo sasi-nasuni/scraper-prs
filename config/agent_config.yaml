@@ -3,7 +3,7 @@
 # LLM Settings
 llm:
   provider: openai  # openai or anthropic
-  model: gpt-4.1  # Specify the model to use (e.g., gpt-4, gpt-3.5-turbo, claude-2)
+  model: gpt-4o-mini  # Specify the model to use (e.g., gpt-4, gpt-3.5-turbo, claude-2)
   temperature: 0.7  # Controls randomness: 0.0 = deterministic/focused, 1.0 = creative/varied
   max_tokens: 8000                # Max output tokens (Copilot Enterprise: 8K out for Low-tier models)
   max_context_tokens: 7500        # Max input tokens for user prompt. Model limit is 8K in; leave ~500 safety margin.
