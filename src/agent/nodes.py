@@ -519,6 +519,15 @@ class PRSummaryNodes:
             logger.warning(f"Error summarizing Confluence page '{page.title}': {e}")
             return None
 
+    async def join_context(self, state: AgentState) -> Dict[str, Any]:
+        """Join node: synchronization point for parallel context branches.
+        
+        This is a no-op pass-through that ensures all parallel context
+        fetching branches complete before proceeding to generate_summary.
+        """
+        logger.info("All context branches joined")
+        return {}
+
     async def analyze_files(self, state: AgentState) -> Dict[str, Any]:
         """Analyze and categorize changed files."""
         logger.info("Analyzing files")

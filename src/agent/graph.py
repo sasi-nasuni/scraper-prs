@@ -95,23 +95,15 @@ def create_pr_summary_graph(
         }
     )
     
-    # Context fetching setup
-    # Step 1 (parallel): Fetch Jira context + analyze files (independent of each other)
+    # Context fetching (sequential to avoid LangGraph loop + fan-in duplication)
+    # Path: extract_references → fetch_jira_context → enrich_references_from_jira
+    #      → fetch_figma_context → fetch_confluence_context → analyze_files
+    #      → summarize_diffs → generate_summary
     workflow.add_edge("extract_references", "fetch_jira_context")
-    workflow.add_edge("extract_references", "analyze_files")
-    
-    # Step 2: Enrich references from Jira ticket descriptions.
-    # Jira tickets often contain Figma and Confluence URLs in their description
-    # / acceptance-criteria fields, so we scan those *after* Jira is fetched.
     workflow.add_edge("fetch_jira_context", "enrich_references_from_jira")
-    
-    # Step 3 (parallel): Fetch Figma & Confluence with the enriched URL lists
     workflow.add_edge("enrich_references_from_jira", "fetch_figma_context")
-    workflow.add_edge("enrich_references_from_jira", "fetch_confluence_context")
-    
-    # All context paths converge into summary generation
-    workflow.add_edge("fetch_figma_context", "generate_summary")
-    workflow.add_edge("fetch_confluence_context", "generate_summary")
+    workflow.add_edge("fetch_figma_context", "fetch_confluence_context")
+    workflow.add_edge("fetch_confluence_context", "analyze_files")
     workflow.add_edge("analyze_files", "summarize_diffs")
     workflow.add_edge("summarize_diffs", "generate_summary")
     
