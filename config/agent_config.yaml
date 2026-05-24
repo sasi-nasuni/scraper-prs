@@ -19,7 +19,7 @@ processing:
   enable_parallel: true
   parallel_workers: 3
   timeout_per_pr: 300  # Maximum time allowed to process one PR before giving up (prevents hanging)
-  api_delay_seconds: 2  # Delay (seconds) between API requests to avoid rate limiting
+  api_delay_seconds: 5  # Delay (seconds) between API requests to avoid rate limiting
 
 # Template Settings
 templates:
