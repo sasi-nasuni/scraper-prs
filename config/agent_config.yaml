@@ -166,7 +166,7 @@ error_handling:
 
 # Output Settings
 output:
-  directory: /mnt/28de65c4-d6ab-41bd-8c1e-c07a599a0963/projects/scraper-prs/outputs
+  directory: /mnt/28de65c4-2a93-493b-886f-3a71dc3ec5e3_1/now/scraper-prs/outputs/
   filename_pattern: 'PR-{number}-{repo_name}-summary.md'
   overwrite_existing: true
   include_metadata: true
