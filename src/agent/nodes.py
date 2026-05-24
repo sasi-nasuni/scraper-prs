@@ -1,6 +1,7 @@
 """
 LangGraph node implementations for PR summary agent.
 """
+import asyncio
 import hashlib
 import logging
 import re
@@ -155,8 +156,9 @@ class PRSummaryNodes:
         try:
             # If PR URLs list is provided, parse each URL and fetch details
             if pr_urls:
-                logger.info(f"Processing {len(pr_urls)} PR URLs directly")
-                for url in pr_urls:
+                api_delay = self.config.get("processing", {}).get("api_delay_seconds", 2)
+                logger.info(f"Processing {len(pr_urls)} PR URLs directly (delay: {api_delay}s between requests)")
+                for i, url in enumerate(pr_urls):
                     url = url.strip().rstrip("/")
                     match = re.search(r'github\.com/([^/]+)/([^/]+)/pull/(\d+)', url)
                     if match:
@@ -172,6 +174,9 @@ class PRSummaryNodes:
                                 state,
                                 f"PR #{url_pr_number} not found in {url_owner}/{url_repo}"
                             )
+                        # Rate limiting delay between requests
+                        if i < len(pr_urls) - 1:
+                            await asyncio.sleep(api_delay)
                     else:
                         add_warning(state, f"Could not parse PR URL: {url}")
                 
@@ -227,6 +232,12 @@ class PRSummaryNodes:
         current_index = state.get("current_pr_index", 0)
         
         if current_index < len(pr_list):
+            # Rate limiting delay between PRs (skip delay for the first PR)
+            if current_index > 0:
+                api_delay = self.config.get("processing", {}).get("api_delay_seconds", 2)
+                logger.info(f"Rate limit delay: waiting {api_delay}s before next PR")
+                await asyncio.sleep(api_delay)
+            
             # Reset PR-specific context (side effect on state)
             reset_pr_context(state)
             

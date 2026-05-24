@@ -19,6 +19,7 @@ processing:
   enable_parallel: true
   parallel_workers: 3
   timeout_per_pr: 300  # Maximum time allowed to process one PR before giving up (prevents hanging)
+  api_delay_seconds: 2  # Delay (seconds) between API requests to avoid rate limiting
 
 # Template Settings
 templates:
@@ -165,7 +166,7 @@ error_handling:
 
 # Output Settings
 output:
-  directory: /mnt/28de65c4-2a93-493b-886f-3a71dc3ec5e3_1/now/scraper-prs/outputs
+  directory: /mnt/28de65c4-d6ab-41bd-8c1e-c07a599a0963/projects/scraper-prs/outputs
   filename_pattern: 'PR-{number}-{repo_name}-summary.md'
   overwrite_existing: true
   include_metadata: true
